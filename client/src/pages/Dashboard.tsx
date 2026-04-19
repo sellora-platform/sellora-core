@@ -11,6 +11,7 @@ import {
   Plus,
   MessageSquare,
   Store,
+  Download,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
@@ -192,6 +193,14 @@ export default function Dashboard() {
                 >
                   <Store className="w-4 h-4 mr-2" />
                   App Marketplace
+                </Button>
+                <Button
+                  onClick={() => setLocation("/export-data")}
+                  variant="outline"
+                  className="w-full justify-start border-border/50 hover:bg-accent/5"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export Data
                 </Button>
               </div>
             </Card>
