@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, and, desc, asc, like, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, stores, InsertStore, products, InsertProduct, categories, InsertCategory, productVariants, InsertProductVariant, customers, InsertCustomer, orders, InsertOrder, orderItems, InsertOrderItem, discounts, InsertDiscount, aiInteractions, InsertAIInteraction, storeThemes, InsertStoreTheme } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,211 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Store queries
+export async function createStore(data: InsertStore) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(stores).values(data);
+  return result;
+}
+
+export async function getStoreByMerchantId(merchantId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(stores).where(eq(stores.merchantId, merchantId)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function getStoreBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(stores).where(eq(stores.slug, slug)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function updateStore(storeId: number, data: Partial<InsertStore>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(stores).set(data).where(eq(stores.id, storeId));
+}
+
+// Product queries
+export async function createProduct(data: InsertProduct) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(products).values(data);
+}
+
+export async function getProductsByStoreId(storeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(products).where(eq(products.storeId, storeId));
+}
+
+export async function getProductById(productId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(products).where(eq(products.id, productId)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function updateProduct(productId: number, data: Partial<InsertProduct>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(products).set(data).where(eq(products.id, productId));
+}
+
+export async function deleteProduct(productId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(products).where(eq(products.id, productId));
+}
+
+// Category queries
+export async function createCategory(data: InsertCategory) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(categories).values(data);
+}
+
+export async function getCategoriesByStoreId(storeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(categories).where(eq(categories.storeId, storeId)).orderBy(asc(categories.displayOrder));
+}
+
+// Product Variant queries
+export async function createProductVariant(data: InsertProductVariant) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(productVariants).values(data);
+}
+
+export async function getVariantsByProductId(productId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(productVariants).where(eq(productVariants.productId, productId));
+}
+
+// Customer queries
+export async function createCustomer(data: InsertCustomer) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(customers).values(data);
+}
+
+export async function getCustomersByStoreId(storeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(customers).where(eq(customers.storeId, storeId));
+}
+
+export async function getCustomerById(customerId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(customers).where(eq(customers.id, customerId)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+// Order queries
+export async function createOrder(data: InsertOrder) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(orders).values(data);
+}
+
+export async function getOrdersByStoreId(storeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(orders).where(eq(orders.storeId, storeId)).orderBy(desc(orders.createdAt));
+}
+
+export async function getOrderById(orderId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function updateOrder(orderId: number, data: Partial<InsertOrder>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(orders).set(data).where(eq(orders.id, orderId));
+}
+
+// Order Item queries
+export async function createOrderItem(data: InsertOrderItem) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(orderItems).values(data);
+}
+
+export async function getOrderItemsByOrderId(orderId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+}
+
+// Discount queries
+export async function createDiscount(data: InsertDiscount) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(discounts).values(data);
+}
+
+export async function getDiscountsByStoreId(storeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(discounts).where(eq(discounts.storeId, storeId));
+}
+
+export async function getDiscountByCode(code: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(discounts).where(eq(discounts.code, code)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function updateDiscount(discountId: number, data: Partial<InsertDiscount>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(discounts).set(data).where(eq(discounts.id, discountId));
+}
+
+// AI Interaction queries
+export async function createAIInteraction(data: InsertAIInteraction) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(aiInteractions).values(data);
+}
+
+export async function getAIInteractionsByStoreId(storeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(aiInteractions).where(eq(aiInteractions.storeId, storeId)).orderBy(desc(aiInteractions.createdAt));
+}
+
+export async function updateAIInteraction(interactionId: number, data: Partial<InsertAIInteraction>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(aiInteractions).set(data).where(eq(aiInteractions.id, interactionId));
+}
+
+// Store Theme queries
+export async function createStoreTheme(data: InsertStoreTheme) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(storeThemes).values(data);
+}
+
+export async function getThemesByStoreId(storeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(storeThemes).where(eq(storeThemes.storeId, storeId));
+}
+
+export async function updateStoreTheme(themeId: number, data: Partial<InsertStoreTheme>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(storeThemes).set(data).where(eq(storeThemes.id, themeId));
+}
