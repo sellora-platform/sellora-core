@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Plus,
   MessageSquare,
+  Store,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
@@ -183,6 +184,14 @@ export default function Dashboard() {
                 >
                   <BarChart3 className="w-4 h-4 mr-2" />
                   Store Settings
+                </Button>
+                <Button
+                  onClick={() => setLocation("/marketplace")}
+                  variant="outline"
+                  className="w-full justify-start border-border/50 hover:bg-accent/5"
+                >
+                  <Store className="w-4 h-4 mr-2" />
+                  App Marketplace
                 </Button>
               </div>
             </Card>

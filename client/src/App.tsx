@@ -14,6 +14,10 @@ import Discounts from "./pages/Discounts";
 import Settings from "./pages/Settings";
 import Storefront from "./pages/Storefront";
 import ProductCreate from "./pages/ProductCreate";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import Onboarding from "./pages/Onboarding";
+import Marketplace from "./pages/Marketplace";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -29,6 +33,10 @@ function Router() {
       <Route path={"/discounts"} component={Discounts} />
       <Route path={"/settings"} component={Settings} />
       <Route path={"/storefront"} component={Storefront} />
+      <Route path={"/cart"} component={Cart} />
+      <Route path={"/checkout"} component={Checkout} />
+      <Route path={"/onboarding"} component={Onboarding} />
+      <Route path={"/marketplace"} component={Marketplace} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
