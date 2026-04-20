@@ -10,6 +10,10 @@ import {
   Eye,
   ChevronDown,
   Loader2,
+  Package,
+  Calendar,
+  DollarSign,
+  ArrowRight,
 } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
@@ -42,155 +46,208 @@ export default function Orders() {
   });
 
   const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      pending: "bg-yellow-50 text-yellow-700",
-      processing: "bg-blue-50 text-blue-700",
-      shipped: "bg-purple-50 text-purple-700",
-      delivered: "bg-green-50 text-green-700",
-      cancelled: "bg-red-50 text-red-700",
-      refunded: "bg-gray-50 text-gray-700",
+    const colors: Record<string, { bg: string; text: string; border: string }> = {
+      pending: { bg: "bg-yellow-50", text: "text-yellow-700", border: "border-yellow-200/50" },
+      processing: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200/50" },
+      shipped: { bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200/50" },
+      delivered: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200/50" },
+      cancelled: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200/50" },
+      refunded: { bg: "bg-gray-50", text: "text-gray-700", border: "border-gray-200/50" },
     };
-    return colors[status] || "bg-gray-50 text-gray-700";
+    return colors[status] || { bg: "bg-gray-50", text: "text-gray-700", border: "border-gray-200/50" };
   };
+
+  const totalOrders = orders.length;
+  const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total.toString()), 0);
+  const pendingOrders = orders.filter((o) => o.status === "pending").length;
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-8">
+        {/* Premium Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-              <ShoppingBag className="w-8 h-8 text-primary" />
+            <h1 className="text-4xl font-bold text-foreground tracking-tight">
               Orders
             </h1>
-            <p className="text-foreground/60 mt-1">
+            <p className="text-foreground/60 mt-2">
               Manage and fulfill customer orders
             </p>
           </div>
         </div>
 
-        {/* Search and Filters */}
-        <Card className="p-4 border-border/50">
-          <div className="flex gap-4 flex-col sm:flex-row">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-3 w-4 h-4 text-foreground/40" />
-              <Input
-                placeholder="Search by order number or email..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 border-border/50 focus:border-primary"
-              />
+        {/* Stats Cards */}
+        <div className="grid md:grid-cols-3 gap-6">
+          <Card className="p-6 border-border/50 bg-gradient-to-br from-blue-500/10 to-blue-600/10 hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <Package className="w-8 h-8 text-blue-600" />
+              <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                Total
+              </span>
             </div>
-            <div className="relative">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2 border border-border/50 rounded-lg bg-background text-foreground focus:border-primary focus:outline-none appearance-none pr-10"
-              >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="processing">Processing</option>
-                <option value="shipped">Shipped</option>
-                <option value="delivered">Delivered</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="refunded">Refunded</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-foreground/40 pointer-events-none" />
-            </div>
-          </div>
-        </Card>
+            <p className="text-sm text-foreground/60 font-medium mb-1">Total Orders</p>
+            <p className="text-3xl font-bold text-foreground">{totalOrders}</p>
+          </Card>
 
-        {/* Orders Table */}
-        <Card className="border-border/50 overflow-hidden">
-          {ordersQuery.isLoading ? (
-            <div className="p-12 flex items-center justify-center">
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          <Card className="p-6 border-border/50 bg-gradient-to-br from-emerald-500/10 to-emerald-600/10 hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <DollarSign className="w-8 h-8 text-emerald-600" />
+              <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
+                Revenue
+              </span>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-accent/5 border-b border-border/50">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                      Order
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                      Customer
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                      Date
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                      Total
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                      Status
-                    </th>
-                    <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/30">
-                  {filteredOrders.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center">
-                        <p className="text-foreground/60">No orders found</p>
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredOrders.map((order) => (
-                      <tr
-                        key={order.id}
-                        className="hover:bg-accent/5 transition-colors"
-                      >
-                        <td className="px-6 py-4">
-                          <p className="font-medium text-foreground">
-                            {order.orderNumber}
-                          </p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className="text-sm text-foreground">
-                            {order.customerEmail}
-                          </p>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-foreground/60">
+            <p className="text-sm text-foreground/60 font-medium mb-1">Total Revenue</p>
+            <p className="text-3xl font-bold text-foreground">${totalRevenue.toFixed(2)}</p>
+          </Card>
+
+          <Card className="p-6 border-border/50 bg-gradient-to-br from-orange-500/10 to-orange-600/10 hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <ShoppingBag className="w-8 h-8 text-orange-600" />
+              <span className="text-xs font-bold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">
+                Pending
+              </span>
+            </div>
+            <p className="text-sm text-foreground/60 font-medium mb-1">Pending Orders</p>
+            <p className="text-3xl font-bold text-foreground">{pendingOrders}</p>
+          </Card>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="flex gap-4 flex-col sm:flex-row">
+          <div className="flex-1 relative">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-foreground/40" />
+            <Input
+              placeholder="Search by order number or email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-12 py-3 border-border/50 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all"
+            />
+          </div>
+          <div className="relative min-w-[200px]">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-4 py-3 border border-border/50 rounded-lg bg-background text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none pr-10 transition-all"
+            >
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="refunded">Refunded</option>
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-foreground/40 pointer-events-none" />
+          </div>
+        </div>
+
+        {/* Orders List */}
+        {ordersQuery.isLoading ? (
+          <Card className="p-12 border-border/50 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </Card>
+        ) : filteredOrders.length > 0 ? (
+          <div className="space-y-4">
+            {filteredOrders.map((order) => {
+              const statusColor = getStatusColor(order.status || "pending");
+              return (
+                <Card
+                  key={order.id}
+                  className="p-6 border-border/50 hover:shadow-lg hover:border-accent/50 transition-all duration-300 group cursor-pointer"
+                  onClick={() => setLocation(`/orders/${order.id}`)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-6 flex-1">
+                      {/* Order Number */}
+                      <div className="min-w-fit">
+                        <p className="text-xs text-foreground/60 font-medium mb-1">
+                          Order ID
+                        </p>
+                        <p className="font-bold text-lg text-foreground">
+                          {order.orderNumber}
+                        </p>
+                      </div>
+
+                      {/* Customer */}
+                      <div className="flex-1 min-w-fit">
+                        <p className="text-xs text-foreground/60 font-medium mb-1">
+                          Customer
+                        </p>
+                        <p className="font-medium text-foreground">
+                          {order.customerEmail}
+                        </p>
+                      </div>
+
+                      {/* Date */}
+                      <div className="hidden md:block min-w-fit">
+                        <p className="text-xs text-foreground/60 font-medium mb-1 flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          Date
+                        </p>
+                        <p className="font-medium text-foreground">
                           {new Date(order.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 font-medium text-foreground">
+                        </p>
+                      </div>
+
+                      {/* Total */}
+                      <div className="min-w-fit">
+                        <p className="text-xs text-foreground/60 font-medium mb-1 flex items-center gap-1">
+                          <DollarSign className="w-3 h-3" />
+                          Total
+                        </p>
+                        <p className="font-bold text-lg text-foreground">
                           ${parseFloat(order.total.toString()).toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`text-sm font-medium px-2 py-1 rounded ${getStatusColor(
-                              order.status || "pending"
-                            )}`}
-                          >
-                            {(order.status || "pending")
-                              .charAt(0)
-                              .toUpperCase() +
-                              (order.status || "pending").slice(1)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              setLocation(`/orders/${order.id}`)
-                            }
-                            className="text-primary hover:bg-primary/5"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                        </p>
+                      </div>
+
+                      {/* Status */}
+                      <div className="min-w-fit">
+                        <p className="text-xs text-foreground/60 font-medium mb-1">
+                          Status
+                        </p>
+                        <span
+                          className={`text-xs font-bold px-3 py-1 rounded-full border ${statusColor.bg} ${statusColor.text} ${statusColor.border}`}
+                        >
+                          {(order.status || "pending")
+                            .charAt(0)
+                            .toUpperCase() +
+                            (order.status || "pending").slice(1)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-4 group-hover:bg-primary/10 transition-colors"
+                    >
+                      <ArrowRight className="w-5 h-5 text-primary group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        ) : (
+          <Card className="p-12 border-border/50 text-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="p-4 rounded-full bg-accent/10">
+                <ShoppingBag className="w-8 h-8 text-foreground/40" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground mb-2">
+                  No orders found
+                </h3>
+                <p className="text-foreground/60">
+                  {search || statusFilter !== "all"
+                    ? "Try adjusting your filters"
+                    : "No orders yet. Your orders will appear here."}
+                </p>
+              </div>
             </div>
-          )}
-        </Card>
+          </Card>
+        )}
       </div>
     </DashboardLayout>
   );
