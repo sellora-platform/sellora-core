@@ -19,12 +19,14 @@ import Checkout from "./pages/Checkout";
 import Onboarding from "./pages/Onboarding";
 import Marketplace from "./pages/Marketplace";
 import ExportData from "./pages/ExportData";
+import Features from "./pages/Features";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/features"} component={Features} />
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/ai-assistant"} component={AIAssistant} />
       <Route path={"/products"} component={Products} />

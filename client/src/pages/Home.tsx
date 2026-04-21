@@ -47,12 +47,21 @@ export default function Home() {
               ShopifyAI
             </span>
           </div>
-          <Button
-            onClick={() => (window.location.href = getLoginUrl())}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground"
-          >
-            Sign In
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              onClick={() => setLocation("/features")}
+              className="text-foreground hover:bg-accent/5"
+            >
+              Features
+            </Button>
+            <Button
+              onClick={() => (window.location.href = getLoginUrl())}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              Sign In
+            </Button>
+          </div>
         </div>
       </nav>
 
@@ -82,9 +91,10 @@ export default function Home() {
             <Button
               variant="outline"
               size="lg"
+              onClick={() => setLocation("/features")}
               className="h-12 px-8 text-base border-border hover:bg-accent/5"
             >
-              View Demo
+              View Features
             </Button>
           </div>
         </div>
