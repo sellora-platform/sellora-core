@@ -56,6 +56,13 @@ export default function Home() {
               Features
             </Button>
             <Button
+              variant="ghost"
+              onClick={() => setLocation("/benefits")}
+              className="text-foreground hover:bg-accent/5"
+            >
+              Benefits
+            </Button>
+            <Button
               onClick={() => (window.location.href = getLoginUrl())}
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >

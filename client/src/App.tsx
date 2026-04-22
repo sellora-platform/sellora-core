@@ -20,6 +20,7 @@ import Onboarding from "./pages/Onboarding";
 import Marketplace from "./pages/Marketplace";
 import ExportData from "./pages/ExportData";
 import Features from "./pages/Features";
+import Benefits from "./pages/Benefits";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -27,6 +28,7 @@ function Router() {
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/features"} component={Features} />
+      <Route path={"/benefits"} component={Benefits} />
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/ai-assistant"} component={AIAssistant} />
       <Route path={"/products"} component={Products} />
