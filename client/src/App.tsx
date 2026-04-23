@@ -21,12 +21,15 @@ import Marketplace from "./pages/Marketplace";
 import ExportData from "./pages/ExportData";
 import Features from "./pages/Features";
 import Benefits from "./pages/Benefits";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/login"} component={Login} />
+      <Route path={"/register"} component={Register} />
       <Route path={"/features"} component={Features} />
       <Route path={"/benefits"} component={Benefits} />
       <Route path={"/dashboard"} component={Dashboard} />

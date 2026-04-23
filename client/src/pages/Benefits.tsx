@@ -32,7 +32,7 @@ export default function Benefits() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-semibold text-foreground">ShopifyAI</span>
+            <span className="text-lg font-semibold text-foreground">Sellora</span>
           </div>
           <div className="flex items-center gap-4">
             <Button
@@ -61,7 +61,7 @@ export default function Benefits() {
         <div className="container max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 rounded-full px-4 py-2 mb-6">
             <Flame className="w-4 h-4 text-accent" />
-            <span className="text-sm font-medium text-accent">Why ShopifyAI Wins</span>
+            <span className="text-sm font-medium text-accent">Why Sellora Wins</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
             Build Your Empire
@@ -71,7 +71,7 @@ export default function Benefits() {
             </span>
           </h1>
           <p className="text-xl text-foreground/70 mb-8 max-w-2xl mx-auto leading-relaxed">
-            ShopifyAI combines the power of Shopify with AI automation. Get professional results without hiring expensive teams. Scale your business while you sleep.
+            Sellora combines the power of Shopify with AI automation. Get professional results without hiring expensive teams. Scale your business while you sleep.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -102,7 +102,7 @@ export default function Benefits() {
         <div className="container">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-foreground mb-4">
-              Why Thousands Choose ShopifyAI
+              Why Thousands Choose Sellora
             </h2>
             <p className="text-foreground/60 max-w-2xl mx-auto">
               The platform designed for modern entrepreneurs who want to build faster, smarter, and more profitably.
@@ -119,7 +119,7 @@ export default function Benefits() {
                 Save 40+ Hours Monthly
               </h3>
               <p className="text-foreground/70 mb-4">
-                AI generates product descriptions, marketing copy, and designs automatically. What takes 15 minutes manually takes 2 minutes with ShopifyAI.
+                AI generates product descriptions, marketing copy, and designs automatically. What takes 15 minutes manually takes 2 minutes with Sellora.
               </p>
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-foreground/60">
@@ -292,10 +292,10 @@ export default function Benefits() {
         <div className="container">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-foreground mb-4">
-              The ShopifyAI Difference
+              The Sellora Difference
             </h2>
             <p className="text-foreground/60 max-w-2xl mx-auto">
-              See how ShopifyAI compares to traditional e-commerce platforms.
+              See how Sellora compares to traditional e-commerce platforms.
             </p>
           </div>
 
@@ -313,7 +313,7 @@ export default function Benefits() {
                     WooCommerce
                   </th>
                   <th className="text-center py-4 px-4 font-semibold text-foreground">
-                    ShopifyAI
+                    Sellora
                   </th>
                 </tr>
               </thead>
@@ -323,61 +323,61 @@ export default function Benefits() {
                     feature: "Setup Time",
                     shopify: "2-3 hours",
                     woo: "4-6 hours",
-                    shopifyai: "30 minutes",
+                    Sellora: "30 minutes",
                   },
                   {
                     feature: "AI Content Generation",
                     shopify: "❌",
                     woo: "❌",
-                    shopifyai: "✅",
+                    Sellora: "✅",
                   },
                   {
                     feature: "AI Design Suggestions",
                     shopify: "❌",
                     woo: "❌",
-                    shopifyai: "✅",
+                    Sellora: "✅",
                   },
                   {
                     feature: "AI Analytics",
                     shopify: "❌",
                     woo: "❌",
-                    shopifyai: "✅",
+                    Sellora: "✅",
                   },
                   {
                     feature: "Monthly Cost (base)",
                     shopify: "$29-299",
                     woo: "$0 + hosting",
-                    shopifyai: "$29-99",
+                    Sellora: "$29-99",
                   },
                   {
                     feature: "Cost with AI tools",
                     shopify: "$500-1500",
                     woo: "$500-2000",
-                    shopifyai: "$29-99",
+                    Sellora: "$29-99",
                   },
                   {
                     feature: "Product Descriptions",
                     shopify: "Manual",
                     woo: "Manual",
-                    shopifyai: "AI-Generated",
+                    Sellora: "AI-Generated",
                   },
                   {
                     feature: "Store Design",
                     shopify: "DIY/Hire",
                     woo: "DIY/Hire",
-                    shopifyai: "AI-Suggested",
+                    Sellora: "AI-Suggested",
                   },
                   {
                     feature: "Customer Support",
                     shopify: "Email/Chat",
                     woo: "Community",
-                    shopifyai: "24/7 AI + Human",
+                    Sellora: "24/7 AI + Human",
                   },
                   {
                     feature: "Scalability",
                     shopify: "Manual",
                     woo: "Manual",
-                    shopifyai: "AI-Powered",
+                    Sellora: "AI-Powered",
                   },
                 ].map((row, idx) => (
                   <tr
@@ -394,7 +394,7 @@ export default function Benefits() {
                       {row.woo}
                     </td>
                     <td className="py-4 px-4 text-center font-semibold text-primary">
-                      {row.shopifyai}
+                      {row.Sellora}
                     </td>
                   </tr>
                 ))}
@@ -412,7 +412,7 @@ export default function Benefits() {
               Success Stories
             </h2>
             <p className="text-foreground/60 max-w-2xl mx-auto">
-              Real entrepreneurs building real businesses with ShopifyAI.
+              Real entrepreneurs building real businesses with Sellora.
             </p>
           </div>
 
@@ -423,7 +423,7 @@ export default function Benefits() {
                 business: "Handmade Jewelry",
                 result: "$47K revenue in 6 months",
                 quote:
-                  "ShopifyAI saved me 40 hours per week. I went from 0 to $47K in 6 months without hiring anyone.",
+                  "Sellora saved me 40 hours per week. I went from 0 to $47K in 6 months without hiring anyone.",
               },
               {
                 name: "Marcus Johnson",
@@ -437,7 +437,7 @@ export default function Benefits() {
                 business: "Eco-Friendly Products",
                 result: "234 customers in 3 months",
                 quote:
-                  "I spent $50K on designers and copywriters before. ShopifyAI does it all for $99/month.",
+                  "I spent $50K on designers and copywriters before. Sellora does it all for $99/month.",
               },
             ].map((story, idx) => (
               <div
@@ -473,7 +473,7 @@ export default function Benefits() {
             Ready to Build Your Empire?
           </h2>
           <p className="text-xl text-foreground/70 mb-8">
-            Join thousands of entrepreneurs using ShopifyAI to build, manage, and scale their e-commerce businesses.
+            Join thousands of entrepreneurs using Sellora to build, manage, and scale their e-commerce businesses.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -510,7 +510,7 @@ export default function Benefits() {
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                   <Sparkles className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <span className="font-semibold text-foreground">ShopifyAI</span>
+                <span className="font-semibold text-foreground">Sellora</span>
               </div>
               <p className="text-sm text-foreground/60">
                 The AI-powered e-commerce platform for modern entrepreneurs.
@@ -578,7 +578,7 @@ export default function Benefits() {
             </div>
           </div>
           <div className="border-t border-border/50 pt-8 text-center text-sm text-foreground/50">
-            <p>&copy; 2026 ShopifyAI. All rights reserved.</p>
+            <p>&copy; 2026 Sellora. All rights reserved.</p>
           </div>
         </div>
       </footer>

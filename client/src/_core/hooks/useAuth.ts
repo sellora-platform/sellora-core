@@ -1,84 +1,104 @@
-import { getLoginUrl } from "@/const";
-import { trpc } from "@/lib/trpc";
-import { TRPCClientError } from "@trpc/client";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation } from "wouter";
+
+type AuthUser = {
+  id: number;
+  email: string;
+  name: string | null;
+  role: "user" | "admin";
+};
 
 type UseAuthOptions = {
   redirectOnUnauthenticated?: boolean;
-  redirectPath?: string;
 };
 
+/**
+ * Sellora Auth Hook
+ *
+ * Manages authentication state using the /api/auth/me endpoint.
+ * Replaces the Manus OAuth + tRPC auth pattern with direct REST calls.
+ */
 export function useAuth(options?: UseAuthOptions) {
-  const { redirectOnUnauthenticated = false, redirectPath = getLoginUrl() } =
-    options ?? {};
-  const utils = trpc.useUtils();
+  const { redirectOnUnauthenticated = false } = options ?? {};
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [, setLocation] = useLocation();
 
-  const meQuery = trpc.auth.me.useQuery(undefined, {
-    retry: false,
-    refetchOnWindowFocus: false,
-  });
+  // Fetch current user on mount
+  useEffect(() => {
+    let mounted = true;
 
-  const logoutMutation = trpc.auth.logout.useMutation({
-    onSuccess: () => {
-      utils.auth.me.setData(undefined, null);
-    },
-  });
+    async function checkAuth() {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          if (mounted) setUser(data.user);
+        } else {
+          if (mounted) setUser(null);
+        }
+      } catch (err) {
+        if (mounted) {
+          setUser(null);
+          setError(err instanceof Error ? err : new Error("Auth check failed"));
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    checkAuth();
+    return () => { mounted = false; };
+  }, []);
+
+  // Redirect if unauthenticated
+  useEffect(() => {
+    if (!redirectOnUnauthenticated || loading) return;
+    if (!user) {
+      setLocation("/login");
+    }
+  }, [redirectOnUnauthenticated, loading, user, setLocation]);
 
   const logout = useCallback(async () => {
     try {
-      await logoutMutation.mutateAsync();
-    } catch (error: unknown) {
-      if (
-        error instanceof TRPCClientError &&
-        error.data?.code === "UNAUTHORIZED"
-      ) {
-        return;
-      }
-      throw error;
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
     } finally {
-      utils.auth.me.setData(undefined, null);
-      await utils.auth.me.invalidate();
+      setUser(null);
+      setLocation("/login");
     }
-  }, [logoutMutation, utils]);
+  }, [setLocation]);
 
-  const state = useMemo(() => {
-    localStorage.setItem(
-      "manus-runtime-user-info",
-      JSON.stringify(meQuery.data)
-    );
-    return {
-      user: meQuery.data ?? null,
-      loading: meQuery.isLoading || logoutMutation.isPending,
-      error: meQuery.error ?? logoutMutation.error ?? null,
-      isAuthenticated: Boolean(meQuery.data),
-    };
-  }, [
-    meQuery.data,
-    meQuery.error,
-    meQuery.isLoading,
-    logoutMutation.error,
-    logoutMutation.isPending,
-  ]);
+  const refresh = useCallback(async () => {
+    try {
+      const res = await fetch("/api/auth/me", { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.user);
+      } else {
+        setUser(null);
+      }
+    } catch {
+      setUser(null);
+    }
+  }, []);
 
-  useEffect(() => {
-    if (!redirectOnUnauthenticated) return;
-    if (meQuery.isLoading || logoutMutation.isPending) return;
-    if (state.user) return;
-    if (typeof window === "undefined") return;
-    if (window.location.pathname === redirectPath) return;
-
-    window.location.href = redirectPath
-  }, [
-    redirectOnUnauthenticated,
-    redirectPath,
-    logoutMutation.isPending,
-    meQuery.isLoading,
-    state.user,
-  ]);
+  const state = useMemo(
+    () => ({
+      user,
+      loading,
+      error,
+      isAuthenticated: Boolean(user),
+    }),
+    [user, loading, error]
+  );
 
   return {
     ...state,
-    refresh: () => meQuery.refetch(),
     logout,
+    refresh,
   };
 }

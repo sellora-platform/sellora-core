@@ -374,7 +374,7 @@ export default function Storefront() {
             </div>
           </div>
           <div className="border-t border-border/50 pt-8 text-center text-foreground/60 text-sm">
-            <p>&copy; 2026 {store?.name || "Store"}. All rights reserved. Powered by ShopifyAI</p>
+            <p>&copy; 2026 {store?.name || "Store"}. All rights reserved. Powered by Sellora</p>
           </div>
         </div>
       </footer>

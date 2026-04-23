@@ -1,227 +1,276 @@
-# ShopifyAI - E-Commerce Platform with AI Agents - TODO
+# Profit Intelligence Platform — TODO
 
-## Phase 1: Foundation & Database Schema
-- [x] Design system and typography setup (elegant, refined aesthetic)
-- [x] Database schema: users, stores, products, variants, categories, inventory
-- [x] Database schema: customers, orders, order items, discounts, coupons
-- [x] Database schema: AI agent interactions, store themes, design preferences
-- [x] Database migrations and schema validation
-- [ ] S3 storage setup for product images and assets
+## Current State Summary
+- **Built:** Core e-commerce shell (products, orders, customers, cart, checkout, AI chat, storefront, dashboard)
+- **Blocked:** 12 files locked to Manus platform — must be stripped before anything works
+- **Missing:** ALL differentiating features (profit intelligence, agent marketplace, payments, shipping, emerging markets)
 
-## Phase 2: Authentication & Merchant Onboarding
-- [x] Merchant signup and store creation flow (via Manus OAuth)
-- [x] Store settings and basic configuration
-- [x] Role-based access control (merchant vs customer)
-- [x] Merchant profile and account management
-- [x] Onboarding flow with multi-step form
+---
 
-## Phase 3: Merchant Dashboard (Core Hub)
-- [x] Dashboard layout and navigation structure
-- [x] Analytics and revenue charts (placeholder stats)
-- [x] Order overview panel and recent orders
-- [x] Quick stats (total revenue, orders, customers)
-- [x] Navigation to all merchant features
-- [x] Quick actions sidebar
+## Phase 0: Strip Manus Dependencies (BLOCKER — Must Do First)
 
-## Phase 4: Product Management
-- [x] Product list view with search and filters
-- [x] Add/edit/delete products (UI ready)
-- [ ] Product variants (size, color, etc.)
-- [ ] Inventory tracking and stock management
-- [ ] Category management and assignment
-- [ ] Product image uploads to S3
-- [x] Product descriptions and SEO fields
+### Manus Files to Replace/Remove
+- [ ] `server/_core/sdk.ts` — Replace Manus OAuth SDK with our own JWT auth
+- [ ] `server/_core/oauth.ts` — Replace Manus OAuth callback with Google/GitHub OAuth
+- [ ] `server/_core/llm.ts` — Replace Manus Forge LLM with direct OpenAI/Gemini API
+- [ ] `server/_core/env.ts` — Replace Manus env vars with our own system
+- [ ] `server/storage.ts` — Replace Manus S3 with Cloudinary/Vercel Blob
+- [ ] `server/_core/storageProxy.ts` — Replace Manus storage proxy with direct cloud storage
+- [ ] `server/_core/imageGeneration.ts` — Remove (or replace with OpenAI DALL-E)
+- [ ] `server/_core/notification.ts` — Remove (replace with Resend later)
+- [ ] `server/_core/dataApi.ts` — Remove (unused)
+- [ ] `server/_core/map.ts` — Remove (not core to e-commerce)
+- [ ] `server/_core/voiceTranscription.ts` — Remove (not needed)
+- [ ] `client/src/const.ts` — Replace Manus OAuth URL builder
 
-## Phase 5: Storefront Builder
-- [x] Public-facing storefront layout
-- [x] Product listing page with filters and sorting
-- [ ] Collections/categories view
-- [ ] Individual product detail pages
-- [x] Theme customization interface for merchants
-- [x] Store branding (logo, colors, fonts)
+### Config Files to Update
+- [ ] `vite.config.ts` — Remove `vite-plugin-manus-runtime` + debug collector + Manus hosts
+- [ ] `package.json` — Remove Manus deps, add `cross-env`, switch to PostgreSQL driver
+- [ ] `client/index.html` — Remove Manus analytics script tag
+- [ ] `drizzle.config.ts` — Switch from MySQL dialect to PostgreSQL
+- [ ] `client/src/_core/hooks/useAuth.ts` — Remove `manus-runtime-user-info` localStorage
+- [ ] `client/src/main.tsx` — Update auth redirect logic
+- [ ] `components/ManusDialog.tsx` — Remove entirely
 
-## Phase 6: Shopping Experience (Customer-Facing)
-- [x] Shopping cart functionality (full UI)
-- [x] Cart persistence (local state)
-- [x] Checkout flow (complete form)
-- [x] Order placement and confirmation
-- [ ] Customer order history view
-- [ ] Order tracking
+### Infrastructure Setup
+- [ ] Set up PostgreSQL database (Neon)
+- [ ] Migrate schema from MySQL to PostgreSQL
+- [ ] Fix Windows compatibility (`cross-env` for NODE_ENV)
+- [ ] Create `.env` file with our own variables
+- [ ] Get dev server running locally on Windows
+- [ ] Deploy to Vercel (first deployment)
 
-## Phase 7: AI Agent System (Core Feature)
-- [x] AI chat interface in merchant dashboard
-- [x] Chat history and persistence
-- [x] AI agent for store design suggestions
-- [x] AI agent for product description generation
-- [x] AI agent for banner and content creation
-- [x] AI agent for store layout recommendations
-- [x] Integration with LLM for natural language processing
+---
 
-## Phase 8: Customer Management
-- [x] Customer list view in merchant dashboard
-- [ ] Customer profile pages with order history
-- [ ] Customer contact details and communication
-- [ ] Customer segmentation and insights
+## Phase 1: Core Platform (Foundation)
 
-## Phase 9: Order Management
-- [x] Order list view with filters and search
-- [ ] Order detail pages
-- [x] Order status updates (pending, processing, shipped, delivered)
-- [ ] Order fulfillment workflow
-- [ ] Order notes and timeline
+### Authentication
+- [ ] Implement JWT-based session management
+- [ ] Google OAuth integration (or email/password)
+- [ ] Signup → Login → Dashboard → Logout flow working
+- [ ] Protected routes enforced
 
-## Phase 10: Discount & Coupon System
-- [x] Create discount rules (percentage-based)
-- [x] Create discount rules (fixed-amount)
-- [x] Coupon code generation and management
-- [ ] Apply discounts in checkout
-- [ ] Discount validation and application logic
+### Database & Data
+- [ ] All 10 tables created in PostgreSQL
+- [ ] Seed data for development/testing
+- [ ] All CRUD operations verified end-to-end
 
-## Phase 11: App/Plugin Marketplace
-- [x] Marketplace placeholder UI
-- [x] Stripe payment integration add-on
-- [x] Shipping settings configuration
-- [x] Integration management interface
+### Core Features Working
+- [ ] Product CRUD (create, edit, delete, list)
+- [ ] Product variants working
+- [ ] Order management (create, update status)
+- [ ] Customer management
+- [ ] Discount/coupon system
+- [ ] AI chat assistant (with our own OpenAI/Gemini key)
+- [ ] Storefront loading real products from DB
+- [ ] Cart → Checkout → Order creation flow
+- [ ] CSV export working
 
-## Phase 12: Polish & Deployment
-- [x] Design refinement and visual polish (elegant typography, colors, spacing)
-- [x] Dashboard redesign with premium styling and gradient cards
-- [x] Products page redesign with gallery layout
-- [x] Orders page redesign with stats cards and improved layout
-- [x] Storefront redesign with premium hero section and trust badges
-- [x] Customers page redesign with customer insights
-- [x] Discounts page redesign with premium coupon management
-- [x] AI Assistant page redesign with enhanced chat interface
-- [ ] Cross-browser testing
-- [ ] Performance optimization
-- [ ] Security audit
-- [ ] Deployment and final testing
+### Branding & UI
+- [ ] Rebrand from "ShopifyAI" to chosen name
+- [ ] Update landing page content (competitive positioning)
+- [ ] Update features/benefits pages
+- [ ] Update meta tags, title, favicon
 
-## Completed Features Summary
+### Deployment
+- [ ] Vercel deployment working
+- [ ] Environment variables configured on Vercel
+- [ ] Production build verified
 
-### Backend (100% Complete)
-- ✅ 10 database tables with full schema
-- ✅ Comprehensive query helpers
-- ✅ 5 feature routers (stores, products, orders, discounts, AI)
-- ✅ Zod validation
-- ✅ Role-based access control
-- ✅ LLM integration for AI agents
+---
 
-### Frontend Pages (95% Complete)
-- ✅ Landing page with feature showcase
-- ✅ Merchant dashboard with analytics
-- ✅ Product management (list, create)
-- ✅ Orders management (list, filtering)
-- ✅ Customers management (list, aggregation)
-- ✅ Discounts management (create, list)
-- ✅ Store settings (branding, design)
-- ✅ AI Assistant chat interface
-- ✅ Public storefront
-- ✅ Shopping cart (full functionality)
-- ✅ Checkout flow (complete form)
-- ✅ Order confirmation page
-- ✅ Onboarding flow (multi-step)
-- ✅ App marketplace with integrations
+## Phase 2: Profit Intelligence Dashboard (Core Differentiator #1)
 
-### Design System (100% Complete)
-- ✅ Refined typography (Geist fonts)
-- ✅ Premium OKLCH color palette
-- ✅ Elegant spacing and sizing
-- ✅ Responsive design
-- ✅ Dark/light theme support
+### Schema Changes
+- [ ] Add COGS (cost of goods) fields to products/variants
+- [ ] Add cost tracking fields to orders (shipping cost, platform fee, ad attribution)
+- [ ] Add profit metrics table (daily/weekly/monthly rollups)
 
-### Routing (100% Complete)
-- ✅ All 14 routes configured
-- ✅ Authentication guards
-- ✅ Proper navigation
+### Profit Dashboard
+- [ ] Revenue vs. True Profit charts
+- [ ] Per-product P&L breakdown table
+- [ ] Profit trend visualization (daily/weekly/monthly)
+- [ ] Margin analysis per product/category
+- [ ] Cost breakdown pie chart (COGS, shipping, fees, ads, returns)
 
-## Pages Built
-1. ✅ / - Landing page
-2. ✅ /dashboard - Merchant dashboard
-3. ✅ /ai-assistant - AI chat interface
-4. ✅ /products - Product list
-5. ✅ /products/new - Create product
-6. ✅ /orders - Orders list
-7. ✅ /customers - Customers list
-8. ✅ /discounts - Discounts management
-9. ✅ /settings - Store settings
-10. ✅ /storefront - Public storefront
-11. ✅ /cart - Shopping cart
-12. ✅ /checkout - Checkout flow
-13. ✅ /onboarding - Store creation
-14. ✅ /marketplace - App marketplace
+### AI Profit Intelligence
+- [ ] AI profit alerts ("Product X is losing $2.30/unit after ads")
+- [ ] "Kill or Scale" recommendations per product
+- [ ] Margin optimizer suggestions (price adjustments, supplier switches)
+- [ ] Profit report generation (PDF/CSV)
 
-## Remaining Tasks (Phase 2)
-- [ ] Apply database migration via webdev_execute_sql
-- [ ] Product image uploads to S3
-- [ ] Product variants system
-- [ ] Customer order history
-- [ ] Order detail pages
-- [ ] Discount application in checkout
-- [ ] Stripe payment integration
-- [ ] Shipping integration
-- [ ] Email notifications
-- [ ] Analytics dashboard with charts
-- [ ] Product categories
-- [ ] Collections/bundles
-- [ ] Customer reviews and ratings
-- [ ] Wishlist functionality
-- [ ] Advanced AI features (image generation)
-- [ ] Mobile app wrapper
-- [ ] Desktop app wrapper
-- [ ] API documentation
-- [ ] Admin panel for platform management
+---
 
-## Known Issues
-- [ ] storageProxy.ts has a pre-existing TypeScript error (not affecting functionality)
-- [ ] Database migration needs to be applied via webdev_execute_sql
+## Phase 3: AI Agent Engine (Core Differentiator #2)
+
+### Agent Runtime
+- [ ] Agent execution engine (trigger-based activation)
+- [ ] Agent permission system (read/write access per data type)
+- [ ] Agent autonomy levels (Monitor / Suggest / Semi-Auto / Full Auto)
+- [ ] Agent activity logging (every action tracked)
+- [ ] Agent configuration storage (per-merchant settings)
+- [ ] Agent credits consumption tracking
+
+### Agent Communication
+- [ ] Trigger system (event-based: new_order, low_stock, etc.)
+- [ ] Schedule system (time-based: daily_6am, weekly_monday, etc.)
+- [ ] Inter-agent messaging (agents can notify other agents)
+- [ ] Merchant notification system (email, dashboard alerts)
+
+### "My Team" Dashboard
+- [ ] Active agents list with status
+- [ ] Per-agent activity feed
+- [ ] Per-agent credit usage
+- [ ] Autonomy level controls
+- [ ] Pause/resume/fire actions
+- [ ] Agent performance metrics
+
+---
+
+## Phase 4: Core Platform Agents (First 5-8 Agents)
+
+### Intelligence Agents
+- [ ] **Profit Intelligence Agent** — Tracks P&L, alerts on losses, suggests optimizations
+- [ ] **Analytics Agent** — Weekly reports, trend detection, anomaly alerts
+
+### Operations Agents
+- [ ] **Inventory Agent** — Low-stock alerts, reorder suggestions, overstock detection
+- [ ] **Order Agent** — Fraud detection, fulfillment reminders, status management
+
+### Marketing Agents
+- [ ] **SEO Agent** — Meta tags audit, keyword suggestions, schema markup
+
+### Customer Agents
+- [ ] **Reviews Agent** — Review requests, response drafting, sentiment analysis
+
+---
+
+## Phase 5: Payments & Shipping
+
+### Payment Infrastructure
+- [ ] Stripe Connect (customer → merchant payments)
+- [ ] Platform subscription billing (Stripe Billing)
+- [ ] Apple Pay / Google Pay via Stripe
+- [ ] PayPal integration
+- [ ] Payment dashboard for merchants
+- [ ] Refund/chargeback management
+
+### Shipping & Fulfillment
+- [ ] Shipping zones & profiles
+- [ ] Rate calculation (flat, weight-based, carrier-calculated)
+- [ ] Pakistani courier integration (TCS, Leopards, BlueEx)
+- [ ] International shipping via EasyPost
+- [ ] Label generation (PDF + thermal)
+- [ ] Branded tracking page
+- [ ] Returns & exchanges workflow
+- [ ] AI Shipping Agent integration
+
+---
+
+## Phase 6: Agent Marketplace
+
+### Marketplace Infrastructure
+- [ ] Agent marketplace UI (browse, search, filter by category)
+- [ ] Agent listing pages (description, permissions, pricing, reviews)
+- [ ] Agent installation/hiring flow
+- [ ] Agent billing integration (monthly subscription per agent)
+- [ ] Agent review/rating system
+
+### Developer Program
+- [ ] Agent SDK documentation
+- [ ] Agent development toolkit
+- [ ] Agent submission & review process
+- [ ] Developer analytics dashboard
+- [ ] Revenue sharing system (70/30 split)
+
+### Premium Platform Agents
+- [ ] Email Marketing Agent ($14/mo)
+- [ ] Ad Optimizer Agent ($19/mo)
+- [ ] Customer Support Agent ($24/mo)
+- [ ] Loyalty Agent ($19/mo)
+- [ ] WhatsApp Commerce Agent ($29/mo)
+
+---
+
+## Phase 7: Emerging Markets
+
+### Pakistan Market (Priority)
+- [ ] JazzCash payment integration
+- [ ] EasyPaisa payment integration
+- [ ] SadaPay / Raast integration
+- [ ] COD (Cash on Delivery) workflow with AI fraud scoring
+- [ ] COD reconciliation tracking
+- [ ] TCS deep integration (booking, tracking, COD, returns)
+- [ ] Leopards deep integration
+- [ ] BlueEx integration
+
+### Localization
+- [ ] RTL (right-to-left) theme support for Urdu/Arabic
+- [ ] Multi-language AI (Urdu, Hindi, Arabic product descriptions)
+- [ ] Local currency pricing with conversion
+- [ ] Localized onboarding flow
+- [ ] WhatsApp notifications (critical for South Asia)
+
+---
+
+## Phase 8: Predictive Intelligence Agents
+
+- [ ] **Demand Forecasting Agent** — Predict stock needs by date
+- [ ] **Price Optimizer Agent** — Elasticity modeling, competitor monitoring
+- [ ] **Cash Flow Agent** — Revenue projections, capital planning
+- [ ] **Trend Detection Agent** — Social media trend tracking
+- [ ] **Scenario Planning Agent** — "What if I launch 3 new products?"
+
+---
+
+## Phase 9: Design Agents & Template System
+
+### Template System
+- [ ] Sections + Slots architecture
+- [ ] Template config files (editable boundaries)
+- [ ] 5-8 high-quality platform templates
+- [ ] Template marketplace for 3rd party designers
+
+### Design Agents
+- [ ] **Theme Agent** — AI theme editing, seasonal changes, A/B testing
+- [ ] **Design from Reference Agent** — Screenshot → store design (Vision Model)
+- [ ] **Product Photo Agent** — Background removal, lifestyle images
+- [ ] Version history & rollback system
+- [ ] Live preview + approval flow
+
+---
+
+## Phase 10: Scale & Enterprise
+
+- [ ] Enterprise plan with white-label option
+- [ ] Multi-store dashboard
+- [ ] Custom agent development (enterprise-only)
+- [ ] SLA guarantees (99.9% uptime)
+- [ ] Dedicated account management
+- [ ] On-premise deployment option
+- [ ] Migration engine (one-click import from Shopify/WooCommerce)
+- [ ] Agency program (volume discounts + commission)
+
+---
 
 ## Architecture Highlights
 
 **Technology Stack:**
 - Frontend: React 19 + TypeScript + Tailwind CSS 4
 - Backend: Express 4 + tRPC 11 + Drizzle ORM
-- Database: MySQL/TiDB with 10 comprehensive tables
-- Authentication: Manus OAuth
-- AI: LLM integration for intelligent agents
-- Storage: S3 for file uploads (ready to implement)
-
-**Key Features:**
-- Type-safe end-to-end with TypeScript and Zod
-- Real-time chat interface for AI agents
-- Elegant, refined UI with premium design system
-- Role-based access control
-- Responsive design for all devices
-- Public storefront + merchant dashboard
-- Complete e-commerce workflow (cart → checkout → orders)
+- Database: PostgreSQL (Neon) — target
+- Auth: JWT + Google OAuth — target
+- AI: OpenAI GPT-4o / Gemini — target
+- Agent Runtime: Custom engine + BullMQ — target
+- Storage: Cloudinary — target
+- Deployment: Vercel — target
+- Email: Resend — target
+- Payments: Stripe Connect — target
 
 **Design Principles:**
-- Elegant and refined aesthetic throughout
-- Consistent spacing, typography, and colors
-- Intuitive navigation and user flows
-- Accessible components with proper contrast
-- Mobile-first responsive design
-- Professional, polished appearance
-
-
-## Phase 13: CSV Export Feature (NEW)
-- [x] Backend: Add export procedures for sales data
-- [x] Backend: Add export procedures for customer data
-- [x] Backend: Add export procedures for order data
-- [x] Frontend: Create export data page
-- [x] Frontend: Add export buttons to dashboard
-- [x] Frontend: Implement CSV download functionality
-- [x] Testing: Verify export data accuracy
-
-
-## Phase 14: Marketing & Showcase Pages (NEW)
-- [x] Create comprehensive Features showcase page
-- [x] Add feature grids with descriptions
-- [x] Add AI features section
-- [x] Add benefits section
-- [x] Add comparison table with competitors
-- [x] Add CTA sections
-- [x] Integrate with Home page navigation
-- [ ] Create pricing page
-- [ ] Create testimonials/case studies page
-- [ ] Create blog/resources page
+- Profit-first dashboard (not revenue-first)
+- Agents, not apps (autonomous workers, not dumb features)
+- Server-side AI (zero storefront bloat)
+- Pakistan/emerging markets first
+- Data portability (no lock-in)
+- Merchant controls autonomy level per agent

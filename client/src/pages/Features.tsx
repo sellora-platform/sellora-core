@@ -135,7 +135,7 @@ export default function Features() {
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white font-bold shadow-md">
               S
             </div>
-            <span className="text-lg font-bold text-foreground">ShopifyAI</span>
+            <span className="text-lg font-bold text-foreground">Sellora</span>
           </div>
           <div className="flex items-center gap-4">
             <Button
@@ -166,7 +166,7 @@ export default function Features() {
             Build Your Store with <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">AI Power</span>
           </h1>
           <p className="text-xl text-foreground/60 mb-8 max-w-2xl mx-auto">
-            ShopifyAI combines the power of e-commerce with intelligent agents. Describe what you want, and AI agents will create it for you.
+            Sellora combines the power of e-commerce with intelligent agents. Describe what you want, and AI agents will create it for you.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -256,7 +256,7 @@ export default function Features() {
       <section className="py-20 px-4 border-t border-border/50">
         <div className="container">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-foreground mb-4">Why Choose ShopifyAI?</h2>
+            <h2 className="text-4xl font-bold text-foreground mb-4">Why Choose Sellora?</h2>
             <p className="text-lg text-foreground/60 max-w-2xl mx-auto">
               Join thousands of merchants who are transforming their businesses
             </p>
@@ -287,7 +287,7 @@ export default function Features() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-foreground mb-4">How We Compare</h2>
             <p className="text-lg text-foreground/60 max-w-2xl mx-auto">
-              ShopifyAI offers more features at a better price
+              Sellora offers more features at a better price
             </p>
           </div>
 
@@ -296,25 +296,25 @@ export default function Features() {
               <thead>
                 <tr className="border-b border-border/50">
                   <th className="text-left py-4 px-6 font-bold text-foreground">Feature</th>
-                  <th className="text-center py-4 px-6 font-bold text-foreground">ShopifyAI</th>
+                  <th className="text-center py-4 px-6 font-bold text-foreground">Sellora</th>
                   <th className="text-center py-4 px-6 font-bold text-foreground">Shopify</th>
                   <th className="text-center py-4 px-6 font-bold text-foreground">WooCommerce</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/30">
                 {[
-                  { feature: "AI-Powered Store Management", shopifyai: true, shopify: false, woo: false },
-                  { feature: "Product Management", shopifyai: true, shopify: true, woo: true },
-                  { feature: "AI Design Assistant", shopifyai: true, shopify: false, woo: false },
-                  { feature: "CSV Export", shopifyai: true, shopify: true, woo: true },
-                  { feature: "Customer Analytics", shopifyai: true, shopify: true, woo: false },
-                  { feature: "Discount System", shopifyai: true, shopify: true, woo: true },
-                  { feature: "Starting Price", shopifyai: true, shopify: true, woo: true },
+                  { feature: "AI-Powered Store Management", Sellora: true, shopify: false, woo: false },
+                  { feature: "Product Management", Sellora: true, shopify: true, woo: true },
+                  { feature: "AI Design Assistant", Sellora: true, shopify: false, woo: false },
+                  { feature: "CSV Export", Sellora: true, shopify: true, woo: true },
+                  { feature: "Customer Analytics", Sellora: true, shopify: true, woo: false },
+                  { feature: "Discount System", Sellora: true, shopify: true, woo: true },
+                  { feature: "Starting Price", Sellora: true, shopify: true, woo: true },
                 ].map((row, idx) => (
                   <tr key={idx} className="hover:bg-accent/5 transition-colors">
                     <td className="py-4 px-6 font-medium text-foreground">{row.feature}</td>
                     <td className="py-4 px-6 text-center">
-                      {row.shopifyai ? (
+                      {row.Sellora ? (
                         <CheckCircle2 className="w-5 h-5 text-green-600 mx-auto" />
                       ) : (
                         <div className="w-5 h-5 border-2 border-foreground/20 rounded mx-auto" />
@@ -348,7 +348,7 @@ export default function Features() {
           <div className="rounded-2xl bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 p-12 text-center">
             <h2 className="text-4xl font-bold text-foreground mb-4">Ready to Transform Your Store?</h2>
             <p className="text-lg text-foreground/60 mb-8 max-w-2xl mx-auto">
-              Join the revolution. Start building your AI-powered store today with ShopifyAI.
+              Join the revolution. Start building your AI-powered store today with Sellora.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -407,7 +407,7 @@ export default function Features() {
             </div>
           </div>
           <div className="border-t border-border/50 pt-8 text-center text-foreground/60 text-sm">
-            <p>&copy; 2026 ShopifyAI. All rights reserved. Powered by AI.</p>
+            <p>&copy; 2026 Sellora. All rights reserved. Powered by AI.</p>
           </div>
         </div>
       </footer>

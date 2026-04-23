@@ -1,15 +1,14 @@
 import { defineConfig } from "drizzle-kit";
 
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
-  throw new Error("DATABASE_URL is required to run drizzle commands");
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is required. Get a free PostgreSQL database at https://neon.tech");
 }
 
 export default defineConfig({
+  out: "./drizzle/migrations",
   schema: "./drizzle/schema.ts",
-  out: "./drizzle",
-  dialect: "mysql",
+  dialect: "postgresql",
   dbCredentials: {
-    url: connectionString,
+    url: process.env.DATABASE_URL,
   },
 });

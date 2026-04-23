@@ -44,7 +44,7 @@ export default function Home() {
               <Sparkles className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="text-lg font-semibold text-foreground">
-              ShopifyAI
+              Sellora
             </span>
           </div>
           <div className="flex items-center gap-4">
@@ -184,7 +184,7 @@ export default function Home() {
             Ready to Transform Your Store?
           </h2>
           <p className="text-lg text-foreground/60 mb-8">
-            Join thousands of merchants using ShopifyAI to build smarter, more
+            Join thousands of merchants using Sellora to build smarter, more
             efficient e-commerce businesses.
           </p>
           <Button
@@ -200,7 +200,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-border/50 py-12 px-4 bg-card/30">
         <div className="container text-center text-foreground/60 text-sm">
-          <p>&copy; 2026 ShopifyAI. All rights reserved.</p>
+          <p>&copy; 2026 Sellora. All rights reserved.</p>
         </div>
       </footer>
     </div>

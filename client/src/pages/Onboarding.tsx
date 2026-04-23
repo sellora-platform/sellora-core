@@ -47,7 +47,7 @@ export default function Onboarding() {
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Store className="w-8 h-8 text-primary" />
-            <h1 className="text-4xl font-bold text-foreground">ShopifyAI</h1>
+            <h1 className="text-4xl font-bold text-foreground">Sellora</h1>
           </div>
           <p className="text-lg text-foreground/60">
             Welcome, {user?.name}! Let's set up your store.
@@ -118,7 +118,7 @@ export default function Onboarding() {
                   Store Slug *
                 </label>
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground/60">shopifyai.com/</span>
+                  <span className="text-foreground/60">Sellora.com/</span>
                   <Input
                     placeholder="my-store"
                     value={formData.slug}

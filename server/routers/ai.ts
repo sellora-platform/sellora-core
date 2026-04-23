@@ -31,7 +31,7 @@ export const aiRouter = router({
 
       try {
         // Build context for the AI based on type
-        let systemPrompt = "You are a helpful AI assistant for an e-commerce store.";
+        let systemPrompt = `You are the Sellora AI assistant — an intelligent e-commerce advisor. Help merchants grow their business with actionable advice.`;
 
         if (input.type === "design") {
           systemPrompt = "You are an expert UI/UX designer for e-commerce stores. Help merchants create beautiful, modern store designs. Provide specific color recommendations, layout suggestions, and design principles.";
@@ -45,7 +45,7 @@ export const aiRouter = router({
           systemPrompt = "You are an expert in e-commerce store layouts and user experience. Provide specific recommendations for store structure, navigation, and product organization.";
         }
 
-        // Call LLM
+        // Call LLM via our provider-agnostic service
         const response = await invokeLLM({
           messages: [
             { role: "system", content: systemPrompt },
@@ -53,27 +53,26 @@ export const aiRouter = router({
           ],
         });
 
-        const content = response.choices[0]?.message?.content;
-        const responseText = typeof content === 'string' ? content : '';
+        // Our LLM service returns a clean LLMResponse with .content
+        const responseText = response.content || "";
 
         // Update interaction with response
-        await db.updateAIInteraction((interaction as any).insertId, {
-          response: responseText || "",
-          status: "completed",
-        });
+        const interactionId = (interaction as any)?.rows?.[0]?.id ?? (interaction as any)?.insertId;
+        if (interactionId) {
+          await db.updateAIInteraction(interactionId, {
+            response: responseText,
+            status: "completed",
+          });
+        }
 
         return {
           success: true,
           response: responseText,
-          interactionId: (interaction as any).insertId,
+          model: response.model,
+          provider: response.provider,
         };
       } catch (error) {
-        // Update interaction with error status
-        await db.updateAIInteraction((interaction as any).insertId, {
-          status: "failed",
-          response: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
-        });
-
+        console.error("[AI] Chat error:", error);
         throw error;
       }
     }),
@@ -89,14 +88,5 @@ export const aiRouter = router({
       }
 
       return db.getAIInteractionsByStoreId(input.storeId);
-    }),
-
-  // Get a specific interaction
-  getInteraction: protectedProcedure
-    .input(z.object({ interactionId: z.number() }))
-    .query(async ({ input }) => {
-      // Note: In production, you'd want to verify ownership here
-      // For now, we're just returning the interaction
-      return null; // This would be implemented with a proper query
     }),
 });
