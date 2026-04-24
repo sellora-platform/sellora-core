@@ -20,6 +20,9 @@ export type SessionUser = {
   name: string | null;
   role: "user" | "admin";
   isVerified: boolean;
+  plan: string;
+  subscriptionStatus: string;
+  trialEndsAt: string | null;
 };
 
 export type AuthResult = {
@@ -58,17 +61,21 @@ function getJwtSecret(): Uint8Array {
  * Create a signed JWT session token for a user.
  */
 export async function createSessionToken(user: SessionUser): Promise<string> {
-  return new SignJWT({
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    role: user.role,
-    isVerified: user.isVerified,
-  })
+  return new SignJWT({})
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(SESSION_DURATION)
     .setSubject(String(user.id))
+    .setPayload({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      isVerified: user.isVerified,
+      plan: user.plan,
+      subscriptionStatus: user.subscriptionStatus,
+      trialEndsAt: user.trialEndsAt,
+    })
     .sign(getJwtSecret());
 }
 
@@ -87,6 +94,9 @@ export async function verifySessionToken(
       name: (payload.name as string) ?? null,
       role: (payload.role as "user" | "admin") ?? "user",
       isVerified: (payload.isVerified as boolean) ?? false,
+      plan: (payload.plan as string) ?? "free",
+      subscriptionStatus: (payload.subscriptionStatus as string) ?? "trialing",
+      trialEndsAt: (payload.trialEndsAt as string) ?? null,
     };
   } catch {
     return null;

@@ -28,6 +28,7 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
+import Billing from "./pages/Billing";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "./_core/hooks/useAuth";
@@ -55,11 +56,25 @@ function Router() {
     // 1. If logged in but NOT verified → Force to /verify-email (except public paths)
     if (user && !user.isVerified && location !== "/verify-email" && !isPublicPath) {
       setLocation("/verify-email");
+      return;
     }
 
-    // 2. If logged in AND verified → Don't allow /verify-email or /login/register
-    if (user && user.isVerified && (location === "/verify-email" || location === "/login" || location === "/register")) {
-      setLocation("/dashboard");
+    // 2. Billing/Trial Enforcement
+    if (user && user.isVerified && !isPublicPath) {
+      const trialExpired = user.trialEndsAt ? new Date(user.trialEndsAt) < new Date() : false;
+      const noPlanActive = user.plan === "free" || !user.plan;
+
+      if (trialExpired && noPlanActive && location !== "/billing") {
+        setLocation("/billing");
+        return;
+      }
+    }
+
+    // 3. If logged in AND verified → Don't allow /verify-email or /login/register
+    if (user && user.isVerified) {
+      if (location === "/login" || location === "/register" || location === "/verify-email") {
+        setLocation("/dashboard");
+      }
     }
   }, [user, loading, location, setLocation]);
 
@@ -104,6 +119,7 @@ function Router() {
       <Route path={"/forgot-password"} component={ForgotPassword} />
       <Route path={"/reset-password"} component={ResetPassword} />
       <Route path={"/verify-email"} component={VerifyEmail} />
+      <Route path={"/billing"} component={Billing} />
       <Route path={"/features"} component={Features} />
       <Route path={"/benefits"} component={Benefits} />
       <Route path={"/dashboard"} component={Dashboard} />

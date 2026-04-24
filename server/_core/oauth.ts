@@ -53,6 +53,8 @@ export function registerAuthRoutes(app: Express) {
       // Hash password and create user
       const passwordHash = await hashPassword(password);
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const trialEndsAt = new Date();
+      trialEndsAt.setDate(trialEndsAt.getDate() + 7);
 
       const [newUser] = await db.insert(users).values({
         email,
@@ -61,6 +63,9 @@ export function registerAuthRoutes(app: Express) {
         role: "user",
         isVerified: false,
         verificationCode,
+        plan: "free",
+        subscriptionStatus: "trialing",
+        trialEndsAt,
       }).returning();
 
       // Send verification email
@@ -420,5 +425,51 @@ export function registerAuthRoutes(app: Express) {
       return;
     }
     res.json({ user });
+  });
+
+  /**
+   * POST /api/auth/update-subscription
+   * Update the user's plan and status after payment.
+   */
+  app.post("/api/auth/update-subscription", async (req, res) => {
+    try {
+      const { user: sessionUser } = await authenticateRequest(req);
+      if (!sessionUser) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+
+      const { plan, status } = req.body;
+      
+      // Update user in DB
+      await db.update(users)
+        .set({ 
+          plan: plan || "basic", 
+          subscriptionStatus: status || "active",
+          trialEndsAt: null // Trial over once paid
+        })
+        .where(eq(users.id, sessionUser.id));
+
+      // Fetch fresh user data for new token
+      const [updatedUser] = await db.select().from(users).where(eq(users.id, sessionUser.id)).limit(1);
+
+      // Create new session token with updated plan
+      const token = await createSessionToken({
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        role: updatedUser.role as "user" | "admin",
+        isVerified: updatedUser.isVerified ?? false,
+        plan: updatedUser.plan ?? "basic",
+        subscriptionStatus: updatedUser.subscriptionStatus ?? "active",
+        trialEndsAt: updatedUser.trialEndsAt ? updatedUser.trialEndsAt.toISOString() : null,
+      });
+
+      res.cookie(SESSION_COOKIE_NAME, token, getSessionCookieOptions());
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[Auth] Update subscription error:", error);
+      res.status(500).json({ error: "Failed to update subscription" });
+    }
   });
 }

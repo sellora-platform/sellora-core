@@ -31,8 +31,11 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   lastSignedIn: timestamp("last_signed_in").defaultNow().notNull(),
-  isVerified: boolean("is_verified").default(false).notNull(),
+  isVerified: boolean("is_verified").default(false),
   verificationCode: varchar("verification_code", { length: 6 }),
+  plan: varchar("plan", { length: 50 }).default("free"),
+  subscriptionStatus: varchar("subscription_status", { length: 50 }).default("trialing"),
+  trialEndsAt: timestamp("trial_ends_at"),
 });
 
 export type User = typeof users.$inferSelect;

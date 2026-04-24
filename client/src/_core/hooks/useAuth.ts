@@ -7,6 +7,9 @@ type AuthUser = {
   name: string | null;
   role: "user" | "admin";
   isVerified: boolean;
+  plan: string;
+  subscriptionStatus: string;
+  trialEndsAt: string | null;
 };
 
 type UseAuthOptions = {
