@@ -17,7 +17,7 @@ import {
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 
-export default function Storefront() {
+export default function Storefront({ params }: { params?: { slug?: string } }) {
   const [, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -32,8 +32,14 @@ export default function Storefront() {
     hostname.includes("vercel.app") || 
     hostname === "sellora.com";
 
-  // If it's a custom domain, fetch by domain. If testing locally, you might want to fetch by slug or a default.
-  // For now, if we are on a custom domain, we use getByDomain.
+  // If this is a preview URL with a slug: /store/my-slug
+  const previewSlug = params?.slug;
+
+  const storeBySlugQuery = trpc.stores.getBySlug.useQuery(
+    { slug: previewSlug || "" },
+    { enabled: !!previewSlug }
+  );
+
   const storeQuery = trpc.stores.getByDomain.useQuery(
     { domain: hostname },
     { enabled: !isPlatformDomain }
@@ -41,10 +47,14 @@ export default function Storefront() {
 
   // Fallback for when we're viewing the storefront from within the admin dashboard
   const myStoreQuery = trpc.stores.getMyStore.useQuery(undefined, {
-    enabled: isPlatformDomain,
+    enabled: isPlatformDomain && !previewSlug,
   });
 
-  const store = isPlatformDomain ? myStoreQuery.data : storeQuery.data;
+  const store = previewSlug 
+    ? storeBySlugQuery.data 
+    : isPlatformDomain 
+      ? myStoreQuery.data 
+      : storeQuery.data;
 
   const productsQuery = trpc.products.listByStore.useQuery(
     { storeId: store?.id || 0 },

@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, Store } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -233,6 +233,19 @@ function DashboardLayoutContent({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (store?.customDomain) {
+                      window.open(`https://${store.customDomain}`, "_blank");
+                    } else if (store?.slug) {
+                      window.open(`/store/${store.slug}`, "_blank");
+                    }
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Store className="mr-2 h-4 w-4" />
+                  <span>View Store</span>
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={logout}
                   className="cursor-pointer text-destructive focus:text-destructive"
