@@ -119,131 +119,47 @@ Merchants manage their agents from a unified "My Team" panel:
 
 ---
 
-## 📦 What's Built (Current State)
+## 📦 Platform Architecture (Frontend & Backend)
 
-### Backend Infrastructure ✅
-- 10 database tables (users, stores, products, variants, categories, customers, orders, orderItems, discounts, aiInteractions, storeThemes)
-- 30+ tRPC procedures for all operations
-- Drizzle ORM with type-safe queries
-- Express server with tRPC API layer
-- Basic AI chat integration (needs replacement — currently locked to Manus)
+The Sellora platform is strictly divided into two logical layers. They live in a single monorepo for seamless type-sharing but are deployed and executed independently.
 
-### Frontend Pages ✅
-1. **/** — Landing page with feature highlights
-2. **/features** — Feature showcase
-3. **/benefits** — Benefits page
-4. **/dashboard** — Analytics & overview
-5. **/products** — Product list with search/filters
-6. **/products/new** — Product creation form
-7. **/orders** — Order management
-8. **/customers** — Customer list
-9. **/discounts** — Discount/coupon management
-10. **/settings** — Store branding & configuration
-11. **/ai-assistant** — AI chat interface
-12. **/storefront** — Public storefront
-13. **/cart** — Shopping cart
-14. **/checkout** — Checkout flow
-15. **/onboarding** — Multi-step store creation
-16. **/marketplace** — App marketplace (placeholder)
-17. **/export-data** — CSV export
+### 🖥️ Frontend Architecture (`/client`)
 
-### Design System ✅
-- 53 ShadcnUI components
-- Geist font typography
-- OKLCH color palette
-- Responsive design
-- Dark/light theme support
+The frontend is the face of Sellora, responsible for the merchant dashboard, public storefronts, and the AI chat interfaces.
+
+**Core Tech Stack:**
+- **Framework:** React 19 + TypeScript + Vite
+- **Styling:** Tailwind CSS 4 + ShadcnUI (53+ pre-built components)
+- **Routing:** Wouter (lightweight routing)
+- **Data Fetching:** React Query + tRPC Client (fully type-safe)
+- **Design System:** Geist typography, OKLCH color palette, Native Dark/Light themes
+
+**Key Layers:**
+1. **Merchant Dashboard (`/dashboard`, `/products`, `/orders`):** Secure, authenticated area where merchants manage operations.
+2. **AI Interface (`/ai-assistant`):** Real-time chat interface for interacting with the AI Agent workforce.
+3. **Storefront Engine (`/storefront`, `/cart`, `/checkout`):** The public-facing e-commerce engine that customers see.
+4. **Auth Flow (`/login`, `/register`, `/onboarding`):** Custom JWT-based authentication screens.
 
 ---
 
-## ❌ What's NOT Built Yet
+### ⚙️ Backend Architecture (`/server`)
 
-### Profit Intelligence (Core Differentiator)
-- [ ] COGS tracking per product/variant
-- [ ] True profit dashboard (Revenue - ALL Costs)
-- [ ] Per-product P&L breakdown
-- [ ] Ad spend attribution (Meta/Google/TikTok)
-- [ ] AI profit alerts & "Kill or Scale" recommendations
+The backend is the brain of Sellora, handling data persistence, AI communication, security, and complex business logic.
 
-### AI Agent Engine & Marketplace
-- [ ] Agent runtime/execution engine
-- [ ] Agent permissions & triggers system
-- [ ] Inter-agent communication
-- [ ] "My Team" dashboard
-- [ ] Agent marketplace UI
-- [ ] Agent SDK for 3rd party developers
-- [ ] Core platform agents (Profit, Inventory, Shipping, etc.)
+**Core Tech Stack:**
+- **Server:** Node.js + Express 4
+- **API Layer:** tRPC 11 (Type-safe RPC replacing REST)
+- **Database:** PostgreSQL (Neon Serverless)
+- **ORM:** Drizzle ORM
+- **Authentication:** Custom JWT + bcryptjs (Self-hosted, no lock-in)
+- **AI Integration:** Groq SDK (Provider-agnostic abstraction layer)
 
-### Payment Infrastructure
-- [ ] Stripe Connect (customer → merchant)
-- [ ] Platform subscription billing
-- [ ] Pakistan payments (JazzCash, EasyPaisa)
-- [ ] COD workflow
-- [ ] Apple Pay / Google Pay
-
-### Shipping & Fulfillment
-- [ ] Shipping zones & rate calculation
-- [ ] Pakistani courier integrations (TCS, Leopards, BlueEx)
-- [ ] Label generation
-- [ ] Branded tracking page
-- [ ] Returns & exchanges
-- [ ] AI shipping agent
-
-### Marketing & SEO
-- [ ] Facebook/Meta Pixel integration
-- [ ] Google Analytics 4
-- [ ] Google Search Console
-- [ ] Auto-generated sitemap & schema.org markup
-- [ ] Custom domain + SSL
-
-### Emerging Markets
-- [ ] RTL (right-to-left) theme support
-- [ ] Multi-language AI (Urdu, Hindi, Arabic)
-- [ ] Local currency pricing
-- [ ] Localized onboarding
-
-### Template System
-- [ ] Sections + Slots architecture
-- [ ] AI theme editor
-- [ ] Design from Reference (screenshot → store)
-- [ ] Template marketplace
-- [ ] Version history / rollback
-
----
-
-## 🗺️ Build Roadmap
-
-| Phase | Focus | Key Deliverables |
-|---|---|---|
-| **0** | Strip Manus Dependencies | Remove all 12 Manus-locked files, get running independently |
-| **1** | Core Platform | Auth, PostgreSQL, deploy to Vercel, basic features working |
-| **2** | Profit Intelligence | COGS tracking, true profit dashboard, AI alerts |
-| **3** | Agent Engine | Runtime, permissions, triggers, "My Team" dashboard |
-| **4** | Core Agents | Ship 5-8 platform-built agents |
-| **5** | Payments & Shipping | Stripe Connect, Pakistani couriers, COD |
-| **6** | Agent Marketplace | 3rd party SDK, marketplace UI, billing |
-| **7** | Emerging Markets | Pakistan payments, RTL, multi-language |
-| **8** | Predictive Agents | Forecasting, price optimization |
-| **9** | Design Agents | Template system, Design from Reference |
-| **10** | Scale | Enterprise, white-label, developer program |
-
----
-
-## 🏗️ Technology Stack
-
-| Layer | Current | Target |
-|---|---|---|
-| Frontend | React 19 + TypeScript + Tailwind CSS 4 | Same (keep) |
-| Backend | Express 4 + tRPC 11 | Same (keep) |
-| Database | MySQL (Manus) | PostgreSQL (Neon) |
-| ORM | Drizzle ORM | Same (keep) |
-| Auth | Manus OAuth (must replace) | JWT + Google OAuth |
-| AI | Manus Forge (must replace) | OpenAI GPT-4o / Gemini |
-| Storage | Manus S3 (must replace) | Cloudinary / Vercel Blob |
-| Deployment | Manus hosting | Vercel |
-| Agent Runtime | Not built | Custom engine + BullMQ |
-| Email | Not built | Resend |
-| Payments | Not built | Stripe Connect |
+**Key Layers:**
+1. **API Routers (`/server/routers/`):** Dedicated tRPC routers for specific domains (`ai.ts`, `stores.ts`, `products.ts`, `orders.ts`).
+2. **Authentication Core (`/server/_core/auth.ts`):** Handles secure JWT minting, password hashing, and session management.
+3. **Database Layer (`/server/db.ts`):** Direct communication with Neon PostgreSQL, ensuring high performance.
+4. **LLM Engine (`/server/_core/llm.ts`):** The AI orchestration layer that communicates with Groq/OpenAI, constructs prompts, and parses AI agent responses.
+5. **Storage Stub (`/server/storage.ts`):** Abstracted file handling, preparing for Cloudinary integration.
 
 ---
 
