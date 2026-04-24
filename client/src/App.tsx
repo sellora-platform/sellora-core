@@ -24,7 +24,31 @@ import Benefits from "./pages/Benefits";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
+import { useState, useEffect } from "react";
+
 function Router() {
+  const [hostname] = useState(window.location.hostname);
+  
+  // Define our core platform domains that should see the Admin/Landing pages
+  const isPlatformDomain = 
+    hostname === "localhost" || 
+    hostname === "127.0.0.1" || 
+    hostname.includes("vercel.app") || 
+    hostname === "sellora.com";
+
+  // If this is a custom domain (e.g. wazewear.com), ONLY show the storefront routes
+  if (!isPlatformDomain) {
+    return (
+      <Switch>
+        <Route path={"/"} component={Storefront} />
+        <Route path={"/cart"} component={Cart} />
+        <Route path={"/checkout"} component={Checkout} />
+        {/* We can pass the domain to the Storefront component so it knows which store to load */}
+        <Route component={NotFound} />
+      </Switch>
+    );
+  }
+
   return (
     <Switch>
       <Route path={"/"} component={Home} />

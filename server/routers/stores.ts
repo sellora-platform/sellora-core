@@ -36,6 +36,14 @@ export const storesRouter = router({
       return store;
     }),
 
+  // Get a store by custom domain (public)
+  getByDomain: publicProcedure
+    .input(z.object({ domain: z.string() }))
+    .query(async ({ input }) => {
+      const store = await db.getStoreByDomain(input.domain);
+      return store;
+    }),
+
   // Update store settings
   update: protectedProcedure
     .input(

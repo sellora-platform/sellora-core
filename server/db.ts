@@ -74,7 +74,8 @@ export async function getUserByEmail(email: string) {
 export async function createStore(data: InsertStore) {
   const db = getDb();
   if (!db) throw new Error("Database not available");
-  return db.insert(stores).values(data);
+  const result = await db.insert(stores).values(data).returning();
+  return result[0];
 }
 
 export async function getStoreByMerchantId(merchantId: number) {
@@ -88,6 +89,13 @@ export async function getStoreBySlug(slug: string) {
   const db = getDb();
   if (!db) return null;
   const result = await db.select().from(stores).where(eq(stores.slug, slug)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function getStoreByDomain(domain: string) {
+  const db = getDb();
+  if (!db) return null;
+  const result = await db.select().from(stores).where(eq(stores.customDomain, domain)).limit(1);
   return result.length > 0 ? result[0] : null;
 }
 

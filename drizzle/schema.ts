@@ -45,6 +45,7 @@ export const stores = pgTable("stores", {
   merchantId: integer("merchant_id").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
+  customDomain: varchar("custom_domain", { length: 255 }).unique(),
   description: text("description"),
   logo: varchar("logo", { length: 512 }),
   favicon: varchar("favicon", { length: 512 }),
