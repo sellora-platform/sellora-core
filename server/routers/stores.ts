@@ -31,8 +31,8 @@ export const storesRouter = router({
 
         // AUTOMATION: Add slug.platformRoot (e.g. wazewear.raaenai.com) to Vercel project
         const fullSubdomain = `${input.slug}.${ENV.platformRoot}`;
-        // We do this asynchronously to not block the response
-        addDomainToVercel(fullSubdomain).catch(err => console.error("Vercel automation failed:", err));
+        // We MUST await this on Vercel or the function will terminate before the API call finishes
+        await addDomainToVercel(fullSubdomain).catch(err => console.error("Vercel automation failed:", err));
 
         return store;
       } catch (err: any) {
@@ -90,7 +90,7 @@ export const storesRouter = router({
 
       // AUTOMATION: If custom domain is being added/changed, register it on Vercel
       if (input.customDomain && input.customDomain !== currentStore.customDomain) {
-        addDomainToVercel(input.customDomain).catch(err => console.error("Vercel custom domain automation failed:", err));
+        await addDomainToVercel(input.customDomain).catch(err => console.error("Vercel custom domain automation failed:", err));
       }
 
       return db.updateStore(storeId, updateData);

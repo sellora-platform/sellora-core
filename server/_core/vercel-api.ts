@@ -6,7 +6,7 @@ const VERCEL_TEAM_ID = ENV.vercelTeamId;
 
 export async function addDomainToVercel(domain: string) {
   if (!VERCEL_TOKEN || !VERCEL_PROJECT_ID) {
-    console.warn("Vercel credentials missing. Skipping domain registration.");
+    console.warn("Vercel credentials missing in environment variables. VERCEL_TOKEN and VERCEL_PROJECT_ID are required for domain automation.");
     return;
   }
 
