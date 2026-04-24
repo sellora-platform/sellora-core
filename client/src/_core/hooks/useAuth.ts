@@ -6,6 +6,7 @@ type AuthUser = {
   email: string;
   name: string | null;
   role: "user" | "admin";
+  isVerified: boolean;
 };
 
 type UseAuthOptions = {
@@ -100,5 +101,6 @@ export function useAuth(options?: UseAuthOptions) {
     ...state,
     logout,
     refresh,
+    refetch: refresh, // Alias for better compatibility
   };
 }

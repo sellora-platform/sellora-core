@@ -19,6 +19,7 @@ export type SessionUser = {
   email: string;
   name: string | null;
   role: "user" | "admin";
+  isVerified: boolean;
 };
 
 export type AuthResult = {
@@ -62,6 +63,7 @@ export async function createSessionToken(user: SessionUser): Promise<string> {
     email: user.email,
     name: user.name,
     role: user.role,
+    isVerified: user.isVerified,
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -84,6 +86,7 @@ export async function verifySessionToken(
       email: payload.email as string,
       name: (payload.name as string) ?? null,
       role: (payload.role as "user" | "admin") ?? "user",
+      isVerified: (payload.isVerified as boolean) ?? false,
     };
   } catch {
     return null;

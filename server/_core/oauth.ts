@@ -52,13 +52,31 @@ export function registerAuthRoutes(app: Express) {
 
       // Hash password and create user
       const passwordHash = await hashPassword(password);
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
       const [newUser] = await db.insert(users).values({
         email,
         name: name || email.split("@")[0],
         passwordHash,
         role: "user",
+        isVerified: false,
+        verificationCode,
       }).returning();
+
+      // Send verification email
+      await sendMail({
+        to: email,
+        subject: "Verify your Sellora account",
+        html: `
+          <h1>Welcome to Sellora!</h1>
+          <p>Hi ${name || email.split("@")[0]},</p>
+          <p>Thank you for signing up. Please use the following code to verify your account:</p>
+          <div style="font-size: 32px; font-weight: bold; letter-spacing: 4px; padding: 20px; background: #f3f4f6; border-radius: 8px; text-align: center;">
+            ${verificationCode}
+          </div>
+          <p>This code is required to access your dashboard.</p>
+        `,
+      });
 
       const userId = newUser.id;
 
@@ -68,6 +86,7 @@ export function registerAuthRoutes(app: Express) {
         email,
         name: name || email.split("@")[0],
         role: "user",
+        isVerified: false,
       });
 
       const cookieOpts = getSessionCookieOptions(req);
@@ -78,11 +97,95 @@ export function registerAuthRoutes(app: Express) {
 
       res.json({
         success: true,
-        user: { id: userId, email, name: name || email.split("@")[0], role: "user" },
+        user: { id: userId, email, name: name || email.split("@")[0], role: "user", isVerified: false },
       });
     } catch (error) {
       console.error("[Auth] Register error:", error);
       res.status(500).json({ error: "Registration failed" });
+    }
+  });
+
+  /**
+   * POST /api/auth/verify-email
+   * Verify account with 6-digit OTP.
+   */
+  app.post("/api/auth/verify-email", async (req, res) => {
+    try {
+      const { user } = await authenticateRequest(req);
+      if (!user) {
+        res.status(401).json({ error: "Not authenticated" });
+        return;
+      }
+
+      const { code } = req.body;
+      if (!code) {
+        res.status(400).json({ error: "Verification code is required" });
+        return;
+      }
+
+      const [dbUser] = await db.select().from(users).where(eq(users.id, user.id)).limit(1);
+      
+      if (!dbUser || dbUser.verificationCode !== code) {
+        res.status(400).json({ error: "Invalid verification code" });
+        return;
+      }
+
+      // Update user status
+      await db.update(users).set({ 
+        isVerified: true, 
+        verificationCode: null 
+      }).where(eq(users.id, user.id));
+
+      // Update session cookie with new isVerified status
+      const newToken = await createSessionToken({
+        ...user,
+        isVerified: true,
+      });
+
+      const cookieOpts = getSessionCookieOptions(req);
+      res.cookie(SESSION_COOKIE_NAME, newToken, {
+        ...cookieOpts,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[Auth] Verify email error:", error);
+      res.status(500).json({ error: "Verification failed" });
+    }
+  });
+
+  /**
+   * POST /api/auth/resend-otp
+   * Resend verification code.
+   */
+  app.post("/api/auth/resend-otp", async (req, res) => {
+    try {
+      const { user } = await authenticateRequest(req);
+      if (!user) {
+        res.status(401).json({ error: "Not authenticated" });
+        return;
+      }
+
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      await db.update(users).set({ verificationCode }).where(eq(users.id, user.id));
+
+      await sendMail({
+        to: user.email,
+        subject: "Your new Sellora verification code",
+        html: `
+          <h1>Verification Code</h1>
+          <p>Your new verification code is:</p>
+          <div style="font-size: 32px; font-weight: bold; letter-spacing: 4px; padding: 20px; background: #f3f4f6; border-radius: 8px; text-align: center;">
+            ${verificationCode}
+          </div>
+        `,
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[Auth] Resend OTP error:", error);
+      res.status(500).json({ error: "Failed to resend code" });
     }
   });
 
@@ -130,6 +233,7 @@ export function registerAuthRoutes(app: Express) {
         email: user.email!,
         name: user.name,
         role: user.role,
+        isVerified: user.isVerified,
       });
 
       const cookieOpts = getSessionCookieOptions(req);
@@ -140,7 +244,7 @@ export function registerAuthRoutes(app: Express) {
 
       res.json({
         success: true,
-        user: { id: user.id, email: user.email, name: user.name, role: user.role },
+        user: { id: user.id, email: user.email, name: user.name, role: user.role, isVerified: user.isVerified },
       });
     } catch (error) {
       console.error("[Auth] Login error:", error);
