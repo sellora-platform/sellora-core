@@ -20,16 +20,27 @@ import {
 import { trpc } from "@/lib/trpc";
 
 export default function Dashboard() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
-  const storeQuery = trpc.stores.getMyStore.useQuery();
+  const storeQuery = trpc.stores.getMyStore.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
 
-  if (!isAuthenticated) {
-    setLocation("/");
+  const store = storeQuery.data;
+  const statsQuery = trpc.dashboard.getStats.useQuery(undefined, {
+    enabled: !!store,
+  });
+
+  if (loading || !isAuthenticated) {
     return null;
   }
 
-  const store = storeQuery.data;
+  const stats = statsQuery.data || {
+    revenue: 0,
+    orders: 0,
+    customers: 0,
+    products: 0,
+  };
 
   return (
     <DashboardLayout>
@@ -68,8 +79,8 @@ export default function Dashboard() {
             {
               icon: ShoppingCart,
               label: "Total Orders",
-              value: "1,234",
-              change: "+12%",
+              value: stats.orders.toString(),
+              change: stats.orders === 0 ? "0%" : "+12%", // Mock trend for now
               gradient: "from-blue-500/10 to-blue-600/10",
               borderColor: "border-blue-200/50",
               iconColor: "text-blue-600",
@@ -77,8 +88,8 @@ export default function Dashboard() {
             {
               icon: TrendingUp,
               label: "Revenue",
-              value: "$45,231",
-              change: "+8%",
+              value: `$${stats.revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              change: stats.revenue === 0 ? "0%" : "+8%",
               gradient: "from-emerald-500/10 to-emerald-600/10",
               borderColor: "border-emerald-200/50",
               iconColor: "text-emerald-600",
@@ -86,17 +97,17 @@ export default function Dashboard() {
             {
               icon: Users,
               label: "Customers",
-              value: "892",
-              change: "+5%",
+              value: stats.customers.toString(),
+              change: stats.customers === 0 ? "0%" : "+5%",
               gradient: "from-purple-500/10 to-purple-600/10",
               borderColor: "border-purple-200/50",
               iconColor: "text-purple-600",
             },
             {
-              icon: BarChart3,
-              label: "Conversion",
-              value: "3.2%",
-              change: "+0.5%",
+              icon: Package,
+              label: "Products",
+              value: stats.products.toString(),
+              change: "Active",
               gradient: "from-orange-500/10 to-orange-600/10",
               borderColor: "border-orange-200/50",
               iconColor: "text-orange-600",

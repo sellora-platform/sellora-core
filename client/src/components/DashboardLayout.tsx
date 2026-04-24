@@ -37,6 +37,8 @@ const DEFAULT_WIDTH = 280;
 const MIN_WIDTH = 200;
 const MAX_WIDTH = 480;
 
+import { trpc } from "@/lib/trpc";
+
 export default function DashboardLayout({
   children,
 }: {
@@ -47,12 +49,22 @@ export default function DashboardLayout({
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
   const { loading, user } = useAuth();
+  const [, setLocation] = useLocation();
+  const { data: store, isLoading: isStoreLoading } = trpc.stores.getMyStore.useQuery(undefined, {
+    enabled: !!user,
+  });
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
   }, [sidebarWidth]);
 
-  if (loading) {
+  useEffect(() => {
+    if (user && !isStoreLoading && store === null) {
+      setLocation("/onboarding");
+    }
+  }, [user, isStoreLoading, store, setLocation]);
+
+  if (loading || isStoreLoading || (user && !store)) {
     return <DashboardLayoutSkeleton />
   }
 
