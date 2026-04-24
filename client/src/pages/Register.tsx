@@ -14,6 +14,50 @@ export default function Register() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Initialize Google Signup
+  useState(() => {
+    if (typeof window !== "undefined") {
+      const initGoogle = () => {
+        if (window.google) {
+          window.google.accounts.id.initialize({
+            client_id: "YOUR_GOOGLE_CLIENT_ID", // Replace with actual ID or handle via ENV
+            callback: handleGoogleCallback,
+          });
+          window.google.accounts.id.renderButton(
+            document.getElementById("google-signup-btn"),
+            { theme: "outline", size: "large", width: "100%" }
+          );
+        } else {
+          setTimeout(initGoogle, 100);
+        }
+      };
+      initGoogle();
+    }
+  });
+
+  const handleGoogleCallback = async (response: any) => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: response.credential }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Google signup failed");
+        return;
+      }
+      // New users from Google go to onboarding
+      setLocation("/onboarding");
+    } catch {
+      setError("Network error with Google Signup");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -110,7 +154,7 @@ export default function Register() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full h-11 font-bold" disabled={loading}>
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
@@ -120,6 +164,17 @@ export default function Register() {
                 )}
               </Button>
             </form>
+
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
+
+            <div id="google-signup-btn" className="w-full min-h-[44px]" />
 
             <div className="mt-6 text-center text-sm text-muted-foreground">
               Already have an account?{" "}

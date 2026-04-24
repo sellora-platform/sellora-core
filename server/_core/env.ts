@@ -42,6 +42,9 @@ export const ENV = {
   /** Platform root domain for merchant subdomains */
   platformRoot: process.env.PLATFORM_ROOT ?? "raaenai.com",
 
+  /** Resend API Key for email services */
+  resendApiKey: process.env.RESEND_API_KEY ?? "",
+
   /** Vercel API Token for domain automation */
   vercelToken: process.env.VERCEL_TOKEN ?? "",
 

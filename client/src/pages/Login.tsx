@@ -13,6 +13,49 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Initialize Google Login
+  useState(() => {
+    if (typeof window !== "undefined") {
+      const initGoogle = () => {
+        if (window.google) {
+          window.google.accounts.id.initialize({
+            client_id: "YOUR_GOOGLE_CLIENT_ID", // Replace with actual ID or handle via ENV
+            callback: handleGoogleCallback,
+          });
+          window.google.accounts.id.renderButton(
+            document.getElementById("google-login-btn"),
+            { theme: "outline", size: "large", width: "100%" }
+          );
+        } else {
+          setTimeout(initGoogle, 100);
+        }
+      };
+      initGoogle();
+    }
+  });
+
+  const handleGoogleCallback = async (response: any) => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: response.credential }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Google login failed");
+        return;
+      }
+      setLocation("/dashboard");
+    } catch {
+      setError("Network error with Google Login");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -84,7 +127,12 @@ export default function Login() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <Link href="/forgot-password" size="sm" className="text-xs text-primary hover:underline">
+                    Forgot password?
+                  </Link>
+                </div>
                 <Input
                   id="password"
                   type="password"
@@ -97,7 +145,7 @@ export default function Login() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full h-11 font-bold" disabled={loading}>
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
@@ -107,6 +155,17 @@ export default function Login() {
                 )}
               </Button>
             </form>
+
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
+
+            <div id="google-login-btn" className="w-full min-h-[44px]" />
 
             <div className="mt-6 text-center text-sm text-muted-foreground">
               Don't have an account?{" "}

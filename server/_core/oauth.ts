@@ -12,10 +12,12 @@ import {
   hashPassword,
   verifyPassword,
   createSessionToken,
+  verifySessionToken,
   SESSION_COOKIE_NAME,
 } from "./auth";
 import { getSessionCookieOptions } from "./cookies";
 import { authenticateRequest } from "./auth";
+import { sendMail } from "./mailer";
 
 export function registerAuthRoutes(app: Express) {
   /**
@@ -143,6 +145,154 @@ export function registerAuthRoutes(app: Express) {
     } catch (error) {
       console.error("[Auth] Login error:", error);
       res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  /**
+   * POST /api/auth/google
+   * Authenticate with Google ID Token.
+   */
+  app.post("/api/auth/google", async (req, res) => {
+    try {
+      const { token } = req.body;
+
+      if (!token) {
+        res.status(400).json({ error: "Google token is required" });
+        return;
+      }
+
+      // Verify token with Google API
+      const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
+      const googleData = await googleRes.json();
+
+      if (!googleRes.ok || googleData.error) {
+        res.status(401).json({ error: "Invalid Google token" });
+        return;
+      }
+
+      const { email, name, sub: googleId, picture } = googleData;
+
+      // Find or create user
+      let [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+
+      if (!user) {
+        // Create new user if doesn't exist
+        [user] = await db.insert(users).values({
+          email,
+          name: name || email.split("@")[0],
+          role: "user",
+          lastSignedIn: new Date(),
+        }).returning();
+      } else {
+        // Update last signed in
+        await db
+          .update(users)
+          .set({ lastSignedIn: new Date() })
+          .where(eq(users.id, user.id));
+      }
+
+      // Create session
+      const sessionToken = await createSessionToken({
+        id: user.id,
+        email: user.email!,
+        name: user.name,
+        role: user.role,
+      });
+
+      const cookieOpts = getSessionCookieOptions(req);
+      res.cookie(SESSION_COOKIE_NAME, sessionToken, {
+        ...cookieOpts,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      res.json({
+        success: true,
+        user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      });
+    } catch (error) {
+      console.error("[Auth] Google Login error:", error);
+      res.status(500).json({ error: "Google login failed" });
+    }
+  });
+
+  /**
+   * POST /api/auth/forgot-password
+   * Send a password reset link.
+   */
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        res.status(400).json({ error: "Email is required" });
+        return;
+      }
+
+      const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      if (!user) {
+        // Don't reveal user existence for security, but return success
+        res.json({ success: true });
+        return;
+      }
+
+      // Create a temporary token for password reset (valid for 1 hour)
+      const resetToken = await createSessionToken({
+        id: user.id,
+        email: user.email!,
+        name: user.name,
+        role: user.role,
+      });
+
+      const resetLink = `${req.get("origin")}/reset-password?token=${resetToken}`;
+
+      await sendMail({
+        to: email,
+        subject: "Reset your Sellora password",
+        html: `
+          <h1>Reset your password</h1>
+          <p>Hi ${user.name || "there"},</p>
+          <p>We received a request to reset your password. Click the link below to set a new one:</p>
+          <a href="${resetLink}" style="display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">Reset Password</a>
+          <p>This link will expire in 1 hour.</p>
+          <p>If you didn't request this, you can safely ignore this email.</p>
+        `,
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[Auth] Forgot password error:", error);
+      res.status(500).json({ error: "Failed to send reset link" });
+    }
+  });
+
+  /**
+   * POST /api/auth/reset-password
+   * Update password using a reset token.
+   */
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { token, password } = req.body;
+      if (!token || !password) {
+        res.status(400).json({ error: "Token and password are required" });
+        return;
+      }
+
+      const payload = await verifySessionToken(token);
+      if (!payload) {
+        res.status(401).json({ error: "Invalid or expired reset link" });
+        return;
+      }
+
+      const passwordHash = await hashPassword(password);
+      await db.update(users).set({ passwordHash }).where(eq(users.id, payload.id));
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[Auth] Reset password error:", error);
+      res.status(500).json({ error: "Failed to reset password" });
     }
   });
 
