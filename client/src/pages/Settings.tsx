@@ -21,27 +21,47 @@ export default function StoreSettings() {
   });
 
   const [formData, setFormData] = useState({
-    name: storeQuery.data?.name || "",
-    description: storeQuery.data?.description || "",
-    primaryColor: storeQuery.data?.primaryColor || "#000000",
-    secondaryColor: storeQuery.data?.secondaryColor || "#ffffff",
-    fontFamily: storeQuery.data?.fontFamily || "sans-serif",
-    customDomain: storeQuery.data?.customDomain || "",
+    name: "",
+    description: "",
+    primaryColor: "#000000",
+    secondaryColor: "#ffffff",
+    fontFamily: "sans-serif",
+    customDomain: "",
   });
 
-  if (!isAuthenticated) {
-    setLocation("/");
+  // Sync form data when store query finishes
+  useEffect(() => {
+    if (storeQuery.data) {
+      setFormData({
+        name: storeQuery.data.name || "",
+        description: storeQuery.data.description || "",
+        primaryColor: storeQuery.data.primaryColor || "#000000",
+        secondaryColor: storeQuery.data.secondaryColor || "#ffffff",
+        fontFamily: storeQuery.data.fontFamily || "sans-serif",
+        customDomain: storeQuery.data.customDomain || "",
+      });
+    }
+  }, [storeQuery.data]);
+
+  if (!isAuthenticated || loading || storeQuery.isLoading) {
     return null;
   }
 
   const handleSave = async () => {
     if (!storeQuery.data) return;
 
-    await updateMutation.mutateAsync({
-      storeId: storeQuery.data.id,
-      ...formData,
-    });
+    try {
+      await updateMutation.mutateAsync({
+        storeId: storeQuery.data.id,
+        ...formData,
+      });
+      // Success toast is handled by TRPC or we could add one here
+    } catch (error) {
+      console.error("Failed to update store:", error);
+    }
   };
+
+  const isDomainConnected = storeQuery.data?.customDomain && !updateMutation.isPending;
 
   return (
     <DashboardLayout>
@@ -52,7 +72,7 @@ export default function StoreSettings() {
             Store Settings
           </h1>
           <p className="text-foreground/60 mt-1">
-            Customize your store appearance and information
+            Manage your store's identity and custom domains
           </p>
         </div>
 
@@ -75,6 +95,7 @@ export default function StoreSettings() {
                       setFormData({ ...formData, name: e.target.value })
                     }
                     className="border-border/50 focus:border-primary"
+                    placeholder="Enter store name"
                   />
                 </div>
                 <div>
@@ -88,56 +109,96 @@ export default function StoreSettings() {
                     }
                     className="border-border/50 focus:border-primary resize-none"
                     rows={4}
+                    placeholder="Tell your customers about your store"
                   />
                 </div>
               </div>
             </Card>
 
             {/* Domain Settings */}
-            <Card className="p-6 border-border/50">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
-                Domain Settings
-              </h2>
-              <div className="space-y-4">
+            <Card className="p-6 border-border/50 relative overflow-hidden">
+              <div className="flex justify-between items-start mb-6">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Custom Domain
-                  </label>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="e.g. wazewear.com"
-                      value={formData.customDomain}
-                      onChange={(e) =>
-                        setFormData({ ...formData, customDomain: e.target.value })
-                      }
-                      className="border-border/50 focus:border-primary"
-                    />
-                  </div>
-                  <p className="text-xs text-foreground/60 mt-2">
-                    Enter your custom domain. Do not include https:// or www.
+                  <h2 className="text-lg font-semibold text-foreground">
+                    Domains
+                  </h2>
+                  <p className="text-sm text-foreground/60">
+                    Connect your own professional domain
                   </p>
                 </div>
-                
-                {formData.customDomain && (
-                  <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mt-4">
-                    <h3 className="text-sm font-bold text-primary mb-2">DNS Instructions</h3>
-                    <p className="text-sm text-foreground/80 mb-3">
-                      To connect your domain, please log into your domain registrar (e.g. GoDaddy, Namecheap) and configure the following DNS records:
-                    </p>
-                    <div className="bg-background border border-border/50 rounded p-3 text-sm font-mono space-y-2">
-                      <div className="flex justify-between border-b border-border/30 pb-2">
-                        <span className="font-semibold text-foreground/60">Type</span>
-                        <span className="font-semibold text-foreground/60">Name/Host</span>
-                        <span className="font-semibold text-foreground/60">Value</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>A Record</span>
-                        <span>@</span>
-                        <span className="text-primary font-bold">76.76.21.21</span>
-                      </div>
-                    </div>
+                {storeQuery.data?.customDomain && (
+                  <div className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                    Pending Connection
                   </div>
                 )}
+              </div>
+
+              <div className="space-y-6">
+                <div className="p-4 rounded-xl border border-border/50 bg-accent/5">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-foreground/70">Default Address</span>
+                    <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">Primary</span>
+                  </div>
+                  <p className="text-base font-semibold text-foreground">
+                    {storeQuery.data?.slug}.raaenai.com
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Custom Domain
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Input
+                          placeholder="e.g. wazewear.com"
+                          value={formData.customDomain}
+                          onChange={(e) =>
+                            setFormData({ ...formData, customDomain: e.target.value.toLowerCase().replace(/https?:\/\/|www\./g, "") })
+                          }
+                          className="border-border/50 focus:border-primary pl-9"
+                        />
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/30">
+                          https://
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-foreground/50 mt-2">
+                      Enter your domain name (e.g. <b>wazewear.com</b>). We will handle the SSL certificate automatically.
+                    </p>
+                  </div>
+                  
+                  {formData.customDomain && (
+                    <div className="bg-primary/[0.03] border border-primary/20 rounded-xl p-5 space-y-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">!</div>
+                        <h3 className="text-sm font-bold text-foreground">Setup Required</h3>
+                      </div>
+                      <p className="text-sm text-foreground/70 leading-relaxed">
+                        To finish connecting your domain, go to your domain provider (like Namecheap) and set these records:
+                      </p>
+                      
+                      <div className="grid gap-3">
+                        <div className="p-3 rounded-lg bg-background border border-border/50 flex flex-col gap-1">
+                          <span className="text-[10px] uppercase tracking-wider font-bold text-foreground/40">A Record (Host: @)</span>
+                          <div className="flex justify-between items-center">
+                            <code className="text-primary font-bold">76.76.21.21</code>
+                            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px]" onClick={() => navigator.clipboard.writeText("76.76.21.21")}>Copy</Button>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-lg bg-background border border-border/50 flex flex-col gap-1">
+                          <span className="text-[10px] uppercase tracking-wider font-bold text-foreground/40">CNAME (Host: www)</span>
+                          <div className="flex justify-between items-center">
+                            <code className="text-primary font-bold">cname.vercel-dns.com</code>
+                            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px]" onClick={() => navigator.clipboard.writeText("cname.vercel-dns.com")}>Copy</Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </Card>
 

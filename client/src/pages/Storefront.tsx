@@ -30,6 +30,8 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
     hostname === "localhost" || 
     hostname === "127.0.0.1" || 
     hostname.includes("vercel.app") || 
+    hostname === "raaenai.com" ||
+    hostname === "www.raaenai.com" ||
     hostname === "sellora.com";
 
   // If this is a preview URL with a slug: /store/my-slug
