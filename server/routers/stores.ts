@@ -13,13 +13,23 @@ export const storesRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const store = await db.createStore({
-        merchantId: ctx.user.id,
-        name: input.name,
-        slug: input.slug,
-        description: input.description,
-      });
-      return store;
+      // Check if slug is already taken
+      const existing = await db.getStoreBySlug(input.slug);
+      if (existing) {
+        throw new Error("This Store ID is already taken. Please choose another one.");
+      }
+
+      try {
+        const store = await db.createStore({
+          merchantId: ctx.user.id,
+          name: input.name,
+          slug: input.slug,
+          description: input.description,
+        });
+        return store;
+      } catch (err: any) {
+        throw new Error("Failed to create store. Please try again.");
+      }
     }),
 
   // Get the merchant's store

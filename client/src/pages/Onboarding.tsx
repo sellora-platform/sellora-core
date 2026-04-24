@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Store, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 export default function Onboarding() {
   const { isAuthenticated, user, loading } = useAuth({ redirectOnUnauthenticated: true });
@@ -23,6 +24,9 @@ export default function Onboarding() {
     onSuccess: () => {
       setLocation("/dashboard");
     },
+    onError: (error) => {
+      toast.error(error.message || "Failed to create store");
+    }
   });
 
   if (!loading && !isAuthenticated) {
