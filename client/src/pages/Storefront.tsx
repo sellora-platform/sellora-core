@@ -24,10 +24,33 @@ export default function Storefront() {
   const [cart, setCart] = useState<any[]>([]);
   const [wishlist, setWishlist] = useState<Set<number>>(new Set());
 
-  const storeQuery = trpc.stores.getMyStore.useQuery();
-  const productsQuery = trpc.products.listByStore.useQuery({ storeId: storeQuery.data?.id || 0 }, { enabled: !!storeQuery.data?.id });
+  // Fetch store by custom domain if it's not a platform domain, else fallback to something safe
+  const hostname = window.location.hostname;
+  const isPlatformDomain = 
+    hostname === "localhost" || 
+    hostname === "127.0.0.1" || 
+    hostname.includes("vercel.app") || 
+    hostname === "sellora.com";
 
-  const store = storeQuery.data;
+  // If it's a custom domain, fetch by domain. If testing locally, you might want to fetch by slug or a default.
+  // For now, if we are on a custom domain, we use getByDomain.
+  const storeQuery = trpc.stores.getByDomain.useQuery(
+    { domain: hostname },
+    { enabled: !isPlatformDomain }
+  );
+
+  // Fallback for when we're viewing the storefront from within the admin dashboard
+  const myStoreQuery = trpc.stores.getMyStore.useQuery(undefined, {
+    enabled: isPlatformDomain,
+  });
+
+  const store = isPlatformDomain ? myStoreQuery.data : storeQuery.data;
+
+  const productsQuery = trpc.products.listByStore.useQuery(
+    { storeId: store?.id || 0 },
+    { enabled: !!store?.id }
+  );
+
   const products = productsQuery.data || [];
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
