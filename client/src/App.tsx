@@ -32,6 +32,7 @@ import Billing from "./pages/Billing";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "./_core/hooks/useAuth";
+import { Loader2 } from "lucide-react";
 
 function Router() {
   const hostname = window.location.hostname;
