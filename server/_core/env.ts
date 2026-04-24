@@ -38,4 +38,16 @@ export const ENV = {
 
   /** Is production? */
   isProduction: process.env.NODE_ENV === "production",
+
+  /** Platform root domain for merchant subdomains */
+  platformRoot: process.env.PLATFORM_ROOT ?? "raaenai.com",
+
+  /** Vercel API Token for domain automation */
+  vercelToken: process.env.VERCEL_TOKEN ?? "",
+
+  /** Vercel Project ID */
+  vercelProjectId: process.env.VERCEL_PROJECT_ID ?? "",
+
+  /** Vercel Team ID (optional) */
+  vercelTeamId: process.env.VERCEL_TEAM_ID ?? "",
 } as const;

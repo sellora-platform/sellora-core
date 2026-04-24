@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { addDomainToVercel } from "../_core/vercel-api";
+import { ENV } from "../_core/env";
 
 export const storesRouter = router({
   // Create a new store for the merchant
@@ -26,6 +28,12 @@ export const storesRouter = router({
           slug: input.slug,
           description: input.description,
         });
+
+        // AUTOMATION: Add slug.platformRoot (e.g. wazewear.raaenai.com) to Vercel project
+        const fullSubdomain = `${input.slug}.${ENV.platformRoot}`;
+        // We do this asynchronously to not block the response
+        addDomainToVercel(fullSubdomain).catch(err => console.error("Vercel automation failed:", err));
+
         return store;
       } catch (err: any) {
         throw new Error("Failed to create store. Please try again.");
@@ -75,9 +83,14 @@ export const storesRouter = router({
       const { storeId, ...updateData } = input;
       
       // Verify ownership
-      const store = await db.getStoreByMerchantId(ctx.user.id);
-      if (!store || store.id !== storeId) {
+      const currentStore = await db.getStoreByMerchantId(ctx.user.id);
+      if (!currentStore || currentStore.id !== storeId) {
         throw new Error("Unauthorized");
+      }
+
+      // AUTOMATION: If custom domain is being added/changed, register it on Vercel
+      if (input.customDomain && input.customDomain !== currentStore.customDomain) {
+        addDomainToVercel(input.customDomain).catch(err => console.error("Vercel custom domain automation failed:", err));
       }
 
       return db.updateStore(storeId, updateData);
