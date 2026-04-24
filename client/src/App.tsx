@@ -18,6 +18,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Onboarding from "./pages/Onboarding";
 import Marketplace from "./pages/Marketplace";
+import Domains from "./pages/Domains";
 import ExportData from "./pages/ExportData";
 import Features from "./pages/Features";
 import Benefits from "./pages/Benefits";
@@ -85,6 +86,7 @@ function Router() {
       <Route path={"/customers"} component={Customers} />
       <Route path={"/discounts"} component={Discounts} />
       <Route path={"/settings"} component={Settings} />
+      <Route path={"/domains"} component={Domains} />
       <Route path={"/store/:slug"} component={Storefront} />
       <Route path={"/storefront"} component={Storefront} />
       <Route path={"/cart"} component={Cart} />

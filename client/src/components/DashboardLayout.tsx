@@ -42,6 +42,7 @@ const menuItems = [
   { icon: ShoppingBag, label: "Products", path: "/products" },
   { icon: Users, label: "Customers", path: "/customers" },
   { icon: Tag, label: "Discounts", path: "/discounts" },
+  { icon: Globe, label: "Domains", path: "/domains" },
   { icon: MessageSquare, label: "AI Assistant", path: "/ai-assistant" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];

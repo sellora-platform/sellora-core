@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Settings, Save, Palette } from "lucide-react";
+import { Settings, Save, Palette, Globe, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 
@@ -115,90 +115,22 @@ export default function StoreSettings() {
               </div>
             </Card>
 
-            {/* Domain Settings */}
-            <Card className="p-6 border-border/50 relative overflow-hidden">
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h2 className="text-lg font-semibold text-foreground">
-                    Domains
-                  </h2>
-                  <p className="text-sm text-foreground/60">
-                    Connect your own professional domain
-                  </p>
-                </div>
-                {storeQuery.data?.customDomain && (
-                  <div className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                    Pending Connection
+            {/* Domain Settings Quick Link */}
+            <Card className="p-6 border-border/50 bg-primary/5 border-primary/10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <Globe className="w-5 h-5" />
                   </div>
-                )}
-              </div>
-
-              <div className="space-y-6">
-                <div className="p-4 rounded-xl border border-border/50 bg-accent/5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-foreground/70">Default Address</span>
-                    <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">Primary</span>
-                  </div>
-                  <p className="text-base font-semibold text-foreground">
-                    {storeQuery.data?.slug}.raaenai.com
-                  </p>
-                </div>
-
-                <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Custom Domain
-                    </label>
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <Input
-                          placeholder="e.g. wazewear.com"
-                          value={formData.customDomain}
-                          onChange={(e) =>
-                            setFormData({ ...formData, customDomain: e.target.value.toLowerCase().replace(/https?:\/\/|www\./g, "") })
-                          }
-                          className="border-border/50 focus:border-primary pl-9"
-                        />
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/30">
-                          https://
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-xs text-foreground/50 mt-2">
-                      Enter your domain name (e.g. <b>wazewear.com</b>). We will handle the SSL certificate automatically.
-                    </p>
+                    <h2 className="text-lg font-semibold text-foreground">Domains</h2>
+                    <p className="text-sm text-foreground/60">Manage your custom store address</p>
                   </div>
-                  
-                  {formData.customDomain && (
-                    <div className="bg-primary/[0.03] border border-primary/20 rounded-xl p-5 space-y-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">!</div>
-                        <h3 className="text-sm font-bold text-foreground">Setup Required</h3>
-                      </div>
-                      <p className="text-sm text-foreground/70 leading-relaxed">
-                        To finish connecting your domain, go to your domain provider (like Namecheap) and set these records:
-                      </p>
-                      
-                      <div className="grid gap-3">
-                        <div className="p-3 rounded-lg bg-background border border-border/50 flex flex-col gap-1">
-                          <span className="text-[10px] uppercase tracking-wider font-bold text-foreground/40">A Record (Host: @)</span>
-                          <div className="flex justify-between items-center">
-                            <code className="text-primary font-bold">76.76.21.21</code>
-                            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px]" onClick={() => navigator.clipboard.writeText("76.76.21.21")}>Copy</Button>
-                          </div>
-                        </div>
-                        <div className="p-3 rounded-lg bg-background border border-border/50 flex flex-col gap-1">
-                          <span className="text-[10px] uppercase tracking-wider font-bold text-foreground/40">CNAME (Host: www)</span>
-                          <div className="flex justify-between items-center">
-                            <code className="text-primary font-bold">cname.vercel-dns.com</code>
-                            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px]" onClick={() => navigator.clipboard.writeText("cname.vercel-dns.com")}>Copy</Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
+                <Button variant="outline" onClick={() => setLocation("/domains")} className="gap-2 bg-white">
+                  Manage Domains
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
               </div>
             </Card>
 
