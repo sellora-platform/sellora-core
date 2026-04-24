@@ -146,6 +146,7 @@ export default function Products() {
                   </div>
 
                   {/* Status Badge */}
+                  <div className="flex items-center gap-2">
                     <span
                       className={`text-xs font-bold px-3 py-1 rounded-full ${
                         product.isActive
