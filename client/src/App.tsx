@@ -29,9 +29,12 @@ import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 
 import { useState, useEffect } from "react";
+import { useAuth } from "./_core/hooks/useAuth";
 
 function Router() {
   const hostname = window.location.hostname;
+  const { user, loading } = useAuth();
+  const [location, setLocation] = useLocation();
   
   // Extract subdomain if on raaenai.com (e.g. "wazewear" from "wazewear.raaenai.com")
   const PLATFORM_ROOT = "raaenai.com";
@@ -40,6 +43,24 @@ function Router() {
   const storeSubdomain = isSubdomainOfPlatform 
     ? hostname.replace(`.${PLATFORM_ROOT}`, "") 
     : null;
+
+  // Verification Restriction Logic
+  useEffect(() => {
+    if (loading) return;
+    
+    const publicPaths = ["/", "/login", "/register", "/forgot-password", "/reset-password", "/features", "/benefits"];
+    const isPublicPath = publicPaths.includes(location);
+
+    // 1. If logged in but NOT verified → Force to /verify-email (except public paths)
+    if (user && !user.isVerified && location !== "/verify-email" && !isPublicPath) {
+      setLocation("/verify-email");
+    }
+
+    // 2. If logged in AND verified → Don't allow /verify-email or /login/register
+    if (user && user.isVerified && (location === "/verify-email" || location === "/login" || location === "/register")) {
+      setLocation("/dashboard");
+    }
+  }, [user, loading, location, setLocation]);
 
   // Core platform domains: localhost, vercel.app, or the root raaenai.com
   const isPlatformDomain = 

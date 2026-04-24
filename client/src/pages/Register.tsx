@@ -80,8 +80,8 @@ export default function Register() {
         return;
       }
 
-      // Redirect to onboarding on success
-      setLocation("/onboarding");
+      // Redirect to verification on success
+      setLocation("/verify-email");
     } catch {
       setError("Network error. Please try again.");
     } finally {

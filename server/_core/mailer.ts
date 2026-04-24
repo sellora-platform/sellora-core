@@ -16,7 +16,7 @@ export async function sendMail({ to, subject, html }: { to: string; subject: str
           "Authorization": `Bearer ${ENV.resendApiKey}`,
         },
         body: JSON.stringify({
-          from: "Sellora <no-reply@raaenai.com>",
+          from: "Sellora <onboarding@resend.dev>",
           to,
           subject,
           html,
