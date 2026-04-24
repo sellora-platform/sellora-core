@@ -71,7 +71,13 @@ export default function VerifyEmail() {
     }
   };
 
-  if (!user) return null;
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">

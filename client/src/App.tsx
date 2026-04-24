@@ -37,6 +37,14 @@ function Router() {
   const hostname = window.location.hostname;
   const { user, loading } = useAuth();
   const [location, setLocation] = useLocation();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
   
   // Extract subdomain if on raaenai.com (e.g. "wazewear" from "wazewear.raaenai.com")
   const PLATFORM_ROOT = "raaenai.com";
