@@ -8,6 +8,7 @@ import { ENV } from "./env";
 export async function sendMail({ to, subject, html }: { to: string; subject: string; html: string }) {
   // If RESEND_API_KEY is present, use Resend API
   if (ENV.resendApiKey) {
+    console.log(`[Mailer] Attempting to send email to ${to} via Resend...`);
     try {
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -30,12 +31,14 @@ export async function sendMail({ to, subject, html }: { to: string; subject: str
         return false;
       }
 
-      console.log(`[Mailer] Email sent successfully to ${to}. ID: ${responseData.id}`);
+      console.log(`[Mailer] Email sent successfully! Resend ID: ${responseData.id}`);
       return true;
     } catch (error) {
-      console.error("[Mailer] Network error:", error);
+      console.error("[Mailer] CRITICAL ERROR calling Resend API:", error);
       return false;
     }
+  } else {
+    console.warn("[Mailer] WARNING: RESEND_API_KEY is missing in environment variables!");
   }
 
   // Fallback: Just log the email for development
