@@ -1,6 +1,6 @@
 import { protectedProcedure, router } from "../_core/trpc";
 import * as dbOperations from "../db";
-import { orders, customers, products } from "../drizzle/schema";
+import { orders, customers, products } from "../../drizzle/schema";
 import { eq, sql } from "drizzle-orm";
 
 export const dashboardRouter = router({
