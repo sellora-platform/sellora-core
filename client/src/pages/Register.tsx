@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,27 +13,6 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  // Initialize Google Signup
-  useState(() => {
-    if (typeof window !== "undefined") {
-      const initGoogle = () => {
-        if (window.google) {
-          window.google.accounts.id.initialize({
-            client_id: "YOUR_GOOGLE_CLIENT_ID", // Replace with actual ID or handle via ENV
-            callback: handleGoogleCallback,
-          });
-          window.google.accounts.id.renderButton(
-            document.getElementById("google-signup-btn"),
-            { theme: "outline", size: "large", width: "100%" }
-          );
-        } else {
-          setTimeout(initGoogle, 100);
-        }
-      };
-      initGoogle();
-    }
-  });
 
   const handleGoogleCallback = async (response: any) => {
     setLoading(true);
@@ -57,6 +36,29 @@ export default function Register() {
       setLoading(false);
     }
   };
+
+  // Initialize Google Signup
+  useEffect(() => {
+    const initGoogle = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: "YOUR_GOOGLE_CLIENT_ID", 
+          callback: handleGoogleCallback,
+        });
+        const btn = document.getElementById("google-signup-btn");
+        if (btn) {
+          window.google.accounts.id.renderButton(btn, { 
+            theme: "outline", 
+            size: "large", 
+            width: "100%" 
+          });
+        }
+      } else {
+        setTimeout(initGoogle, 100);
+      }
+    };
+    initGoogle();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
