@@ -58,6 +58,7 @@ export const storesRouter = router({
         accentColor: z.string().optional(),
         fontFamily: z.string().optional(),
         theme: z.enum(["light", "dark", "auto"]).optional(),
+        customDomain: z.string().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {

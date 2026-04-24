@@ -26,6 +26,7 @@ export default function StoreSettings() {
     primaryColor: storeQuery.data?.primaryColor || "#000000",
     secondaryColor: storeQuery.data?.secondaryColor || "#ffffff",
     fontFamily: storeQuery.data?.fontFamily || "sans-serif",
+    customDomain: storeQuery.data?.customDomain || "",
   });
 
   if (!isAuthenticated) {
@@ -89,6 +90,54 @@ export default function StoreSettings() {
                     rows={4}
                   />
                 </div>
+              </div>
+            </Card>
+
+            {/* Domain Settings */}
+            <Card className="p-6 border-border/50">
+              <h2 className="text-lg font-semibold text-foreground mb-4">
+                Domain Settings
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Custom Domain
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="e.g. wazewear.com"
+                      value={formData.customDomain}
+                      onChange={(e) =>
+                        setFormData({ ...formData, customDomain: e.target.value })
+                      }
+                      className="border-border/50 focus:border-primary"
+                    />
+                  </div>
+                  <p className="text-xs text-foreground/60 mt-2">
+                    Enter your custom domain. Do not include https:// or www.
+                  </p>
+                </div>
+                
+                {formData.customDomain && (
+                  <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mt-4">
+                    <h3 className="text-sm font-bold text-primary mb-2">DNS Instructions</h3>
+                    <p className="text-sm text-foreground/80 mb-3">
+                      To connect your domain, please log into your domain registrar (e.g. GoDaddy, Namecheap) and configure the following DNS records:
+                    </p>
+                    <div className="bg-background border border-border/50 rounded p-3 text-sm font-mono space-y-2">
+                      <div className="flex justify-between border-b border-border/30 pb-2">
+                        <span className="font-semibold text-foreground/60">Type</span>
+                        <span className="font-semibold text-foreground/60">Name/Host</span>
+                        <span className="font-semibold text-foreground/60">Value</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>A Record</span>
+                        <span>@</span>
+                        <span className="text-primary font-bold">76.76.21.21</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </Card>
 
