@@ -25,9 +25,17 @@ export default function Onboarding() {
     },
   });
 
-  if (!isAuthenticated) {
+  if (!loading && !isAuthenticated) {
     setLocation("/");
     return null;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-foreground/50">Loading...</div>
+      </div>
+    );
   }
 
   const handleCreateStore = async () => {
