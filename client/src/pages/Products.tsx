@@ -19,7 +19,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export default function Products() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
 

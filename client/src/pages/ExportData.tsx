@@ -17,7 +17,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 export default function ExportData() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
   const storeQuery = trpc.stores.getMyStore.useQuery();
   const [loading, setLoading] = useState<string | null>(null);
@@ -44,8 +44,7 @@ export default function ExportData() {
     { enabled: false }
   );
 
-  if (!isAuthenticated) {
-    setLocation("/");
+  if (authLoading || !isAuthenticated) {
     return null;
   }
 

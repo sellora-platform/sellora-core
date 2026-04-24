@@ -27,7 +27,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 export default function Discounts() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);

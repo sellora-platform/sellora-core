@@ -9,7 +9,7 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 
 export default function Onboarding() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, loading } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
   const [step, setStep] = useState(1);
 

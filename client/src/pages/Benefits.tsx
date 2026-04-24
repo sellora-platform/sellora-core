@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 export default function Benefits() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
 
   return (

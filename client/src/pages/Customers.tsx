@@ -9,7 +9,7 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 
 export default function Customers() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
 

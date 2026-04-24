@@ -10,7 +10,7 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 
 export default function StoreSettings() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
 
   const storeQuery = trpc.stores.getMyStore.useQuery();
