@@ -21,6 +21,7 @@ export const productsRouter = router({
         shortDescription: z.string().optional(),
         price: z.string().regex(/^\d+(\.\d{1,2})?$/),
         compareAtPrice: z.string().optional(),
+        costPrice: z.string().regex(/^\d+(\.\d{1,2})?$/).optional(),
         sku: z.string().optional(),
         barcode: z.string().optional(),
         quantity: z.number().default(0),
@@ -48,6 +49,7 @@ export const productsRouter = router({
         shortDescription: input.shortDescription,
         price: parseFloat(input.price) as any,
         compareAtPrice: input.compareAtPrice ? parseFloat(input.compareAtPrice) as any : undefined,
+        costPrice: input.costPrice ? parseFloat(input.costPrice) as any : "0.00",
         sku: input.sku,
         barcode: input.barcode,
         quantity: input.quantity,
@@ -85,6 +87,7 @@ export const productsRouter = router({
         name: z.string().optional(),
         description: z.string().optional(),
         price: z.string().optional(),
+        costPrice: z.string().optional(),
         quantity: z.number().optional(),
         images: z.array(productImageSchema).optional(),
       })
@@ -96,10 +99,11 @@ export const productsRouter = router({
         throw new Error("Unauthorized");
       }
 
-      const { productId, storeId, price, ...updateData } = input;
+      const { productId, storeId, price, costPrice, ...updateData } = input;
       return db.updateProduct(productId, {
         ...updateData,
         price: price ? (parseFloat(price) as any) : undefined,
+        costPrice: costPrice ? (parseFloat(costPrice) as any) : undefined,
       });
     }),
 

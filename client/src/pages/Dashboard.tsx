@@ -40,6 +40,7 @@ export default function Dashboard() {
     orders: 0,
     customers: 0,
     products: 0,
+    profit: 0,
   };
 
   return (
@@ -104,10 +105,10 @@ export default function Dashboard() {
               iconColor: "text-purple-600",
             },
             {
-              icon: Package,
-              label: "Products",
-              value: stats.products.toString(),
-              change: "Active",
+              icon: TrendingUp,
+              label: "Estimated Profit",
+              value: `$${stats.profit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              change: stats.profit === 0 ? "0%" : "+15%",
               gradient: "from-orange-500/10 to-orange-600/10",
               borderColor: "border-orange-200/50",
               iconColor: "text-orange-600",

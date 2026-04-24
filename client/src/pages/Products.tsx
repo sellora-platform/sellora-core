@@ -146,7 +146,6 @@ export default function Products() {
                   </div>
 
                   {/* Status Badge */}
-                  <div className="flex items-center gap-2">
                     <span
                       className={`text-xs font-bold px-3 py-1 rounded-full ${
                         product.isActive
@@ -156,6 +155,12 @@ export default function Products() {
                     >
                       {product.isActive ? "Active" : "Inactive"}
                     </span>
+                    {(product as any).costPrice && parseFloat((product as any).costPrice) > 0 && (
+                      <span className="text-[11px] font-bold px-2 py-1 bg-orange-50 text-orange-700 rounded-full flex items-center gap-1">
+                        <TrendingUp className="w-3 h-3" />
+                        {((parseFloat(product.price.toString()) - parseFloat((product as any).costPrice)) / parseFloat(product.price.toString()) * 100).toFixed(0)}% Margin
+                      </span>
+                    )}
                   </div>
 
                   {/* Actions */}

@@ -27,6 +27,7 @@ export default function ProductCreate() {
     description: "",
     sku: "",
     price: "",
+    costPrice: "",
     quantity: "",
     categoryId: "",
   });
@@ -47,6 +48,7 @@ export default function ProductCreate() {
       description: formData.description,
       sku: formData.sku,
       price: formData.price,
+      costPrice: formData.costPrice,
       categoryId: formData.categoryId ? parseInt(formData.categoryId) : undefined,
     });
   };
@@ -161,6 +163,36 @@ export default function ProductCreate() {
                       }
                       className="border-border/50 focus:border-primary"
                     />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Cost per item
+                    </label>
+                    <Input
+                      type="number"
+                      placeholder="0.00"
+                      value={formData.costPrice}
+                      onChange={(e) =>
+                        setFormData({ ...formData, costPrice: e.target.value })
+                      }
+                      className="border-border/50 focus:border-primary"
+                    />
+                    <p className="text-[11px] text-muted-foreground mt-1.5">
+                      Customers won't see this
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Profit
+                    </label>
+                    <div className="h-10 flex items-center px-3 rounded-md bg-accent/5 border border-border/50 text-sm text-foreground/60">
+                      {formData.price && formData.costPrice 
+                        ? `$${(parseFloat(formData.price) - parseFloat(formData.costPrice)).toFixed(2)} (${((parseFloat(formData.price) - parseFloat(formData.costPrice)) / parseFloat(formData.price) * 100).toFixed(1)}% margin)`
+                        : "-"}
+                    </div>
                   </div>
                 </div>
                 <div>

@@ -102,6 +102,7 @@ export const products = pgTable("products", {
   shortDescription: varchar("short_description", { length: 500 }),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
   compareAtPrice: numeric("compare_at_price", { precision: 10, scale: 2 }),
+  costPrice: numeric("cost_price", { precision: 10, scale: 2 }).default("0.00").notNull(),
   sku: varchar("sku", { length: 255 }),
   barcode: varchar("barcode", { length: 255 }),
   quantity: integer("quantity").default(0),

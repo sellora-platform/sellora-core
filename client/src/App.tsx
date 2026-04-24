@@ -14,6 +14,7 @@ import Discounts from "./pages/Discounts";
 import Settings from "./pages/Settings";
 import Storefront from "./pages/Storefront";
 import ProductCreate from "./pages/ProductCreate";
+import ProductEdit from "./pages/ProductEdit";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Onboarding from "./pages/Onboarding";
@@ -109,6 +110,7 @@ function Router() {
       <Route path={"/ai-assistant"} component={AIAssistant} />
       <Route path={"/products"} component={Products} />
       <Route path={"/products/new"} component={ProductCreate} />
+      <Route path={"/products/:id/edit"} component={ProductEdit} />
       <Route path={"/orders"} component={Orders} />
       <Route path={"/customers"} component={Customers} />
       <Route path={"/discounts"} component={Discounts} />
