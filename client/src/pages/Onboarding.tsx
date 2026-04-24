@@ -115,29 +115,32 @@ export default function Onboarding() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold text-foreground mb-2">
-                  Store URL
+                  Free Sellora Address
                 </h2>
                 <p className="text-foreground/60 mb-4">
-                  Choose your store's web address
+                  Choose a temporary web address. <br />
+                  <span className="text-primary font-medium">Don't worry, you can connect your custom domain (like wazewear.com) later!</span>
                 </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  Store Slug *
+                  Store ID (Internal Name) *
                 </label>
-                <div className="flex items-center gap-2">
-                  <span className="text-foreground/60">Sellora.com/</span>
+                <div className="flex items-center rounded-lg border border-border/50 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary overflow-hidden h-12 bg-background shadow-sm transition-all">
                   <Input
                     placeholder="my-store"
                     value={formData.slug}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        slug: e.target.value.toLowerCase().replace(/\s+/g, "-"),
+                        slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
                       })
                     }
-                    className="border-border/50 focus:border-primary h-12 flex-1"
+                    className="border-0 focus-visible:ring-0 h-full flex-1 rounded-none px-4 text-base"
                   />
+                  <div className="bg-accent/5 px-4 h-full flex items-center border-l border-border/50">
+                    <span className="text-foreground/50 font-medium whitespace-nowrap">.sellora.com</span>
+                  </div>
                 </div>
               </div>
               <div className="flex gap-3">
