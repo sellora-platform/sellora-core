@@ -126,16 +126,16 @@ export default function Onboarding() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold text-foreground mb-2">
-                  Free Sellora Address
+                  Your Free Store Address
                 </h2>
                 <p className="text-foreground/60 mb-4">
-                  Choose a temporary web address. <br />
-                  <span className="text-primary font-medium">Don't worry, you can connect your custom domain (like wazewear.com) later!</span>
+                  Pick a unique name for your store's web address. <br />
+                  <span className="text-primary font-medium">You can connect your own domain (like mystore.com) anytime later!</span>
                 </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  Store ID (Internal Name) *
+                  Store Address *
                 </label>
                 <div className="flex items-center rounded-lg border border-border/50 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary overflow-hidden h-12 bg-background shadow-sm transition-all">
                   <Input
@@ -150,9 +150,14 @@ export default function Onboarding() {
                     className="border-0 focus-visible:ring-0 h-full flex-1 rounded-none px-4 text-base"
                   />
                   <div className="bg-accent/5 px-4 h-full flex items-center border-l border-border/50">
-                    <span className="text-foreground/50 font-medium whitespace-nowrap">.sellora.com</span>
+                    <span className="text-foreground/50 font-medium whitespace-nowrap">.raaenai.com</span>
                   </div>
                 </div>
+                {formData.slug && (
+                  <p className="mt-2 text-sm text-foreground/50">
+                    Your store will be live at: <span className="text-primary font-semibold">{formData.slug}.raaenai.com</span>
+                  </p>
+                )}
               </div>
               <div className="flex gap-3">
                 <Button

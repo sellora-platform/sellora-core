@@ -27,23 +27,44 @@ import Register from "./pages/Register";
 import { useState, useEffect } from "react";
 
 function Router() {
-  const [hostname] = useState(window.location.hostname);
+  const hostname = window.location.hostname;
   
-  // Define our core platform domains that should see the Admin/Landing pages
+  // Extract subdomain if on raaenai.com (e.g. "wazewear" from "wazewear.raaenai.com")
+  const PLATFORM_ROOT = "raaenai.com";
+  const isExactPlatformDomain = hostname === PLATFORM_ROOT || hostname === `www.${PLATFORM_ROOT}`;
+  const isSubdomainOfPlatform = !isExactPlatformDomain && hostname.endsWith(`.${PLATFORM_ROOT}`);
+  const storeSubdomain = isSubdomainOfPlatform 
+    ? hostname.replace(`.${PLATFORM_ROOT}`, "") 
+    : null;
+
+  // Core platform domains: localhost, vercel.app, or the root raaenai.com
   const isPlatformDomain = 
     hostname === "localhost" || 
     hostname === "127.0.0.1" || 
     hostname.includes("vercel.app") || 
-    hostname === "sellora.com";
+    isExactPlatformDomain;
 
-  // If this is a custom domain (e.g. wazewear.com), ONLY show the storefront routes
+  // CASE 1: Subdomain of platform (e.g. wazewear.raaenai.com) → Storefront
+  if (storeSubdomain) {
+    return (
+      <Switch>
+        <Route path={"/"}>
+          {() => <Storefront params={{ slug: storeSubdomain }} />}
+        </Route>
+        <Route path={"/cart"} component={Cart} />
+        <Route path={"/checkout"} component={Checkout} />
+        <Route component={NotFound} />
+      </Switch>
+    );
+  }
+
+  // CASE 2: Custom domain (e.g. wazewear.com) → Storefront via domain lookup
   if (!isPlatformDomain) {
     return (
       <Switch>
         <Route path={"/"} component={Storefront} />
         <Route path={"/cart"} component={Cart} />
         <Route path={"/checkout"} component={Checkout} />
-        {/* We can pass the domain to the Storefront component so it knows which store to load */}
         <Route component={NotFound} />
       </Switch>
     );

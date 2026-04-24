@@ -240,7 +240,7 @@ function DashboardLayoutContent({
                     if (store?.customDomain) {
                       window.open(`https://${store.customDomain}`, "_blank");
                     } else if (store?.slug) {
-                      window.open(`/store/${store.slug}`, "_blank");
+                      window.open(`https://${store.slug}.raaenai.com`, "_blank");
                     }
                   }}
                   className="cursor-pointer"
