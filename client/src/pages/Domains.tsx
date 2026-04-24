@@ -142,155 +142,98 @@ export default function DomainsPage() {
                 </div>
               </div>
 
-              <div className="p-8 space-y-10">
-                {/* Steps Guide */}
-                <div className="grid lg:grid-cols-5 gap-10">
-                  <div className="lg:col-span-2 space-y-6">
-                    <div className="space-y-1">
-                      <h4 className="font-bold text-xl flex items-center gap-2">
-                        <ShieldCheck className="w-6 h-6 text-primary" />
-                        Verification Required
-                      </h4>
-                      <p className="text-sm text-foreground/60 leading-relaxed">
-                        To prove you own <b>{store?.customDomain}</b>, you must complete the steps below.
-                      </p>
-                    </div>
-                    
-                    <div className="space-y-8 relative before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-border/50">
-                      <div className="relative pl-10">
-                        <div className="absolute left-0 top-0 w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shadow-md">1</div>
-                        <h5 className="font-bold text-sm mb-1 text-foreground">Ownership Verification</h5>
-                        <p className="text-[13px] text-foreground/60 leading-relaxed mb-3">
-                          Add a TXT record to your DNS settings so we can verify you own this domain.
-                        </p>
-                        <div className="p-3 rounded-lg bg-accent/5 border border-border/50 flex flex-col gap-1.5">
-                          <span className="text-[10px] uppercase font-bold text-foreground/40 tracking-wider">TXT Host: <code className="text-foreground/80 lowercase">sellora-verify</code></span>
-                          <div className="flex justify-between items-center gap-2">
-                            <code className="text-[11px] font-bold text-primary break-all">{verificationToken}</code>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => {
-                              navigator.clipboard.writeText(verificationToken);
-                              toast.success("Verification token copied");
-                            }}>
-                              <Copy className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
+              <div className="p-8 space-y-8">
+                <div className="space-y-4">
+                  <h4 className="font-bold text-lg text-foreground">Connect your domain</h4>
+                  <p className="text-sm text-foreground/60 leading-relaxed max-w-2xl">
+                    To connect your domain, log in to your domain provider (like Namecheap) and add these records to your DNS settings. After saving, click verify below.
+                  </p>
+                </div>
 
-                      <div className="relative pl-10">
-                        <div className="absolute left-0 top-0 w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shadow-md">2</div>
-                        <h5 className="font-bold text-sm mb-1 text-foreground">A Record Setup</h5>
-                        <p className="text-[13px] text-foreground/60 leading-relaxed">
-                          Point your domain to our global network by adding an A record.
-                        </p>
-                      </div>
+                {/* DNS Records Table */}
+                <div className="border border-border/50 rounded-2xl overflow-hidden bg-accent/5">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-background border-b border-border/50">
+                        <th className="px-6 py-4 text-[11px] font-bold text-foreground/40 uppercase tracking-wider">Type</th>
+                        <th className="px-6 py-4 text-[11px] font-bold text-foreground/40 uppercase tracking-wider">Host</th>
+                        <th className="px-6 py-4 text-[11px] font-bold text-foreground/40 uppercase tracking-wider">Value</th>
+                        <th className="px-6 py-4 text-[11px] font-bold text-foreground/40 uppercase tracking-wider text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/50 bg-background/50">
+                      {/* A Record */}
+                      <tr>
+                        <td className="px-6 py-5">
+                          <span className="px-2 py-1 rounded bg-primary/10 text-primary text-[11px] font-bold">A</span>
+                        </td>
+                        <td className="px-6 py-5 text-sm font-mono text-foreground">@</td>
+                        <td className="px-6 py-5 text-sm font-mono font-bold text-foreground">76.76.21.21</td>
+                        <td className="px-6 py-5 text-right">
+                          <Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => {
+                            navigator.clipboard.writeText("76.76.21.21");
+                            toast.success("IP copied");
+                          }}>
+                            <Copy className="w-3.5 h-3.5" />
+                          </Button>
+                        </td>
+                      </tr>
+                      {/* CNAME Record */}
+                      <tr>
+                        <td className="px-6 py-5">
+                          <span className="px-2 py-1 rounded bg-primary/10 text-primary text-[11px] font-bold">CNAME</span>
+                        </td>
+                        <td className="px-6 py-5 text-sm font-mono text-foreground">www</td>
+                        <td className="px-6 py-5 text-sm font-mono font-bold text-foreground">cname.vercel-dns.com</td>
+                        <td className="px-6 py-5 text-right">
+                          <Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => {
+                            navigator.clipboard.writeText("cname.vercel-dns.com");
+                            toast.success("CNAME copied");
+                          }}>
+                            <Copy className="w-3.5 h-3.5" />
+                          </Button>
+                        </td>
+                      </tr>
+                      {/* TXT Record */}
+                      <tr>
+                        <td className="px-6 py-5">
+                          <span className="px-2 py-1 rounded bg-primary/10 text-primary text-[11px] font-bold">TXT</span>
+                        </td>
+                        <td className="px-6 py-5 text-sm font-mono text-foreground">sellora-verify</td>
+                        <td className="px-6 py-5 text-sm font-mono font-bold text-foreground truncate max-w-[200px]">{verificationToken}</td>
+                        <td className="px-6 py-5 text-right">
+                          <Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => {
+                            navigator.clipboard.writeText(verificationToken);
+                            toast.success("Token copied");
+                          }}>
+                            <Copy className="w-3.5 h-3.5" />
+                          </Button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
 
-                      <div className="relative pl-10">
-                        <div className="absolute left-0 top-0 w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shadow-md">3</div>
-                        <h5 className="font-bold text-sm mb-1 text-foreground">Verify & Go Live</h5>
-                        <p className="text-[13px] text-foreground/60 leading-relaxed">
-                          Once DNS records are saved, click verify. Propagation can take up to 24 hours.
-                        </p>
-                      </div>
-                    </div>
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                  <Button 
+                    className="flex-1 gap-2 h-12 shadow-lg shadow-primary/10" 
+                    onClick={handleVerify}
+                    disabled={isVerifying}
+                  >
+                    {isVerifying ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                    Verify Connection
+                  </Button>
+                  <Button variant="outline" className="flex-1 h-12 gap-2" onClick={() => setShowGuide(true)}>
+                    <ExternalLink className="w-4 h-4" />
+                    Detailed Setup Guide
+                  </Button>
+                </div>
 
-                    <Button 
-                      className="w-full gap-2 h-12 shadow-lg shadow-primary/10" 
-                      onClick={handleVerify}
-                      disabled={isVerifying}
-                    >
-                      {isVerifying ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                      Verify Connection
-                    </Button>
-                  </div>
-
-                  <div className="lg:col-span-3 space-y-6">
-                    <div className="bg-accent/5 rounded-2xl border border-border/50 p-7 space-y-6">
-                      <h4 className="font-bold text-xs uppercase tracking-wider text-foreground/40 flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary/40" />
-                        Required DNS Records
-                      </h4>
-                      
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <div className="p-4 rounded-xl bg-background border border-border/50 space-y-3 shadow-sm">
-                          <div className="flex justify-between items-center text-[10px] font-bold text-foreground/40 uppercase">
-                            <span>Type</span>
-                            <span>Host</span>
-                          </div>
-                          <div className="flex justify-between items-center text-sm font-mono">
-                            <span className="text-primary font-bold">A Record</span>
-                            <span className="font-bold">@</span>
-                          </div>
-                          <div className="pt-3 border-t border-border/30 flex justify-between items-center">
-                            <code className="text-base font-bold text-foreground tracking-tight">76.76.21.21</code>
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
-                              navigator.clipboard.writeText("76.76.21.21");
-                              toast.success("IP copied to clipboard");
-                            }}>
-                              <Copy className="w-3.5 h-3.5" />
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div className="p-4 rounded-xl bg-background border border-border/50 space-y-3 shadow-sm">
-                          <div className="flex justify-between items-center text-[10px] font-bold text-foreground/40 uppercase">
-                            <span>Type</span>
-                            <span>Host</span>
-                          </div>
-                          <div className="flex justify-between items-center text-sm font-mono">
-                            <span className="text-primary font-bold">CNAME</span>
-                            <span className="font-bold">www</span>
-                          </div>
-                          <div className="pt-3 border-t border-border/30 flex justify-between items-center">
-                            <code className="text-[12px] font-bold text-foreground truncate max-w-[120px]">cname.vercel-dns.com</code>
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
-                              navigator.clipboard.writeText("cname.vercel-dns.com");
-                              toast.success("CNAME copied to clipboard");
-                            }}>
-                              <Copy className="w-3.5 h-3.5" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 pt-2">
-                        <h5 className="text-[11px] font-bold text-foreground/50 uppercase tracking-widest">Setup Tutorial</h5>
-                        <div className="grid gap-3">
-                          <button onClick={() => setShowGuide(true)} className="flex items-center justify-between p-4 rounded-xl bg-background border border-border/50 hover:border-primary/50 hover:shadow-md transition-all group text-left w-full">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-lg bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors text-primary font-bold text-xs italic">nc</div>
-                              <div>
-                                <h6 className="font-bold text-sm text-foreground">Namecheap Setup</h6>
-                                <p className="text-[11px] text-foreground/50">Follow the step-by-step guide</p>
-                              </div>
-                            </div>
-                            <ArrowRight className="w-4 h-4 text-foreground/20 group-hover:text-primary transition-all group-hover:translate-x-1" />
-                          </button>
-
-                          <button onClick={() => setShowGuide(true)} className="flex items-center justify-between p-4 rounded-xl bg-background border border-border/50 hover:border-primary/50 hover:shadow-md transition-all group text-left w-full">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-lg bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors text-primary font-bold text-xs italic">gd</div>
-                              <div>
-                                <h6 className="font-bold text-sm text-foreground">GoDaddy Setup</h6>
-                                <p className="text-[11px] text-foreground/50">Configure your GoDaddy DNS</p>
-                              </div>
-                            </div>
-                            <ArrowRight className="w-4 h-4 text-foreground/20 group-hover:text-primary transition-all group-hover:translate-x-1" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 p-5 rounded-2xl bg-amber-500/5 border border-amber-500/10">
-                      <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5 shadow-sm" />
-                      <div className="space-y-1">
-                        <p className="text-xs font-bold text-amber-700/80">Propagation Period</p>
-                        <p className="text-[11px] text-amber-600/70 leading-relaxed">
-                          DNS changes can take anywhere from a few minutes to 24 hours to take effect globally. If verification fails, please try again in an hour.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                <div className="flex items-start gap-3 p-5 rounded-2xl bg-amber-500/5 border border-amber-500/10">
+                  <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-600/70 leading-relaxed font-medium">
+                    Propagation can take up to 24 hours. If verification fails, please check your records and try again in a few minutes.
+                  </p>
                 </div>
               </div>
             </Card>
