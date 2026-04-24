@@ -81,7 +81,10 @@ export default function Register() {
         return;
       }
 
-      // Redirect to verification on success
+      // Refresh auth state to detect the new session
+      await refresh();
+      
+      // Redirect to verification page on success
       setLocation("/verify-email");
     } catch {
       setError("Network error. Please try again.");

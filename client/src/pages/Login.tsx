@@ -79,7 +79,10 @@ export default function Login() {
         return;
       }
 
-      // Redirect to dashboard on success
+      // Refresh auth state to detect the new session
+      await refresh();
+      
+      // Redirect to dashboard on success (App.tsx will handle verification/billing redirects)
       setLocation("/dashboard");
     } catch {
       setError("Network error. Please try again.");
