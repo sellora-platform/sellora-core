@@ -39,14 +39,6 @@ function Router() {
   const { user, loading } = useAuth();
   const [location, setLocation] = useLocation();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-  
   // Extract subdomain if on raaenai.com (e.g. "wazewear" from "wazewear.raaenai.com")
   const PLATFORM_ROOT = "raaenai.com";
   const isExactPlatformDomain = hostname === PLATFORM_ROOT || hostname === `www.${PLATFORM_ROOT}`;
@@ -86,6 +78,14 @@ function Router() {
       }
     }
   }, [user, loading, location, setLocation]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   // Core platform domains: localhost, vercel.app, or the root raaenai.com
   const isPlatformDomain = 
