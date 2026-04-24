@@ -51,14 +51,14 @@ export function registerAuthRoutes(app: Express) {
       // Hash password and create user
       const passwordHash = await hashPassword(password);
 
-      const result = await db.insert(users).values({
+      const [newUser] = await db.insert(users).values({
         email,
         name: name || email.split("@")[0],
         passwordHash,
         role: "user",
-      });
+      }).returning();
 
-      const userId = Number((result as any).insertId ?? (result as any)[0]?.id);
+      const userId = newUser.id;
 
       // Create session
       const token = await createSessionToken({
