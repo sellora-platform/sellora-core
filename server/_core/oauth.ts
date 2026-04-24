@@ -86,16 +86,23 @@ export function registerAuthRoutes(app: Express) {
       const userId = newUser.id;
 
       // Create session
-      const token = await createSessionToken({
-        id: userId,
-        email,
-        name: name || email.split("@")[0],
-        role: "user",
-        isVerified: false,
-        plan: "free",
-        subscriptionStatus: "trialing",
-        trialEndsAt: trialEndsAt.toISOString(),
-      });
+      let token: string;
+      try {
+        token = await createSessionToken({
+          id: newUser.id,
+          email: newUser.email!,
+          name: newUser.name,
+          role: "user",
+          isVerified: false,
+          plan: "free",
+          subscriptionStatus: "trialing",
+          trialEndsAt: trialEndsAt.toISOString(),
+        });
+      } catch (tokenError) {
+        console.error("[Auth] Token generation failed:", tokenError);
+        res.status(500).json({ error: "Session creation failed. Please try logging in." });
+        return;
+      }
 
       const cookieOpts = getSessionCookieOptions(req);
       res.cookie(SESSION_COOKIE_NAME, token, {
@@ -105,11 +112,20 @@ export function registerAuthRoutes(app: Express) {
 
       res.json({
         success: true,
-        user: { id: userId, email, name: name || email.split("@")[0], role: "user", isVerified: false },
+        user: { 
+          id: newUser.id, 
+          email: newUser.email, 
+          name: newUser.name, 
+          role: "user", 
+          isVerified: false,
+          plan: "free",
+          subscriptionStatus: "trialing",
+          trialEndsAt: trialEndsAt.toISOString()
+        },
       });
     } catch (error) {
       console.error("[Auth] Register error:", error);
-      res.status(500).json({ error: "Registration failed" });
+      res.status(500).json({ error: "Registration failed. This email might already be in use." });
     }
   });
 
