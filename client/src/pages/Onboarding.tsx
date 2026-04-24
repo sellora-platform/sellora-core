@@ -10,7 +10,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 export default function Onboarding() {
-  const { isAuthenticated, user, loading } = useAuth({ redirectOnUnauthenticated: true });
+  const { isAuthenticated, user, loading, logout } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
   const [step, setStep] = useState(1);
 
@@ -56,13 +56,20 @@ export default function Onboarding() {
     <div className="min-h-screen bg-gradient-to-br from-accent/5 via-background to-accent/5 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-2xl">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-3 mb-4">
+        <div className="flex items-center justify-between mb-12">
+          <div className="flex items-center gap-3">
             <Store className="w-8 h-8 text-primary" />
             <h1 className="text-4xl font-bold text-foreground">Sellora</h1>
           </div>
-          <p className="text-lg text-foreground/60">
-            Welcome, {user?.name}! Let's set up your store.
+          <Button variant="ghost" className="text-foreground/60 hover:text-foreground" onClick={() => logout()}>
+            Log out
+          </Button>
+        </div>
+        
+        <div className="text-center mb-12">
+          <h2 className="text-2xl font-semibold mb-2">Welcome, {user?.name}! Let's set up your store.</h2>
+          <p className="text-foreground/60 max-w-lg mx-auto">
+            Complete these 3 simple steps to launch your intelligent storefront. Our AI agents are ready to assist you.
           </p>
         </div>
 
