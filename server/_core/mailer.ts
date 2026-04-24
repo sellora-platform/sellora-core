@@ -16,19 +16,21 @@ export async function sendMail({ to, subject, html }: { to: string; subject: str
           "Authorization": `Bearer ${ENV.resendApiKey}`,
         },
         body: JSON.stringify({
-          from: "Sellora <onboarding@resend.dev>",
+          from: "Sellora <no-reply@raaenai.com>",
           to,
           subject,
           html,
         }),
       });
 
+      const responseData = await res.json();
+
       if (!res.ok) {
-        const error = await res.json();
-        console.error("[Mailer] Resend API error:", error);
+        console.error("[Mailer] Resend API error details:", JSON.stringify(responseData, null, 2));
         return false;
       }
 
+      console.log(`[Mailer] Email sent successfully to ${to}. ID: ${responseData.id}`);
       return true;
     } catch (error) {
       console.error("[Mailer] Network error:", error);
