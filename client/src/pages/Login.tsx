@@ -41,7 +41,7 @@ export default function Login() {
     const initGoogle = () => {
       if (window.google) {
         window.google.accounts.id.initialize({
-          client_id: "YOUR_GOOGLE_CLIENT_ID", 
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID", 
           callback: handleGoogleCallback,
         });
         const btn = document.getElementById("google-login-btn");
@@ -49,7 +49,7 @@ export default function Login() {
           window.google.accounts.id.renderButton(btn, { 
             theme: "outline", 
             size: "large", 
-            width: "100%" 
+            width: 400 
           });
         }
       } else {

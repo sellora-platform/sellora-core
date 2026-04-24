@@ -92,6 +92,9 @@ export function registerAuthRoutes(app: Express) {
         name: name || email.split("@")[0],
         role: "user",
         isVerified: false,
+        plan: "free",
+        subscriptionStatus: "trialing",
+        trialEndsAt: trialEndsAt.toISOString(),
       });
 
       const cookieOpts = getSessionCookieOptions(req);
@@ -237,8 +240,11 @@ export function registerAuthRoutes(app: Express) {
         id: user.id,
         email: user.email!,
         name: user.name,
-        role: user.role,
-        isVerified: user.isVerified,
+        role: user.role as "user" | "admin",
+        isVerified: user.isVerified ?? false,
+        plan: user.plan ?? "free",
+        subscriptionStatus: user.subscriptionStatus ?? "trialing",
+        trialEndsAt: user.trialEndsAt ? user.trialEndsAt.toISOString() : null,
       });
 
       const cookieOpts = getSessionCookieOptions(req);
