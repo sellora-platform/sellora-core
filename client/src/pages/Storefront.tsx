@@ -19,7 +19,7 @@ import { trpc } from "@/lib/trpc";
 import SectionRenderer from "@/storefront/SectionRenderer";
 
 export default function Storefront({ params }: { params?: { slug?: string } }) {
-  const [, setLocation] = useLocation();
+  const [locationPath] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState<any[]>([]);
@@ -90,6 +90,17 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
     { themeId: themeId || 0 },
     { enabled: !!themeId }
   );
+
+  const getPageKey = () => {
+    if (locationPath.endsWith("/products")) return "product";
+    if (locationPath.endsWith("/cart")) return "cart";
+    if (locationPath.endsWith("/checkout")) return "checkout";
+    return "index";
+  };
+  const pageKey = getPageKey();
+  
+  const themeSections = theme?.sections as Record<string, any>;
+  const sectionsToRender = previewSections || (themeSections?.[pageKey] || []);
 
   const products = productsQuery.data || [];
   const theme = themeId ? themeByIdQuery.data : themeByStoreQuery.data;
@@ -200,7 +211,7 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
 
       {/* Dynamic Sections */}
       <SectionRenderer 
-        sections={(previewSections || theme?.sections) as any || []} 
+        sections={sectionsToRender as any || []} 
         products={products} 
       />
 
