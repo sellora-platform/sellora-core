@@ -46,6 +46,32 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <div className="space-y-8">
+        {/* Trial Banner */}
+        {user?.plan === "free" && user?.trialEndsAt && new Date(user.trialEndsAt) > new Date() && (
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-700 p-8 shadow-2xl shadow-blue-500/20">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <Clock className="w-32 h-32" />
+            </div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="text-center md:text-left">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold mb-3 backdrop-blur-md">
+                  <Clock className="w-3 h-3" />
+                  FREE TRIAL ACTIVE
+                </div>
+                <h2 className="text-3xl font-bold text-white mb-2">You have 7 days of free access left!</h2>
+                <p className="text-blue-100 text-lg">Experience all premium AI features. No credit card required during trial.</p>
+              </div>
+              <Button 
+                onClick={() => setLocation("/billing")}
+                size="lg"
+                className="bg-white text-blue-700 hover:bg-blue-50 font-bold px-8 h-14 rounded-xl shadow-xl transition-all hover:scale-105 active:scale-95"
+              >
+                Choose Your Plan
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Premium Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -264,6 +290,58 @@ export default function Dashboard() {
             </div>
           </Card>
         </div>
+
+        {/* Premium Upgrade Card */}
+        {user?.plan === "free" && (
+          <Card className="relative overflow-hidden border-border/50 shadow-2xl p-0 group">
+            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
+              <Zap className="w-64 h-64 text-primary" />
+            </div>
+            <div className="flex flex-col md:flex-row">
+              <div className="p-8 md:p-12 flex-1">
+                <div className="flex items-center gap-2 text-primary font-bold mb-4">
+                  <Sparkles className="w-5 h-5" />
+                  LIMITED TIME OFFER
+                </div>
+                <h2 className="text-4xl font-extrabold text-foreground mb-6 leading-tight">
+                  Unlock the full power of <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">Sellora Growth</span>
+                </h2>
+                <ul className="space-y-4 mb-8">
+                  {[
+                    "Unlimited AI Design Generations",
+                    "Custom Domain Integration",
+                    "Advanced Profit Analytics",
+                    "Dedicated Account Manager",
+                    "Priority 24/7 Support",
+                  ].map((feature, i) => (
+                    <li key={i} className="flex items-center gap-3 text-foreground/70 font-medium">
+                      <div className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                        <ArrowUpRight className="w-3 h-3" />
+                      </div>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Button 
+                  onClick={() => setLocation("/billing")}
+                  className="h-14 px-10 text-lg font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all hover:-translate-y-1"
+                >
+                  Get Started for $19/mo
+                </Button>
+              </div>
+              <div className="bg-accent/5 p-8 md:p-12 flex flex-col justify-center items-center text-center border-l border-border/50 min-w-[300px]">
+                <p className="text-foreground/40 font-bold uppercase tracking-widest text-xs mb-2">MOST POPULAR</p>
+                <div className="text-6xl font-black text-foreground mb-4">$19<span className="text-2xl text-foreground/50">/mo</span></div>
+                <p className="text-foreground/60 max-w-[200px] text-sm">Save 20% compared to monthly billing</p>
+                <div className="mt-8 pt-8 border-t border-border/50 w-full">
+                  <p className="text-foreground/80 font-semibold mb-4 italic">"This platform paid for itself in the first 2 days!"</p>
+                  <p className="text-xs text-foreground/40 font-bold">— Happy Merchant</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
       </div>
     </DashboardLayout>
   );
