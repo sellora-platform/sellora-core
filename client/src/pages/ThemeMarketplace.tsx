@@ -1,12 +1,37 @@
+import { useState } from "react";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Palette, Eye, Check, Loader2, Sparkles, Layout, Zap, ShoppingBag, ArrowLeft, Plus } from "lucide-react";
-import { useState } from "react";
-import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Palette, 
+  Eye, 
+  Check, 
+  Loader2, 
+  Sparkles, 
+  Layout, 
+  Zap, 
+  ShoppingBag, 
+  ArrowLeft, 
+  Plus, 
+  Search,
+  Star,
+  X,
+  CheckCircle2,
+  ArrowRight
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const themes = [
   {
@@ -93,9 +118,12 @@ const themes = [
 ];
 
 export default function ThemeMarketplace() {
-  const { isAuthenticated, user } = useAuth({ redirectOnUnauthenticated: true });
+  const { isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
   const [installingId, setInstallingId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All Themes");
+  const [selectedTheme, setSelectedTheme] = useState<any>(null);
   
   const { data: store } = trpc.stores.getMyStore.useQuery();
   const { data: marketplaceThemes, isLoading: themesLoading } = trpc.themes.listMarketplace.useQuery();
@@ -145,7 +173,12 @@ export default function ThemeMarketplace() {
   };
 
   const activeThemeName = getMyThemeQuery.data?.name;
-  const allThemes = [...(marketplaceThemes || [])];
+  
+  const filteredThemes = (marketplaceThemes || []).filter(theme => {
+    const matchesSearch = theme.name.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = selectedCategory === "All Themes" || theme.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <DashboardLayout>
@@ -184,20 +217,33 @@ export default function ThemeMarketplace() {
           </div>
         </div>
 
-        {/* Categories Bar */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {["All Themes", "Fashion", "Electronics", "Grocery", "Beauty", "Home Decor"].map((cat) => (
-            <button
-              key={cat}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                cat === "All Themes" 
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
-                : "bg-card border hover:border-primary/50 text-foreground/70"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        {/* Search and Filters Bar */}
+        <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide w-full md:w-auto">
+            {["All Themes", "Fashion", "Electronics", "Grocery", "Beauty", "Home Decor"].map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-5 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap ${
+                  selectedCategory === cat 
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105" 
+                  : "bg-card border border-border/50 hover:border-primary/50 text-foreground/70 hover:bg-muted/50"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          <div className="relative w-full md:w-[300px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search themes..." 
+              className="pl-10 h-11 bg-card border-border/50 rounded-xl focus:ring-primary"
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -205,13 +251,16 @@ export default function ThemeMarketplace() {
             <div className="col-span-full flex justify-center py-20">
               <Loader2 className="w-10 h-10 animate-spin text-primary" />
             </div>
-          ) : allThemes.length === 0 ? (
-            <Card className="col-span-full p-20 text-center border-dashed">
-              <ShoppingBag className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
-              <p className="text-muted-foreground font-medium italic">No themes in the marketplace yet. Be the first to publish one!</p>
+          ) : filteredThemes.length === 0 ? (
+            <Card className="col-span-full p-20 text-center border-dashed border-border/50 rounded-[2.5rem] bg-card/50 backdrop-blur-sm">
+              <div className="inline-flex p-6 bg-muted rounded-full mb-6">
+                <Search className="w-12 h-12 text-muted-foreground/30" />
+              </div>
+              <p className="text-xl font-bold text-foreground">No themes found</p>
+              <p className="text-muted-foreground italic">Try adjusting your filters or search terms.</p>
             </Card>
           ) : (
-            allThemes.map((theme) => {
+            filteredThemes.map((theme) => {
               const isInstalling = installingId === theme.id.toString();
               
               return (
@@ -231,9 +280,13 @@ export default function ThemeMarketplace() {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
                       <div className="flex gap-2 w-full">
-                        <Button variant="secondary" className="flex-1 bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border-white/20 gap-2">
+                        <Button 
+                          onClick={() => setSelectedTheme(theme)}
+                          variant="secondary" 
+                          className="flex-1 bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border-white/20 gap-2"
+                        >
                           <Eye className="w-4 h-4" />
-                          Live Preview
+                          View Details
                         </Button>
                       </div>
                     </div>
@@ -339,6 +392,92 @@ export default function ThemeMarketplace() {
           <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
         </div>
       </div>
+
+      {/* Theme Details Dialog */}
+      <Dialog open={!!selectedTheme} onOpenChange={(open) => !open && setSelectedTheme(null)}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl">
+          {selectedTheme && (
+            <div className="grid md:grid-cols-2 h-full max-h-[90vh]">
+              <div className="bg-muted relative">
+                {selectedTheme.previewImage ? (
+                  <img 
+                    src={selectedTheme.previewImage} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+                    <Palette className="w-20 h-20 opacity-20" />
+                  </div>
+                )}
+                <button 
+                  onClick={() => setSelectedTheme(null)}
+                  className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white md:hidden"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="p-8 md:p-12 space-y-8 overflow-y-auto bg-white">
+                <div className="space-y-4">
+                  <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1">{selectedTheme.category || "General"}</Badge>
+                  <DialogTitle className="text-4xl font-black tracking-tight leading-tight">{selectedTheme.name}</DialogTitle>
+                  <div className="text-2xl font-bold text-primary">
+                    {parseFloat(selectedTheme.price || "0") === 0 ? "Free" : `$${selectedTheme.price}`}
+                  </div>
+                </div>
+
+                <DialogDescription className="text-lg leading-relaxed text-muted-foreground">
+                  {selectedTheme.description || "Transform your store with this high-performance, beautifully designed theme. Built for conversion, speed, and premium aesthetics."}
+                </DialogDescription>
+
+                <div className="space-y-4">
+                  <h4 className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Key Highlights</h4>
+                  <ul className="grid grid-cols-1 gap-3">
+                    {[
+                      "Dynamic Sections Architecture",
+                      "SEO Optimized Frontend",
+                      "Mobile-First Responsive Layout",
+                      "Fully Customizable in Theme Editor",
+                      "Premium Typography & UI Components"
+                    ].map(f => (
+                      <li key={f} className="flex items-center gap-3 text-sm font-medium">
+                        <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center">
+                          <Check className="w-3 h-3 text-green-500" />
+                        </div>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="flex gap-4 pt-8">
+                  <Button 
+                    onClick={() => {
+                      handleInstall({
+                        ...selectedTheme,
+                        id: selectedTheme.id.toString(),
+                        settings: { 
+                          sections: selectedTheme.sections, 
+                          colors: selectedTheme.colors, 
+                          typography: selectedTheme.typography 
+                        }
+                      } as any);
+                      setSelectedTheme(null);
+                    }}
+                    disabled={installingId === selectedTheme.id.toString()}
+                    className="flex-1 h-14 font-bold text-lg rounded-2xl shadow-xl shadow-primary/20 gap-2"
+                  >
+                    {installingId === selectedTheme.id.toString() ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <>Add to My Library <ArrowRight className="w-5 h-5" /></>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
