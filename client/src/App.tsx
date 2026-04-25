@@ -104,11 +104,10 @@ function Router() {
   if (storeSubdomain) {
     return (
       <Switch>
-        <Route path={"/"}>
-          {() => <Storefront params={{ slug: storeSubdomain }} />}
-        </Route>
-        <Route path={"/cart"} component={Cart} />
-        <Route path={"/checkout"} component={Checkout} />
+        <Route path={"/"} component={() => <Storefront params={{ slug: storeSubdomain }} />} />
+        <Route path={"/products"} component={() => <Storefront params={{ slug: storeSubdomain }} />} />
+        <Route path={"/cart"} component={() => <Storefront params={{ slug: storeSubdomain }} />} />
+        <Route path={"/checkout"} component={() => <Storefront params={{ slug: storeSubdomain }} />} />
         <Route component={NotFound} />
       </Switch>
     );
@@ -119,8 +118,9 @@ function Router() {
     return (
       <Switch>
         <Route path={"/"} component={Storefront} />
-        <Route path={"/cart"} component={Cart} />
-        <Route path={"/checkout"} component={Checkout} />
+        <Route path={"/products"} component={Storefront} />
+        <Route path={"/cart"} component={Storefront} />
+        <Route path={"/checkout"} component={Storefront} />
         <Route component={NotFound} />
       </Switch>
     );
@@ -150,9 +150,10 @@ function Router() {
       <Route path={"/settings"} component={Settings} />
       <Route path={"/domains"} component={Domains} />
       <Route path={"/store/:slug"} component={Storefront} />
+      <Route path={"/store/:slug/products"} component={Storefront} />
+      <Route path={"/store/:slug/cart"} component={Storefront} />
+      <Route path={"/store/:slug/checkout"} component={Storefront} />
       <Route path={"/storefront"} component={Storefront} />
-      <Route path={"/cart"} component={Cart} />
-      <Route path={"/checkout"} component={Checkout} />
       <Route path={"/onboarding"} component={Onboarding} />
       <Route path={"/marketplace"} component={Marketplace} />
       <Route path={"/themes"} component={ThemeManager} />
