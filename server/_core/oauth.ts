@@ -127,7 +127,10 @@ export function registerAuthRoutes(app: Express) {
       });
     } catch (error) {
       console.error("[Auth] Register error:", error);
-      res.status(500).json({ error: "Registration failed. This email might already be in use." });
+      res.status(500).json({ 
+        error: "Registration failed", 
+        details: error instanceof Error ? error.message : String(error) 
+      });
     }
   });
 
@@ -229,6 +232,7 @@ export function registerAuthRoutes(app: Express) {
       }
 
       // Find user
+      console.log(`[Auth] Attempting login for email: ${email}`);
       const [user] = await db
         .select()
         .from(users)
@@ -236,6 +240,7 @@ export function registerAuthRoutes(app: Express) {
         .limit(1);
 
       if (!user || !user.passwordHash) {
+        console.warn(`[Auth] Login failed: User not found or no password hash for ${email}`);
         res.status(401).json({ error: "Invalid email or password" });
         return;
       }
@@ -243,17 +248,24 @@ export function registerAuthRoutes(app: Express) {
       // Verify password
       const valid = await verifyPassword(password, user.passwordHash);
       if (!valid) {
+        console.warn(`[Auth] Login failed: Invalid password for ${email}`);
         res.status(401).json({ error: "Invalid email or password" });
         return;
       }
 
       // Update last signed in
-      await db
-        .update(users)
-        .set({ lastSignedIn: new Date() })
-        .where(eq(users.id, user.id));
+      try {
+        await db
+          .update(users)
+          .set({ lastSignedIn: new Date() })
+          .where(eq(users.id, user.id));
+      } catch (dbError) {
+        console.error("[Auth] Failed to update lastSignedIn:", dbError);
+        // Continue anyway as this is not critical
+      }
 
       // Create session
+      console.log(`[Auth] Creating session for user ID: ${user.id}`);
       let trialEndsAtStr: string | null = null;
       if (user.trialEndsAt) {
         try {
@@ -298,7 +310,10 @@ export function registerAuthRoutes(app: Express) {
       });
     } catch (error) {
       console.error("[Auth] Login error:", error);
-      res.status(500).json({ error: "Login failed" });
+      res.status(500).json({ 
+        error: "Login failed", 
+        details: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
