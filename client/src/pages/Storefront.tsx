@@ -45,6 +45,11 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
 
   const [previewSections, setPreviewSections] = useState<any[] | null>(null);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+  const [globalSettings, setGlobalSettings] = useState<any>({
+    primaryColor: "#000000",
+    backgroundColor: "#ffffff",
+    fontFamily: "Inter"
+  });
 
   // Listen for editor updates
   useEffect(() => {
@@ -52,6 +57,9 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
       if (event.data?.type === "THEME_UPDATE") {
         setPreviewSections(event.data.sections);
         setSelectedSectionId(event.data.selectedSectionId);
+        if (event.data.globalSettings) {
+          setGlobalSettings(event.data.globalSettings);
+        }
       }
     };
     window.addEventListener("message", handleMessage);
@@ -173,9 +181,16 @@ function StorefrontContent({
   const [search, setSearch] = useState("");
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Visual Selection Styles */}
+    <div className="min-h-screen bg-background storefront-container">
+      {/* Visual Selection & Global Theme Styles */}
       <style dangerouslySetInnerHTML={{ __html: `
+        :root {
+          --primary: ${globalSettings.primaryColor};
+          --background: ${globalSettings.backgroundColor};
+        }
+        .storefront-container {
+          font-family: '${globalSettings.fontFamily}', sans-serif;
+        }
         [data-section-id="${selectedSectionId}"] {
           outline: 3px solid #3b82f6 !important;
           outline-offset: -3px;

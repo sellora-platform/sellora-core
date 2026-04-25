@@ -23,6 +23,8 @@ import {
   Redo2,
   ArrowLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   MoreHorizontal,
   Box,
   MousePointer2,
@@ -86,7 +88,13 @@ export default function ThemeEditor() {
     index: [],
     product: [],
     cart: [],
-    checkout: []
+    checkout: [],
+  });
+  const [globalSettings, setGlobalSettings] = useState({
+    primaryColor: "#008060",
+    backgroundColor: "#ffffff",
+    textColor: "#1a1a1a",
+    fontFamily: "Inter"
   });
   const [history, setHistory] = useState<Record<string, Section[]>[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -160,10 +168,11 @@ export default function ThemeEditor() {
       previewRef.current.contentWindow.postMessage({ 
         type: "THEME_UPDATE", 
         sections: localSections,
-        selectedSectionId: selectedSectionId
+        selectedSectionId: selectedSectionId,
+        globalSettings: globalSettings
       }, "*");
     }
-  }, [localSections, selectedSectionId]);
+  }, [localSections, selectedSectionId, globalSettings]);
 
   // Listen for Selection from Preview
   useEffect(() => {
@@ -342,37 +351,43 @@ export default function ThemeEditor() {
                 <div className="space-y-4">
                   <Label className="text-[10px] font-bold text-[#616161] uppercase tracking-widest">Brand Colors</Label>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 rounded-lg border border-[#f1f1f1]">
-                      <span className="text-sm">Primary Accent</span>
-                      <div className="w-8 h-8 rounded border shadow-sm bg-[#008060]" />
+                    <div className="flex items-center justify-between p-4 rounded-2xl border border-[#f1f1f1] bg-[#f9f9f9]">
+                      <span className="text-sm font-bold">Accent Color</span>
+                      <Input 
+                        type="color" 
+                        value={globalSettings.primaryColor} 
+                        onChange={(e) => setGlobalSettings({...globalSettings, primaryColor: e.target.value})}
+                        className="w-10 h-10 p-1 rounded-lg border-none bg-transparent cursor-pointer"
+                      />
                     </div>
-                    <div className="flex items-center justify-between p-3 rounded-lg border border-[#f1f1f1]">
-                      <span className="text-sm">Background</span>
-                      <div className="w-8 h-8 rounded border shadow-sm bg-white" />
-                    </div>
-                    <div className="flex items-center justify-between p-3 rounded-lg border border-[#f1f1f1]">
-                      <span className="text-sm">Text Color</span>
-                      <div className="w-8 h-8 rounded border shadow-sm bg-[#303030]" />
+                    <div className="flex items-center justify-between p-4 rounded-2xl border border-[#f1f1f1] bg-[#f9f9f9]">
+                      <span className="text-sm font-bold">Background</span>
+                      <Input 
+                        type="color" 
+                        value={globalSettings.backgroundColor} 
+                        onChange={(e) => setGlobalSettings({...globalSettings, backgroundColor: e.target.value})}
+                        className="w-10 h-10 p-1 rounded-lg border-none bg-transparent cursor-pointer"
+                      />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-4 pt-6 border-t">
                   <Label className="text-[10px] font-bold text-[#616161] uppercase tracking-widest">Typography</Label>
-                  <select className="w-full h-10 px-3 rounded-md border border-[#d1d1d1] text-sm bg-white">
-                    <option>Inter (Default)</option>
-                    <option>Roboto</option>
-                    <option>Playfair Display</option>
-                    <option>Montserrat</option>
-                  </select>
-                </div>
-
-                <div className="space-y-4 pt-6 border-t">
-                  <Label className="text-[10px] font-bold text-[#616161] uppercase tracking-widest">Buttons</Label>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Corner Radius</Label>
-                    <Input type="range" min="0" max="20" className="accent-[#008060]" />
-                  </div>
+                  <Select 
+                    value={globalSettings.fontFamily} 
+                    onValueChange={(val) => setGlobalSettings({...globalSettings, fontFamily: val})}
+                  >
+                    <SelectTrigger className="h-12 rounded-xl border-[#d1d1d1]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Inter">Inter (Modern)</SelectItem>
+                      <SelectItem value="Playfair Display">Playfair (Elegant)</SelectItem>
+                      <SelectItem value="Montserrat">Montserrat (Bold)</SelectItem>
+                      <SelectItem value="Roboto">Roboto (Clean)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             ) : !selectedSectionId ? (
@@ -394,14 +409,57 @@ export default function ThemeEditor() {
                     <div 
                       key={section.id}
                       onClick={() => setSelectedSectionId(section.id)}
-                      className="p-3 rounded-md hover:bg-[#f1f1f1] flex items-center justify-between cursor-pointer group border border-transparent hover:border-[#d1d1d1] transition-all mb-1"
+                      className={`p-3 rounded-xl flex items-center justify-between cursor-pointer group border transition-all mb-2 ${selectedSectionId === section.id ? "bg-[#008060]/5 border-[#008060] shadow-sm" : "bg-white border-[#f1f1f1] hover:border-[#d1d1d1]"}`}
                     >
                       <div className="flex items-center gap-3">
-                        <GripVertical className="w-4 h-4 text-[#c1c1c1]" />
-                        <span className="text-sm font-medium capitalize">{section.type.replace("_", " ")}</span>
+                        <GripVertical className="w-4 h-4 text-[#c1c1c1] cursor-grab" />
+                        <span className="text-sm font-bold capitalize text-[#1a1a1a]">{section.type.replace("_", " ")}</span>
                       </div>
-                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100">
-                        <Eye className="w-4 h-4 text-[#616161]" />
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button 
+                          variant="ghost" size="icon" className="h-7 w-7 text-[#616161] hover:text-[#008060]"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (idx > 0) {
+                              const newSections = [...localSections];
+                              [newSections[idx-1], newSections[idx]] = [newSections[idx], newSections[idx-1]];
+                              const newTemplates = { ...templates, [pageKey]: newSections };
+                              setTemplates(newTemplates);
+                              pushToHistory(newTemplates);
+                            }
+                          }}
+                        >
+                          <ChevronUp className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" size="icon" className="h-7 w-7 text-[#616161] hover:text-[#008060]"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (idx < localSections.length - 1) {
+                              const newSections = [...localSections];
+                              [newSections[idx], newSections[idx+1]] = [newSections[idx+1], newSections[idx]];
+                              const newTemplates = { ...templates, [pageKey]: newSections };
+                              setTemplates(newTemplates);
+                              pushToHistory(newTemplates);
+                            }
+                          }}
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" size="icon" className="h-7 w-7 text-[#616161] hover:text-[#008060]"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const newSection = { ...section, id: Math.random().toString(36).substr(2, 9) };
+                            const newSections = [...localSections];
+                            newSections.splice(idx + 1, 0, newSection);
+                            const newTemplates = { ...templates, [pageKey]: newSections };
+                            setTemplates(newTemplates);
+                            pushToHistory(newTemplates);
+                          }}
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </Button>
                       </div>
                     </div>
                   ))}
