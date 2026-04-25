@@ -16,6 +16,7 @@ import {
   Clock,
   Package,
   Zap,
+  Sparkles,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
