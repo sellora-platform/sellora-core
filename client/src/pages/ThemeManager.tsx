@@ -89,7 +89,7 @@ export default function ThemeManager() {
               View Store
             </Button>
             <Button 
-              onClick={() => setLocation("/themes")}
+              onClick={() => setLocation("/themes/marketplace")}
               className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
             >
               <Plus className="w-4 h-4" />
