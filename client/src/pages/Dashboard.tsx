@@ -17,17 +17,26 @@ import {
   Package,
   Zap,
   Sparkles,
+  Check,
+  Layout,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 export default function Dashboard() {
-  const { user, isAuthenticated, loading } = useAuth({ redirectOnUnauthenticated: true });
+  const { user, isAuthenticated, loading, refresh } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
-  const storeQuery = trpc.stores.getMyStore.useQuery(undefined, {
+  
+  const storesQuery = trpc.stores.getMyStores.useQuery(undefined, {
     enabled: isAuthenticated,
   });
 
-  const store = storeQuery.data;
+  const myRequestsQuery = trpc.subscriptions.getMyRequests.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
+
+  const store = storesQuery.data?.[0];
+  const pendingRequest = myRequestsQuery.data?.find(r => r.status === "pending");
+
   const statsQuery = trpc.dashboard.getStats.useQuery(undefined, {
     enabled: !!store,
   });
@@ -44,305 +53,167 @@ export default function Dashboard() {
     profit: 0,
   };
 
+  const planName = user?.tier.toUpperCase() || "FREE";
+  const storeLimit = user?.tier === "starter" ? 1 : user?.tier === "growth" ? 3 : user?.tier === "scale" ? 10 : user?.tier === "empire" ? 999 : 1;
+  const storeCount = storesQuery.data?.length || 0;
+
   return (
     <DashboardLayout>
-      <div className="space-y-8">
-        {/* Trial Banner */}
-        {user?.tier === "free" && user?.trialEndsAt && new Date(user.trialEndsAt) > new Date() && (
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-700 p-8 shadow-2xl shadow-blue-500/20">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <Clock className="w-32 h-32" />
+      <div className="space-y-10 pb-20">
+        {/* TOP BAR: Welcome & Plan Status */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <h1 className="text-4xl font-extrabold text-foreground tracking-tight flex items-center gap-3">
+              Marhaba, {user?.name?.split(' ')[0] || "Merchant"}! <span className="animate-bounce">👋</span>
+            </h1>
+            <p className="text-foreground/60 text-lg">Here's what's happening with your empire today.</p>
+          </div>
+
+          <Card className="p-4 bg-card/40 backdrop-blur-md border-primary/20 flex items-center gap-6 shadow-xl shadow-primary/5">
+            <div className="flex flex-col items-center px-4 border-r border-border/50">
+              <span className="text-[10px] font-bold text-primary tracking-widest uppercase">Current Tier</span>
+              <span className="text-xl font-black text-foreground">{planName}</span>
             </div>
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="text-center md:text-left">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold mb-3 backdrop-blur-md">
-                  <Clock className="w-3 h-3" />
-                  FREE TRIAL ACTIVE
-                </div>
-                <h2 className="text-3xl font-bold text-white mb-2">You have 7 days of free access left!</h2>
-                <p className="text-blue-100 text-lg">Experience all premium AI features. No credit card required during trial.</p>
+            <div className="flex flex-col items-center px-4">
+              <span className="text-[10px] font-bold text-foreground/40 tracking-widest uppercase">Stores</span>
+              <span className="text-xl font-black text-foreground">{storeCount} <span className="text-foreground/30">/ {storeLimit}</span></span>
+            </div>
+            <Button size="sm" variant="ghost" onClick={() => setLocation("/billing")} className="text-primary hover:bg-primary/5 font-bold">
+              Upgrade
+            </Button>
+          </Card>
+        </div>
+
+        {/* STATUS NOTIFICATIONS (Banners) */}
+        {pendingRequest && (
+          <div className="bg-gradient-to-r from-amber-500/10 to-orange-600/10 border border-amber-500/20 rounded-2xl p-6 flex items-center justify-between shadow-lg shadow-amber-500/5">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-amber-500/20 text-amber-600 flex items-center justify-center animate-pulse">
+                <Clock className="w-6 h-6" />
               </div>
-              <Button 
-                onClick={() => setLocation("/billing")}
-                size="lg"
-                className="bg-white text-blue-700 hover:bg-blue-50 font-bold px-8 h-14 rounded-xl shadow-xl transition-all hover:scale-105 active:scale-95"
-              >
-                Choose Your Plan
+              <div>
+                <h3 className="font-bold text-foreground">Subscription Pending Verification</h3>
+                <p className="text-sm text-foreground/60">We received your {pendingRequest.tier} plan request. Activation takes up to 24 hours.</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setLocation("/billing")}>View Receipt</Button>
+          </div>
+        )}
+
+        {/* MAIN ACTIONS & CHECKLIST */}
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Action 1: Theme Editor */}
+          <Card 
+            onClick={() => setLocation("/editor")}
+            className="group lg:col-span-2 relative overflow-hidden p-10 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background hover:shadow-2xl hover:shadow-primary/10 transition-all cursor-pointer border-2"
+          >
+            <div className="absolute top-0 right-0 p-12 opacity-5 group-hover:scale-110 group-hover:opacity-10 transition-all duration-700">
+              <Layout className="w-64 h-64 text-primary" />
+            </div>
+            <div className="relative z-10 space-y-6">
+              <div className="w-14 h-14 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/30 group-hover:rotate-12 transition-transform">
+                <Sparkles className="w-8 h-8" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-3xl font-black text-foreground">Design Your Storefront</h2>
+                <p className="text-foreground/60 text-lg max-w-md">Our visual editor is now live. Build a world-class shopping experience with sections and blocks.</p>
+              </div>
+              <Button size="lg" className="h-14 px-10 rounded-xl bg-primary font-bold shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+                Open Theme Editor
               </Button>
             </div>
-          </div>
-        )}
+          </Card>
 
-        {/* Premium Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-foreground tracking-tight">
-              {store?.name || "My Store"}
-            </h1>
-            <p className="text-foreground/60 mt-2 text-lg">
-              Welcome back, <span className="font-semibold text-foreground">{user?.name || "Merchant"}</span>
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <Button
-              onClick={() => setLocation("/ai-assistant")}
-              className="bg-gradient-to-r from-primary to-primary/80 hover:shadow-lg hover:shadow-primary/20 text-primary-foreground gap-2 transition-all duration-300"
-            >
-              <Zap className="w-4 h-4" />
-              AI Assistant
-            </Button>
-            <Button
-              onClick={() => setLocation("/products/new")}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-md hover:shadow-lg transition-all duration-300"
-            >
-              <Plus className="w-4 h-4" />
-              Add Product
-            </Button>
-          </div>
-        </div>
-
-        {/* Premium Stats Grid */}
-        <div className="grid md:grid-cols-4 gap-6">
-          {[
-            {
-              icon: ShoppingCart,
-              label: "Total Orders",
-              value: stats.orders.toString(),
-              change: stats.orders === 0 ? "0%" : "+12%", // Mock trend for now
-              gradient: "from-blue-500/10 to-blue-600/10",
-              borderColor: "border-blue-200/50",
-              iconColor: "text-blue-600",
-            },
-            {
-              icon: TrendingUp,
-              label: "Revenue",
-              value: `$${stats.revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-              change: stats.revenue === 0 ? "0%" : "+8%",
-              gradient: "from-emerald-500/10 to-emerald-600/10",
-              borderColor: "border-emerald-200/50",
-              iconColor: "text-emerald-600",
-            },
-            {
-              icon: Users,
-              label: "Customers",
-              value: stats.customers.toString(),
-              change: stats.customers === 0 ? "0%" : "+5%",
-              gradient: "from-purple-500/10 to-purple-600/10",
-              borderColor: "border-purple-200/50",
-              iconColor: "text-purple-600",
-            },
-            {
-              icon: TrendingUp,
-              label: "Estimated Profit",
-              value: `$${stats.profit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-              change: stats.profit === 0 ? "0%" : "+15%",
-              gradient: "from-orange-500/10 to-orange-600/10",
-              borderColor: "border-orange-200/50",
-              iconColor: "text-orange-600",
-            },
-          ].map((stat, idx) => {
-            const Icon = stat.icon;
-            return (
-              <Card
-                key={idx}
-                className={`p-6 border ${stat.borderColor} bg-gradient-to-br ${stat.gradient} hover:shadow-lg transition-all duration-300 group cursor-pointer`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`p-3 rounded-lg bg-white/50 ${stat.iconColor} group-hover:bg-white transition-all`}>
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full flex items-center gap-1">
-                    <ArrowUpRight className="w-3 h-3" />
-                    {stat.change}
-                  </span>
-                </div>
-                <p className="text-sm text-foreground/60 font-medium mb-2">{stat.label}</p>
-                <p className="text-3xl font-bold text-foreground">{stat.value}</p>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Recent Orders - Premium Design */}
-          <div className="lg:col-span-2">
-            <Card className="p-8 border-border/50 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground">
-                    Recent Orders
-                  </h2>
-                  <p className="text-foreground/50 text-sm mt-1">Your latest transactions</p>
-                </div>
-                <Button
-                  variant="ghost"
-                  onClick={() => setLocation("/orders")}
-                  className="text-primary hover:bg-primary/5 font-semibold"
-                >
-                  View All →
-                </Button>
-              </div>
-
-              <div className="space-y-3">
-                {[1, 2, 3].map((_, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-4 border border-border/30 rounded-xl hover:bg-accent/5 hover:border-accent/50 transition-all duration-300 group"
-                  >
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center group-hover:from-primary/30 group-hover:to-accent/30 transition-colors">
-                        <ShoppingCart className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-foreground">
-                          Order #{1000 + idx}
-                        </p>
-                        <p className="text-sm text-foreground/50 flex items-center gap-1 mt-0.5">
-                          <Clock className="w-3 h-3" />
-                          2 hours ago
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-foreground text-lg">$234.50</p>
-                      <span className="text-xs font-bold text-blue-600 bg-blue-50/80 px-3 py-1 rounded-full inline-block mt-1">
-                        Processing
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-
-          {/* Quick Actions - Premium Design */}
-          <div>
-            <Card className="p-8 border-border/50 shadow-sm hover:shadow-md transition-shadow h-full">
-              <h2 className="text-2xl font-bold text-foreground mb-2">
-                Quick Actions
-              </h2>
-              <p className="text-foreground/50 text-sm mb-6">Manage your store</p>
-
-              <div className="space-y-2">
-                {[
-                  { icon: Package, label: "Manage Products", path: "/products", color: "from-blue-500/10 to-blue-600/10" },
-                  { icon: Users, label: "View Customers", path: "/customers", color: "from-purple-500/10 to-purple-600/10" },
-                  { icon: TrendingUp, label: "Create Discount", path: "/discounts", color: "from-emerald-500/10 to-emerald-600/10" },
-                  { icon: BarChart3, label: "Store Settings", path: "/settings", color: "from-orange-500/10 to-orange-600/10" },
-                  { icon: Store, label: "App Marketplace", path: "/marketplace", color: "from-pink-500/10 to-pink-600/10" },
-                  { icon: Download, label: "Export Data", path: "/export-data", color: "from-indigo-500/10 to-indigo-600/10" },
-                ].map((action, idx) => {
-                  const Icon = action.icon;
-                  return (
-                    <Button
-                      key={idx}
-                      onClick={() => setLocation(action.path)}
-                      className={`w-full justify-start px-4 py-3 rounded-lg border border-border/30 bg-gradient-to-r ${action.color} hover:border-accent/50 hover:shadow-md transition-all duration-300 group text-foreground font-medium`}
-                    >
-                      <Icon className="w-4 h-4 mr-3 group-hover:scale-110 transition-transform" />
-                      {action.label}
-                    </Button>
-                  );
-                })}
-              </div>
-            </Card>
-          </div>
-        </div>
-
-        {/* Additional Insights Section */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Performance Metrics */}
-          <Card className="p-8 border-border/50 shadow-sm">
-            <h3 className="text-xl font-bold text-foreground mb-6">Performance Metrics</h3>
+          {/* Action 2: Launch Checklist */}
+          <Card className="p-8 border-border/50 bg-card/30 space-y-6">
+            <h3 className="text-xl font-bold text-foreground">Launch Checklist</h3>
             <div className="space-y-4">
               {[
-                { label: "Average Order Value", value: "$156.23", change: "+4.2%" },
-                { label: "Customer Retention", value: "78%", change: "+2.1%" },
-                { label: "Cart Abandonment", value: "22%", change: "-1.5%" },
-              ].map((metric, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-accent/5 hover:bg-accent/10 transition-colors">
-                  <span className="text-foreground/70 font-medium">{metric.label}</span>
-                  <div className="text-right">
-                    <p className="font-bold text-foreground">{metric.value}</p>
-                    <p className="text-xs text-emerald-600 font-semibold">{metric.change}</p>
+                { label: "Create First Product", done: stats.products > 0, path: "/products/new" },
+                { label: "Customize Store Theme", done: false, path: "/editor" },
+                { label: "Set Up Local Payments", done: true, path: "/billing" }, // Mocked for now
+                { label: "Add Custom Domain", done: !!store?.customDomain, path: "/settings" },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center justify-between group">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${item.done ? 'bg-emerald-500 border-emerald-500' : 'border-border/50 group-hover:border-primary'}`}>
+                      {item.done && <Check className="w-4 h-4 text-white" />}
+                    </div>
+                    <span className={`text-sm font-medium ${item.done ? 'text-foreground/40 line-through' : 'text-foreground/80'}`}>{item.label}</span>
                   </div>
+                  {!item.done && <Button variant="ghost" size="sm" onClick={() => setLocation(item.path)} className="text-primary hover:bg-primary/5 p-0 h-auto">Setup</Button>}
                 </div>
               ))}
             </div>
-          </Card>
-
-          {/* Store Health */}
-          <Card className="p-8 border-border/50 shadow-sm">
-            <h3 className="text-xl font-bold text-foreground mb-6">Store Health</h3>
-            <div className="space-y-4">
-              {[
-                { label: "Product Inventory", status: "Healthy", color: "bg-emerald-50 text-emerald-700" },
-                { label: "Payment Processing", status: "Active", color: "bg-blue-50 text-blue-700" },
-                { label: "Shipping Integration", status: "Connected", color: "bg-purple-50 text-purple-700" },
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-accent/5 hover:bg-accent/10 transition-colors">
-                  <span className="text-foreground/70 font-medium">{item.label}</span>
-                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${item.color}`}>
-                    {item.status}
-                  </span>
-                </div>
-              ))}
+            
+            <div className="pt-6 border-t border-border/50">
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-3">
+                <p className="text-xs font-bold text-primary uppercase tracking-widest">Growth Tip</p>
+                <p className="text-sm text-foreground/70">"Stores with a custom domain have 3x higher trust scores in Pakistan."</p>
+              </div>
             </div>
           </Card>
         </div>
 
-        {/* Premium Upgrade Card */}
-        {user?.tier === "free" && (
-          <Card className="relative overflow-hidden border-border/50 shadow-2xl p-0 group">
-            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
-              <Zap className="w-64 h-64 text-primary" />
+        {/* STATS SECTION */}
+        <div className="space-y-6 pt-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-foreground">Business Intelligence</h2>
+            <Button variant="ghost" onClick={refresh} className="text-foreground/40 hover:text-primary"><Clock className="w-4 h-4 mr-2" /> Refresh Data</Button>
+          </div>
+          
+          <div className="grid md:grid-cols-4 gap-6">
+            {[
+              { icon: ShoppingCart, label: "Orders", value: stats.orders, color: "text-blue-500", bg: "bg-blue-500/5" },
+              { icon: TrendingUp, label: "Net Revenue", value: `$${stats.revenue.toFixed(2)}`, color: "text-emerald-500", bg: "bg-emerald-500/5" },
+              { icon: Users, label: "Customers", value: stats.customers, color: "text-purple-500", bg: "bg-purple-500/5" },
+              { icon: Package, label: "Products", value: stats.products, color: "text-orange-500", bg: "bg-orange-500/5" },
+            ].map((stat, i) => {
+              const Icon = stat.icon;
+              return (
+                <Card key={i} className={`p-6 border-border/40 ${stat.bg} group hover:border-primary/30 transition-all cursor-pointer`}>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className={`p-2 rounded-lg ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <span className="text-sm font-bold text-foreground/60">{stat.label}</span>
+                  </div>
+                  <p className="text-3xl font-black text-foreground">{stat.value}</p>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* QUICK ACCESS GRID */}
+        <div className="grid md:grid-cols-3 gap-6">
+          <Card className="p-8 space-y-4 hover:shadow-lg transition-all border-border/50">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
+              <Store className="w-5 h-5" />
             </div>
-            <div className="flex flex-col md:flex-row">
-              <div className="p-8 md:p-12 flex-1">
-                <div className="flex items-center gap-2 text-primary font-bold mb-4">
-                  <Sparkles className="w-5 h-5" />
-                  LIMITED TIME OFFER
-                </div>
-                <h2 className="text-4xl font-extrabold text-foreground mb-6 leading-tight">
-                  Unlock the full power of <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">Sellora Growth</span>
-                </h2>
-                <ul className="space-y-4 mb-8">
-                  {[
-                    "Unlimited AI Design Generations",
-                    "Custom Domain Integration",
-                    "Advanced Profit Analytics",
-                    "Dedicated Account Manager",
-                    "Priority 24/7 Support",
-                  ].map((feature, i) => (
-                    <li key={i} className="flex items-center gap-3 text-foreground/70 font-medium">
-                      <div className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
-                        <ArrowUpRight className="w-3 h-3" />
-                      </div>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <Button 
-                  onClick={() => setLocation("/billing")}
-                  className="h-14 px-10 text-lg font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all hover:-translate-y-1"
-                >
-                  Get Started for $19/mo
-                </Button>
-              </div>
-              <div className="bg-accent/5 p-8 md:p-12 flex flex-col justify-center items-center text-center border-l border-border/50 min-w-[300px]">
-                <p className="text-foreground/40 font-bold uppercase tracking-widest text-xs mb-2">MOST POPULAR</p>
-                <div className="text-6xl font-black text-foreground mb-4">$19<span className="text-2xl text-foreground/50">/mo</span></div>
-                <p className="text-foreground/60 max-w-[200px] text-sm">Save 20% compared to monthly billing</p>
-                <div className="mt-8 pt-8 border-t border-border/50 w-full">
-                  <p className="text-foreground/80 font-semibold mb-4 italic">"This platform paid for itself in the first 2 days!"</p>
-                  <p className="text-xs text-foreground/40 font-bold">— Happy Merchant</p>
-                </div>
-              </div>
-            </div>
+            <h3 className="text-lg font-bold">Marketing & AI</h3>
+            <p className="text-sm text-foreground/50">Auto-generate ads and social media posts for your products.</p>
+            <Button variant="outline" className="w-full" onClick={() => setLocation("/ai-assistant")}>Open AI Assistant</Button>
           </Card>
-        )}
+          
+          <Card className="p-8 space-y-4 hover:shadow-lg transition-all border-border/50">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
+              <Package className="w-5 h-5" />
+            </div>
+            <h3 className="text-lg font-bold">Inventory Control</h3>
+            <p className="text-sm text-foreground/50">Keep track of your stock across all your stores in one place.</p>
+            <Button variant="outline" className="w-full" onClick={() => setLocation("/products")}>Manage Stock</Button>
+          </Card>
+
+          <Card className="p-8 space-y-4 hover:shadow-lg transition-all border-border/50 bg-gradient-to-br from-foreground to-foreground/80 text-background">
+            <div className="w-10 h-10 rounded-xl bg-background/20 text-background flex items-center justify-center">
+              <Zap className="w-5 h-5" />
+            </div>
+            <h3 className="text-lg font-bold">Sellora Academy</h3>
+            <p className="text-sm text-background/60">Learn how to scale from 0 to 100 orders per day in Pakistan.</p>
+            <Button variant="secondary" className="w-full bg-background text-foreground font-bold">Watch Tutorials</Button>
+          </Card>
+        </div>
       </div>
     </DashboardLayout>
   );
