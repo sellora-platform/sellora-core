@@ -4,6 +4,9 @@ import ImageBanner, { ImageBannerSchema } from "./sections/ImageBanner";
 import ProductDetails, { Schema as ProductDetailsSchema } from "./sections/ProductDetails";
 import CartView, { Schema as CartViewSchema } from "./sections/CartView";
 import CheckoutForm, { Schema as CheckoutFormSchema } from "./sections/CheckoutForm";
+import Testimonials, { Schema as TestimonialsSchema } from "./sections/Testimonials";
+import FAQ, { Schema as FAQSchema } from "./sections/FAQ";
+import Newsletter, { Schema as NewsletterSchema } from "./sections/Newsletter";
 
 export const SECTION_COMPONENTS: Record<string, any> = {
   hero: Hero,
@@ -12,6 +15,9 @@ export const SECTION_COMPONENTS: Record<string, any> = {
   "product-details": ProductDetails,
   "cart-view": CartView,
   "checkout-form": CheckoutForm,
+  "testimonials": Testimonials,
+  "faq": FAQ,
+  "newsletter": Newsletter,
 };
 
 export const SECTION_SCHEMAS: Record<string, any> = {
@@ -21,6 +27,9 @@ export const SECTION_SCHEMAS: Record<string, any> = {
   "product-details": ProductDetailsSchema,
   "cart-view": CartViewSchema,
   "checkout-form": CheckoutFormSchema,
+  "testimonials": TestimonialsSchema,
+  "faq": FAQSchema,
+  "newsletter": NewsletterSchema,
 };
 
 export default function SectionRenderer({ 
