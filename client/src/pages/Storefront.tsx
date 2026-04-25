@@ -1,4 +1,4 @@
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -158,6 +158,7 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
         pageKey={pageKey} 
         sectionsToRender={sectionsToRender} 
         selectedSectionId={selectedSectionId}
+        globalSettings={globalSettings}
         setLocation={setLocation}
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
@@ -173,6 +174,7 @@ function StorefrontContent({
   pageKey, 
   sectionsToRender,
   selectedSectionId,
+  globalSettings,
   setLocation,
   mobileMenuOpen,
   setMobileMenuOpen
