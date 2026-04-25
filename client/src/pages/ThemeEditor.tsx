@@ -59,6 +59,7 @@ type Section = {
 export default function ThemeEditor() {
   const { user } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
+  const utils = trpc.useUtils();
   
   // Navigation State
   const [activeActivity, setActiveActivity] = useState<"sections" | "settings" | "apps">("sections");
@@ -135,7 +136,11 @@ export default function ThemeEditor() {
   }, [localSections]);
 
   const updateMutation = trpc.themes.update.useMutation({
-    onSuccess: () => toast.success("Changes saved!"),
+    onSuccess: () => {
+      toast.success("Changes saved!");
+      utils.themes.getById.invalidate({ themeId });
+      utils.themes.getByStoreId.invalidate({ storeId: storeQuery.data?.id || 0 });
+    },
   });
 
   const handleSave = () => {
@@ -518,7 +523,7 @@ export default function ThemeEditor() {
           >
             <iframe 
               ref={previewRef}
-              src={`/store/${storeQuery.data?.slug}${selectedPage !== "Home Page" ? "/" + selectedPage.toLowerCase() : ""}?preview=true`} 
+              src={`/store/${storeQuery.data?.slug}${selectedPage !== "Home Page" ? "/" + selectedPage.toLowerCase() : ""}?preview=true&themeId=${themeId}`} 
               className="w-full h-full border-none"
               title="Theme Preview"
             />

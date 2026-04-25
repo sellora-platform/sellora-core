@@ -37,6 +37,10 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
 
   // If this is a preview URL with a slug: /store/my-slug
   const previewSlug = params?.slug;
+  const searchParams = new URLSearchParams(window.location.search);
+  const isPreview = searchParams.get("preview") === "true";
+  const themeIdParam = searchParams.get("themeId");
+  const themeId = themeIdParam ? parseInt(themeIdParam) : null;
 
   const [previewSections, setPreviewSections] = useState<any[] | null>(null);
 
@@ -77,13 +81,18 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
     { enabled: !!store?.id }
   );
 
-  const themeQuery = trpc.themes.getByStoreId.useQuery(
+  const themeByStoreQuery = trpc.themes.getByStoreId.useQuery(
     { storeId: store?.id || 0 },
-    { enabled: !!store?.id }
+    { enabled: !!store?.id && !themeId }
+  );
+
+  const themeByIdQuery = trpc.themes.getById.useQuery(
+    { themeId: themeId || 0 },
+    { enabled: !!themeId }
   );
 
   const products = productsQuery.data || [];
-  const theme = themeQuery.data;
+  const theme = themeId ? themeByIdQuery.data : themeByStoreQuery.data;
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
   );
