@@ -68,10 +68,23 @@ export default function ThemeEditor() {
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   
   // Data State
-  const [localSections, setLocalSections] = useState<Section[]>([]);
-  const [history, setHistory] = useState<Section[][]>([]);
+  const [templates, setTemplates] = useState<Record<string, Section[]>>({
+    index: [],
+    product: [],
+    cart: [],
+    checkout: []
+  });
+  const [history, setHistory] = useState<Record<string, Section[]>[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const previewRef = useRef<HTMLIFrameElement>(null);
+
+  // Helper to get current template key
+  const getPageKey = (page: string) => {
+    if (page === "Home Page") return "index";
+    return page.toLowerCase();
+  };
+  const pageKey = getPageKey(selectedPage);
+  const localSections = templates[pageKey] || [];
 
   // Queries
   const storeQuery = trpc.stores.getMyStore.useQuery();
@@ -94,16 +107,16 @@ export default function ThemeEditor() {
 
   useEffect(() => {
     if (theme?.sections) {
-      const sections = theme.sections as Section[];
-      setLocalSections(sections);
+      const sections = theme.sections as Record<string, Section[]>;
+      setTemplates(sections);
       setHistory([sections]);
       setHistoryIndex(0);
     }
   }, [theme]);
 
-  const pushToHistory = (sections: Section[]) => {
+  const pushToHistory = (newTemplates: Record<string, Section[]>) => {
     const newHistory = history.slice(0, historyIndex + 1);
-    newHistory.push(JSON.parse(JSON.stringify(sections)));
+    newHistory.push(JSON.parse(JSON.stringify(newTemplates)));
     if (newHistory.length > 30) newHistory.shift();
     setHistory(newHistory);
     setHistoryIndex(newHistory.length - 1);
@@ -112,7 +125,7 @@ export default function ThemeEditor() {
   const undo = () => {
     if (historyIndex > 0) {
       const newIndex = historyIndex - 1;
-      setLocalSections(history[newIndex]);
+      setTemplates(history[newIndex]);
       setHistoryIndex(newIndex);
     }
   };
@@ -120,7 +133,7 @@ export default function ThemeEditor() {
   const redo = () => {
     if (historyIndex < history.length - 1) {
       const newIndex = historyIndex + 1;
-      setLocalSections(history[newIndex]);
+      setTemplates(history[newIndex]);
       setHistoryIndex(newIndex);
     }
   };
@@ -147,14 +160,15 @@ export default function ThemeEditor() {
     if (!theme) return;
     updateMutation.mutate({
       themeId: theme.id,
-      sections: localSections,
+      sections: templates,
     });
   };
 
   const handleUpdateSection = (id: string, settings: any) => {
     const newSections = localSections.map(s => s.id === id ? { ...s, settings } : s);
-    setLocalSections(newSections);
-    pushToHistory(newSections);
+    const newTemplates = { ...templates, [pageKey]: newSections };
+    setTemplates(newTemplates);
+    pushToHistory(newTemplates);
   };
 
   const addSection = (type: string) => {
@@ -164,10 +178,11 @@ export default function ThemeEditor() {
     schema?.settings?.forEach((s: any) => {
       defaultSettings[s.id] = s.default;
     });
-    
+
     const newSections = [...localSections, { id: newId, type, settings: defaultSettings }];
-    setLocalSections(newSections);
-    pushToHistory(newSections);
+    const newTemplates = { ...templates, [pageKey]: newSections };
+    setTemplates(newTemplates);
+    pushToHistory(newTemplates);
     setSelectedSectionId(newId);
   };
 
@@ -497,8 +512,9 @@ export default function ThemeEditor() {
                     className="w-full text-red-600 hover:bg-red-50 hover:text-red-700 h-10 gap-2"
                     onClick={() => {
                       const newSections = localSections.filter(s => s.id !== selectedSectionId);
-                      setLocalSections(newSections);
-                      pushToHistory(newSections);
+                      const newTemplates = { ...templates, [pageKey]: newSections };
+                      setTemplates(newTemplates);
+                      pushToHistory(newTemplates);
                       setSelectedSectionId(null);
                     }}
                   >
