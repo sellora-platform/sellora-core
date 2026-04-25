@@ -171,11 +171,11 @@ export const themesRouter = router({
   update: protectedProcedure
     .input(z.object({
       themeId: z.number(),
-      sections: z.array(z.object({
-        id: z.string().optional(),
+      sections: z.record(z.array(z.object({
+        id: z.string(),
         type: z.string(),
         settings: z.record(z.any()),
-      })).optional(),
+      }))).optional(),
       colors: z.record(z.string()).optional(),
       typography: z.record(z.any()).optional(),
       name: z.string().optional(),
