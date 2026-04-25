@@ -5,6 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 import { 
   ChevronLeft, 
   Save, 
@@ -15,14 +18,6 @@ import {
   Smartphone,
   Trash2,
   GripVertical,
-  ChevronDown,
-  Layers,
-  Settings,
-  Eye,
-  Undo2,
-  Redo2,
-  ArrowLeft,
-  ChevronRight,
   ChevronUp,
   ChevronDown,
   MoreHorizontal,
@@ -622,12 +617,12 @@ export default function ThemeEditor() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                {field.options.map((opt: any) => (
+                                {field.options?.map((opt: any) => (
                                   <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
-                          )}
+                          ) : null}
 
                           {field.type === "range" && (
                             <div className="space-y-3 pt-2">
@@ -655,14 +650,6 @@ export default function ThemeEditor() {
                                 onCheckedChange={(val) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
                               />
                             </div>
-                          )}
-                          {field.type === "image" && (
-                            <ImagePicker 
-                              currentValue={currentSection?.settings[field.id]}
-                              onSelect={(url) => {
-                                handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: url });
-                              }}
-                            />
                           )}
                         </div>
                       ))}
