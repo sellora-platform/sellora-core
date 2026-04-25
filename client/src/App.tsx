@@ -31,6 +31,8 @@ import VerifyEmail from "./pages/VerifyEmail";
 import Billing from "./pages/Billing";
 import AdminSubscriptions from "./pages/AdminSubscriptions";
 import ThemeEditor from "./pages/ThemeEditor";
+import ThemeMarketplace from "./pages/ThemeMarketplace";
+
 
 import { useState, useEffect } from "react";
 import { useAuth } from "./_core/hooks/useAuth";
@@ -151,6 +153,8 @@ function Router() {
       <Route path={"/checkout"} component={Checkout} />
       <Route path={"/onboarding"} component={Onboarding} />
       <Route path={"/marketplace"} component={Marketplace} />
+      <Route path={"/themes"} component={ThemeMarketplace} />
+
       <Route path={"/export-data"} component={ExportData} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

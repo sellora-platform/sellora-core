@@ -58,6 +58,7 @@ export const themesRouter = router({
       })).optional(),
       colors: z.record(z.string()).optional(),
       typography: z.record(z.any()).optional(),
+      name: z.string().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
       const [theme] = await db.select()
@@ -75,6 +76,7 @@ export const themesRouter = router({
 
       const [updatedTheme] = await db.update(storeThemes)
         .set({
+          name: input.name,
           sections: input.sections,
           colors: input.colors,
           typography: input.typography,

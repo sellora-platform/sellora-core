@@ -31,7 +31,8 @@ import {
   LogOut, 
   PanelLeft, 
   Store,
-  Globe
+  Globe,
+  Palette
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -41,6 +42,7 @@ import { Button } from "./ui/button";
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: ShoppingBag, label: "Products", path: "/products" },
+  { icon: Palette, label: "Themes", path: "/themes" },
   { icon: Users, label: "Customers", path: "/customers" },
   { icon: Tag, label: "Discounts", path: "/discounts" },
   { icon: Globe, label: "Domains", path: "/domains" },
