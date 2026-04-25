@@ -18,7 +18,9 @@ import {
   orderItems, type InsertOrderItem,
   discounts, type InsertDiscount,
   aiInteractions, type InsertAIInteraction,
+  aiInteractions, type InsertAIInteraction,
   storeThemes, type InsertStoreTheme,
+  plans,
 } from "../drizzle/schema";
 
 // ============================================================================
@@ -78,11 +80,15 @@ export async function createStore(data: InsertStore) {
   return result[0];
 }
 
-export async function getStoreByMerchantId(merchantId: number) {
+export async function getStoresByMerchantId(merchantId: number) {
   const db = getDb();
-  if (!db) return null;
-  const result = await db.select().from(stores).where(eq(stores.merchantId, merchantId)).limit(1);
-  return result.length > 0 ? result[0] : null;
+  if (!db) return [];
+  return db.select().from(stores).where(eq(stores.merchantId, merchantId));
+}
+
+export async function getStoreByMerchantId(merchantId: number) {
+  const storesList = await getStoresByMerchantId(merchantId);
+  return storesList.length > 0 ? storesList[0] : null;
 }
 
 export async function getStoreBySlug(slug: string) {
@@ -103,6 +109,17 @@ export async function updateStore(storeId: number, data: Partial<InsertStore>) {
   const db = getDb();
   if (!db) throw new Error("Database not available");
   return db.update(stores).set(data).where(eq(stores.id, storeId));
+}
+
+// ============================================================================
+// Plan Queries
+// ============================================================================
+
+export async function getPlanByTier(tier: string) {
+  const db = getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(plans).where(eq(plans.tier, tier as any)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
 }
 
 // ============================================================================

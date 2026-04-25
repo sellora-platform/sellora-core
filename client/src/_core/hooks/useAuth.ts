@@ -7,7 +7,7 @@ type AuthUser = {
   name: string | null;
   role: "user" | "admin";
   isVerified: boolean;
-  plan: string;
+  tier: "free" | "starter" | "growth" | "scale" | "empire";
   subscriptionStatus: string;
   trialEndsAt: string | null;
 };

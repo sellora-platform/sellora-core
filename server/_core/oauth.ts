@@ -63,7 +63,7 @@ export function registerAuthRoutes(app: Express) {
         role: "user",
         isVerified: false,
         verificationCode,
-        plan: "free",
+        tier: "free",
         subscriptionStatus: "trialing",
         trialEndsAt,
       }).returning();
@@ -101,7 +101,7 @@ export function registerAuthRoutes(app: Express) {
         name: newUser.name,
         role: "user",
         isVerified: false,
-        plan: "free",
+        tier: "free",
         subscriptionStatus: "trialing",
         trialEndsAt: trialEndsAtStr,
       });
@@ -120,7 +120,7 @@ export function registerAuthRoutes(app: Express) {
           name: newUser.name, 
           role: "user", 
           isVerified: false,
-          plan: "free",
+          tier: "free",
           subscriptionStatus: "trialing",
           trialEndsAt: trialEndsAtStr
         },
@@ -284,7 +284,7 @@ export function registerAuthRoutes(app: Express) {
         name: user.name,
         role: user.role as "user" | "admin",
         isVerified: user.isVerified ?? false,
-        plan: user.plan ?? "free",
+        tier: (user.tier as any) ?? "free",
         subscriptionStatus: user.subscriptionStatus ?? "trialing",
         trialEndsAt: trialEndsAtStr,
       });
@@ -303,7 +303,7 @@ export function registerAuthRoutes(app: Express) {
           name: user.name, 
           role: user.role, 
           isVerified: user.isVerified,
-          plan: user.plan,
+          tier: user.tier,
           subscriptionStatus: user.subscriptionStatus,
           trialEndsAt: trialEndsAtStr
         },
@@ -383,7 +383,7 @@ export function registerAuthRoutes(app: Express) {
         name: user.name,
         role: user.role as "user" | "admin",
         isVerified: user.isVerified ?? false,
-        plan: user.plan ?? "free",
+        tier: (user.tier as any) ?? "free",
         subscriptionStatus: user.subscriptionStatus ?? "trialing",
         trialEndsAt: trialEndsAtStr,
       });
@@ -402,7 +402,7 @@ export function registerAuthRoutes(app: Express) {
           name: user.name, 
           role: user.role, 
           isVerified: user.isVerified,
-          plan: user.plan,
+          tier: user.tier,
           subscriptionStatus: user.subscriptionStatus,
           trialEndsAt: trialEndsAtStr
         },
@@ -529,8 +529,8 @@ export function registerAuthRoutes(app: Express) {
       // Update user in DB
       await db.update(users)
         .set({ 
-          plan: plan || "basic", 
-          subscriptionStatus: status || "active",
+          tier: (req.body.tier || "starter") as any, 
+          subscriptionStatus: (req.body.status || "active") as any,
           trialEndsAt: null // Trial over once paid
         })
         .where(eq(users.id, sessionUser.id));
@@ -545,8 +545,8 @@ export function registerAuthRoutes(app: Express) {
         name: updatedUser.name,
         role: updatedUser.role as "user" | "admin",
         isVerified: updatedUser.isVerified ?? false,
-        plan: updatedUser.plan ?? "basic",
-        subscriptionStatus: updatedUser.subscriptionStatus ?? "active",
+        tier: updatedUser.tier as any,
+        subscriptionStatus: (updatedUser.subscriptionStatus as string) ?? "active",
         trialEndsAt: updatedUser.trialEndsAt ? updatedUser.trialEndsAt.toISOString() : null,
       });
 

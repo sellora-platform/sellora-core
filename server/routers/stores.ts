@@ -15,7 +15,18 @@ export const storesRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      // Check if slug is already taken
+      // 1. Check plan limits
+      const userStores = await db.getStoresByMerchantId(ctx.user.id);
+      const userPlan = await db.getPlanByTier(ctx.user.tier);
+      
+      // If no plan found (should not happen), default to free tier limits
+      const maxStores = userPlan?.maxStores ?? 1;
+
+      if (userStores.length >= maxStores) {
+        throw new Error(`Your current plan (${ctx.user.tier}) only allows up to ${maxStores} store(s). Please upgrade to create more.`);
+      }
+
+      // 2. Check if slug is already taken
       const existing = await db.getStoreBySlug(input.slug);
       if (existing) {
         throw new Error("This Store ID is already taken. Please choose another one.");
@@ -40,10 +51,14 @@ export const storesRouter = router({
       }
     }),
 
-  // Get the merchant's store
+  // Get the merchant's stores
+  getMyStores: protectedProcedure.query(async ({ ctx }) => {
+    return db.getStoresByMerchantId(ctx.user.id);
+  }),
+
+  // Get the primary store (for compatibility)
   getMyStore: protectedProcedure.query(async ({ ctx }) => {
-    const store = await db.getStoreByMerchantId(ctx.user.id);
-    return store;
+    return db.getStoreByMerchantId(ctx.user.id);
   }),
 
   // Get a store by slug (public)

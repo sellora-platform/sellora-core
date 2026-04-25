@@ -20,7 +20,7 @@ export type SessionUser = {
   name: string | null;
   role: "user" | "admin";
   isVerified: boolean;
-  plan: string;
+  tier: "free" | "starter" | "growth" | "scale" | "empire";
   subscriptionStatus: string;
   trialEndsAt: string | null;
 };
@@ -67,7 +67,7 @@ export async function createSessionToken(user: SessionUser): Promise<string> {
     name: user.name,
     role: user.role,
     isVerified: user.isVerified,
-    plan: user.plan,
+    tier: user.tier,
     subscriptionStatus: user.subscriptionStatus,
     trialEndsAt: user.trialEndsAt,
   })
@@ -93,7 +93,7 @@ export async function verifySessionToken(
       name: (payload.name as string) ?? null,
       role: (payload.role as "user" | "admin") ?? "user",
       isVerified: (payload.isVerified as boolean) ?? false,
-      plan: (payload.plan as string) ?? "free",
+      tier: (payload.tier as any) ?? "free",
       subscriptionStatus: (payload.subscriptionStatus as string) ?? "trialing",
       trialEndsAt: (payload.trialEndsAt as string) ?? null,
     };

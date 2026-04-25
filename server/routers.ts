@@ -9,9 +9,11 @@ import { discountsRouter } from "./routers/discounts";
 import { aiRouter } from "./routers/ai";
 import { exportsRouter } from "./routers/exports";
 import { dashboardRouter } from "./routers/dashboard";
+import { subscriptionsRouter } from "./routers/subscriptions";
 
 export const appRouter = router({
   system: systemRouter,
+  subscriptions: subscriptionsRouter,
   exports: exportsRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),

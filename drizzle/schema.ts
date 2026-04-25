@@ -17,6 +17,9 @@ export const orderStatusEnum = pgEnum("order_status", ["pending", "processing", 
 export const discountTypeEnum = pgEnum("discount_type", ["percentage", "fixed_amount"]);
 export const aiInteractionTypeEnum = pgEnum("ai_interaction_type", ["design", "product_description", "banner", "content", "layout", "general"]);
 export const aiInteractionStatusEnum = pgEnum("ai_interaction_status", ["pending", "completed", "failed"]);
+export const subscriptionTierEnum = pgEnum("subscription_tier", ["free", "starter", "growth", "scale", "empire"]);
+export const subscriptionStatusEnum = pgEnum("subscription_status", ["active", "trialing", "past_due", "canceled", "incomplete", "unpaid"]);
+export const profitIntelligenceLevelEnum = pgEnum("profit_intelligence_level", ["basic", "standard", "advanced", "predictive"]);
 
 // ============================================================================
 // Users
@@ -34,8 +37,14 @@ export const users = pgTable("users", {
   isVerified: boolean("is_verified").default(false),
   verificationCode: varchar("verification_code", { length: 6 }),
   plan: varchar("plan", { length: 50 }).default("free"),
-  subscriptionStatus: varchar("subscription_status", { length: 50 }).default("trialing"),
+  // Subscription Info
+  tier: subscriptionTierEnum("tier").default("free").notNull(),
+  subscriptionStatus: subscriptionStatusEnum("subscription_status").default("trialing"),
   trialEndsAt: timestamp("trial_ends_at"),
+  stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
+  stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }),
+  // Staff/Team Management
+  parentMerchantId: integer("parent_merchant_id"), // If set, this user is a staff member of another merchant
 });
 
 export type User = typeof users.$inferSelect;
@@ -68,6 +77,29 @@ export const stores = pgTable("stores", {
 
 export type Store = typeof stores.$inferSelect;
 export type InsertStore = typeof stores.$inferInsert;
+
+// ============================================================================
+// Plans
+// ============================================================================
+
+export const plans = pgTable("plans", {
+  id: serial("id").primaryKey(),
+  tier: subscriptionTierEnum("tier").notNull().unique(),
+  name: varchar("name", { length: 100 }).notNull(),
+  monthlyPrice: numeric("monthly_price", { precision: 10, scale: 2 }).notNull(),
+  yearlyPrice: numeric("yearly_price", { precision: 10, scale: 2 }).notNull(),
+  maxStores: integer("max_stores").notNull(),
+  maxStaff: integer("max_staff"), // null = unlimited
+  transactionFee: numeric("transaction_fee", { precision: 5, scale: 2 }).notNull(),
+  profitIntelligenceLevel: profitIntelligenceLevelEnum("profit_intelligence_level").default("basic").notNull(),
+  stripePriceIdMonthly: varchar("stripe_price_id_monthly", { length: 255 }),
+  stripePriceIdYearly: varchar("stripe_price_id_yearly", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type Plan = typeof plans.$inferSelect;
+export type InsertPlan = typeof plans.$inferInsert;
 
 // ============================================================================
 // Categories
@@ -300,3 +332,27 @@ export const storeThemes = pgTable("store_themes", {
 
 export type StoreTheme = typeof storeThemes.$inferSelect;
 export type InsertStoreTheme = typeof storeThemes.$inferInsert;
+
+export const subscriptionRequestStatusEnum = pgEnum("subscription_request_status", ["pending", "approved", "rejected"]);
+
+// ============================================================================
+// Subscription Requests (Manual Payments)
+// ============================================================================
+
+export const subscriptionRequests = pgTable("subscription_requests", {
+  id: serial("id").primaryKey(),
+  merchantId: integer("merchant_id").notNull(),
+  tier: subscriptionTierEnum("tier").notNull(),
+  status: subscriptionRequestStatusEnum("status").default("pending").notNull(),
+  amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
+  receiptImage: varchar("receipt_image", { length: 512 }),
+  notes: text("notes"),
+  adminNotes: text("admin_notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  merchantIdIdx: index("sub_req_merchant_id_idx").on(table.merchantId),
+}));
+
+export type SubscriptionRequest = typeof subscriptionRequests.$inferSelect;
+export type InsertSubscriptionRequest = typeof subscriptionRequests.$inferInsert;

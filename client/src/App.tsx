@@ -29,6 +29,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import Billing from "./pages/Billing";
+import AdminSubscriptions from "./pages/AdminSubscriptions";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "./_core/hooks/useAuth";
@@ -63,7 +64,7 @@ function Router() {
     // 2. Billing/Trial Enforcement
     if (user && user.isVerified && !isPublicPath) {
       const trialExpired = user.trialEndsAt ? new Date(user.trialEndsAt) < new Date() : false;
-      const noPlanActive = user.plan === "free" || !user.plan;
+      const noPlanActive = user.tier === "free" || !user.tier;
 
       if (trialExpired && noPlanActive && location !== "/billing") {
         setLocation("/billing");
@@ -129,6 +130,7 @@ function Router() {
       <Route path={"/reset-password"} component={ResetPassword} />
       <Route path={"/verify-email"} component={VerifyEmail} />
       <Route path={"/billing"} component={Billing} />
+      <Route path={"/admin/subscriptions"} component={AdminSubscriptions} />
       <Route path={"/features"} component={Features} />
       <Route path={"/benefits"} component={Benefits} />
       <Route path={"/dashboard"} component={Dashboard} />

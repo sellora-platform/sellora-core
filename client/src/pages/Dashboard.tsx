@@ -48,7 +48,7 @@ export default function Dashboard() {
     <DashboardLayout>
       <div className="space-y-8">
         {/* Trial Banner */}
-        {user?.plan === "free" && user?.trialEndsAt && new Date(user.trialEndsAt) > new Date() && (
+        {user?.tier === "free" && user?.trialEndsAt && new Date(user.trialEndsAt) > new Date() && (
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-700 p-8 shadow-2xl shadow-blue-500/20">
             <div className="absolute top-0 right-0 p-4 opacity-10">
               <Clock className="w-32 h-32" />
@@ -293,7 +293,7 @@ export default function Dashboard() {
         </div>
 
         {/* Premium Upgrade Card */}
-        {user?.plan === "free" && (
+        {user?.tier === "free" && (
           <Card className="relative overflow-hidden border-border/50 shadow-2xl p-0 group">
             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
               <Zap className="w-64 h-64 text-primary" />
