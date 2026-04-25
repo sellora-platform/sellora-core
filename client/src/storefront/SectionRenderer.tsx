@@ -35,10 +35,10 @@ export default function SectionRenderer({
 
   return (
     <>
-      {sections.map((section, index) => {
+      {sections.map((section) => {
         const Component = SECTION_COMPONENTS[section.type];
         if (!Component) return null;
-        return <Component key={index} settings={section.settings} products={products} />;
+        return <Component key={section.id} id={section.id} settings={section.settings} products={products} />;
       })}
     </>
   );
