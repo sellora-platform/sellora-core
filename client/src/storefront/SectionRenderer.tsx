@@ -1,9 +1,17 @@
-import Hero from "./sections/Hero";
-import FeaturedCollection from "./sections/FeaturedCollection";
+import Hero, { HeroSchema } from "./sections/Hero";
+import FeaturedCollection, { FeaturedCollectionSchema } from "./sections/FeaturedCollection";
+import ImageBanner, { ImageBannerSchema } from "./sections/ImageBanner";
 
-const SECTION_COMPONENTS: Record<string, any> = {
+export const SECTION_COMPONENTS: Record<string, any> = {
   hero: Hero,
   featured_collection: FeaturedCollection,
+  image_banner: ImageBanner,
+};
+
+export const SECTION_SCHEMAS: Record<string, any> = {
+  hero: HeroSchema,
+  featured_collection: FeaturedCollectionSchema,
+  image_banner: ImageBannerSchema,
 };
 
 export default function SectionRenderer({ 

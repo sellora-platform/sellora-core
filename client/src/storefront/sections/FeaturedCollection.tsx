@@ -9,6 +9,41 @@ export type FeaturedCollectionSettings = {
   productLimit: number;
 };
 
+export const FeaturedCollectionSchema = {
+  name: "Featured Collection",
+  type: "featured_collection",
+  settings: [
+    {
+      id: "title",
+      type: "text",
+      label: "Heading",
+      default: "Featured Products"
+    },
+    {
+      id: "subtitle",
+      type: "text",
+      label: "Subheading",
+      default: "Selected specifically for you"
+    },
+    {
+      id: "columns",
+      type: "range",
+      label: "Columns on desktop",
+      min: 2,
+      max: 4,
+      default: 4
+    },
+    {
+      id: "productLimit",
+      type: "range",
+      label: "Product limit",
+      min: 4,
+      max: 12,
+      default: 8
+    }
+  ]
+};
+
 export default function FeaturedCollection({ settings, products }: { settings: FeaturedCollectionSettings, products: any[] }) {
   const gridClass = {
     2: "grid-cols-1 md:grid-cols-2",

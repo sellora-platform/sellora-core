@@ -31,6 +31,23 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
+import { SECTION_SCHEMAS } from "@/storefront/SectionRenderer";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Section = {
   id: string;
@@ -106,11 +123,13 @@ export default function ThemeEditor() {
 
   const addSection = (type: string) => {
     const newId = Math.random().toString(36).substr(2, 9);
-    const defaults: any = {
-      hero: { heading: "New Banner", subheading: "Best collection ever", alignment: "center" },
-      featured_collection: { title: "Featured Products", columns: 4, productLimit: 8 },
-    };
-    setLocalSections([...localSections, { id: newId, type, settings: defaults[type] || {} }]);
+    const schema = SECTION_SCHEMAS[type];
+    const defaultSettings: any = {};
+    schema?.settings?.forEach((s: any) => {
+      defaultSettings[s.id] = s.default;
+    });
+    
+    setLocalSections([...localSections, { id: newId, type, settings: defaultSettings }]);
     setSelectedSectionId(newId);
   };
 
@@ -265,14 +284,31 @@ export default function ThemeEditor() {
                     </div>
                   ))}
 
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start text-[#008060] hover:bg-[#f1f1f1] text-sm font-semibold h-10 mt-4 border border-dashed border-[#008060]/30"
-                    onClick={() => addSection("hero")}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Section
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start text-[#008060] hover:bg-[#f1f1f1] text-sm font-semibold h-10 mt-4 border border-dashed border-[#008060]/30"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Section
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-[280px]">
+                      {Object.values(SECTION_SCHEMAS).map((schema: any) => (
+                        <DropdownMenuItem 
+                          key={schema.type}
+                          onClick={() => addSection(schema.type)}
+                          className="py-3 cursor-pointer"
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-bold text-sm">{schema.name}</span>
+                            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Type: {schema.type}</span>
+                          </div>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
 
                 <div className="p-3 rounded-md hover:bg-[#f1f1f1] flex items-center justify-between cursor-pointer group border border-transparent hover:border-[#d1d1d1] mt-4">
@@ -285,65 +321,82 @@ export default function ThemeEditor() {
             ) : (
               /* Section Settings View */
               <div className="p-4 space-y-6 animate-in slide-in-from-right-4 duration-200">
-                {currentSection?.type === "hero" && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-xs font-bold text-[#616161]">HEADING</Label>
-                      <Input 
-                        className="h-10 border-[#d1d1d1] focus-visible:ring-[#008060]"
-                        value={currentSection.settings.heading} 
-                        onChange={(e) => handleUpdateSection(currentSection.id, { ...currentSection.settings, heading: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-bold text-[#616161]">SUBHEADING</Label>
-                      <Input 
-                        className="h-10 border-[#d1d1d1] focus-visible:ring-[#008060]"
-                        value={currentSection.settings.subheading} 
-                        onChange={(e) => handleUpdateSection(currentSection.id, { ...currentSection.settings, subheading: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-bold text-[#616161]">DESKTOP CONTENT ALIGNMENT</Label>
-                      <div className="flex gap-1 bg-[#f1f1f1] p-1 rounded-md">
-                        {['left', 'center', 'right'].map(align => (
-                          <button 
-                            key={align}
-                            onClick={() => handleUpdateSection(currentSection.id, { ...currentSection.settings, alignment: align })}
-                            className={`flex-1 py-1.5 text-xs font-bold capitalize rounded ${currentSection.settings.alignment === align ? 'bg-white shadow-sm' : 'text-[#616161]'}`}
-                          >
-                            {align}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {(() => {
+                  const schema = SECTION_SCHEMAS[currentSection?.type || ""];
+                  if (!schema) return <div className="text-sm text-foreground/50 italic">No settings available for this section.</div>;
 
-                {currentSection?.type === "featured_collection" && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-xs font-bold text-[#616161]">TITLE</Label>
-                      <Input 
-                        className="h-10 border-[#d1d1d1]"
-                        value={currentSection.settings.title} 
-                        onChange={(e) => handleUpdateSection(currentSection.id, { ...currentSection.settings, title: e.target.value })}
-                      />
+                  return (
+                    <div className="space-y-6">
+                      {schema.settings.map((field: any) => (
+                        <div key={field.id} className="space-y-2">
+                          <Label className="text-[10px] font-bold text-[#616161] uppercase tracking-wider">
+                            {field.label}
+                          </Label>
+
+                          {field.type === "text" && (
+                            <Input 
+                              className="h-10 border-[#d1d1d1] focus-visible:ring-[#008060]"
+                              value={currentSection?.settings[field.id] || ""} 
+                              onChange={(e) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: e.target.value })}
+                            />
+                          )}
+
+                          {field.type === "textarea" && (
+                            <Textarea 
+                              className="min-h-[100px] border-[#d1d1d1] focus-visible:ring-[#008060] resize-none"
+                              value={currentSection?.settings[field.id] || ""} 
+                              onChange={(e) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: e.target.value })}
+                            />
+                          )}
+
+                          {field.type === "select" && (
+                            <Select 
+                              value={currentSection?.settings[field.id]} 
+                              onValueChange={(val) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
+                            >
+                              <SelectTrigger className="h-10 border-[#d1d1d1]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {field.options.map((opt: any) => (
+                                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+
+                          {field.type === "range" && (
+                            <div className="space-y-3 pt-2">
+                              <Slider 
+                                min={field.min} 
+                                max={field.max} 
+                                step={1}
+                                value={[currentSection?.settings[field.id] || field.default]}
+                                onValueChange={([val]) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
+                                className="[&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&_[role=slider]]:border-[#008060] [&_[role=track]]:h-1"
+                              />
+                              <div className="flex justify-between text-[10px] font-bold text-[#616161]">
+                                <span>{field.min}</span>
+                                <span className="text-[#008060]">{currentSection?.settings[field.id]}</span>
+                                <span>{field.max}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {field.type === "checkbox" && (
+                            <div className="flex items-center justify-between p-3 rounded-lg border border-[#f1f1f1] bg-white">
+                              <span className="text-sm">{field.label}</span>
+                              <Switch 
+                                checked={currentSection?.settings[field.id]}
+                                onCheckedChange={(val) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-bold text-[#616161]">COLUMNS ON DESKTOP</Label>
-                      <Input 
-                        type="range" min="2" max="4" 
-                        value={currentSection.settings.columns}
-                        onChange={(e) => handleUpdateSection(currentSection.id, { ...currentSection.settings, columns: parseInt(e.target.value) })}
-                        className="accent-[#008060]"
-                      />
-                      <div className="flex justify-between text-[10px] font-bold text-[#616161]">
-                        <span>2</span><span>3</span><span>4</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 <div className="pt-6 border-t border-[#f1f1f1]">
                   <Button 

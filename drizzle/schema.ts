@@ -325,6 +325,11 @@ export const storeThemes = pgTable("store_themes", {
   layout: jsonb("layout").$type<Record<string, unknown>>().default({}),
   sections: jsonb("sections").$type<Array<{ type: string; settings: Record<string, any> }>>().default([]),
   isActive: boolean("is_active").default(false),
+  // Marketplace Fields
+  isPublic: boolean("is_public").default(false),
+  price: numeric("price", { precision: 10, scale: 2 }).default("0.00"),
+  category: varchar("category", { length: 100 }),
+  previewImage: varchar("preview_image", { length: 512 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({

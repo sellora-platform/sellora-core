@@ -58,6 +58,13 @@ export default function ThemeManager() {
     },
   });
 
+  const marketplaceMutation = trpc.themes.toggleMarketplace.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.isPublic ? "Theme published to marketplace!" : "Theme removed from marketplace");
+      utils.themes.listByStore.invalidate();
+    },
+  });
+
   if (isLoading) return <DashboardLayout>Loading themes...</DashboardLayout>;
 
   const activeTheme = themes?.find((t) => t.isActive);
@@ -151,6 +158,18 @@ export default function ThemeManager() {
                           <ArrowUpRight className="w-4 h-4 mr-2" />
                           Preview in Editor
                         </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => marketplaceMutation.mutate({ 
+                            themeId: activeTheme.id, 
+                            isPublic: !activeTheme.isPublic,
+                            category: "Premium",
+                            price: "29.00"
+                          })}
+                          className="text-primary focus:text-primary font-bold"
+                        >
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          {activeTheme.isPublic ? "Remove from Marketplace" : "Publish to Marketplace"}
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -205,6 +224,18 @@ export default function ThemeManager() {
                           <DropdownMenuItem onClick={() => publishMutation.mutate({ themeId: theme.id })} className="text-green-600 focus:text-green-600 font-bold">
                             <ExternalLink className="w-4 h-4 mr-2" />
                             Publish
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => marketplaceMutation.mutate({ 
+                              themeId: theme.id, 
+                              isPublic: !theme.isPublic,
+                              category: "Modern",
+                              price: "0.00"
+                            })}
+                            className="text-primary focus:text-primary font-bold"
+                          >
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            {theme.isPublic ? "Remove from Marketplace" : "Publish to Marketplace"}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => duplicateMutation.mutate({ themeId: theme.id })}>
                             <Copy className="w-4 h-4 mr-2" />

@@ -98,6 +98,7 @@ export default function ThemeMarketplace() {
   const [installingId, setInstallingId] = useState<string | null>(null);
   
   const { data: store } = trpc.stores.getMyStore.useQuery();
+  const { data: marketplaceThemes, isLoading: themesLoading } = trpc.themes.listMarketplace.useQuery();
   const utils = trpc.useUtils();
 
   const installMutation = trpc.themes.create.useMutation({
@@ -144,6 +145,7 @@ export default function ThemeMarketplace() {
   };
 
   const activeThemeName = getMyThemeQuery.data?.name;
+  const allThemes = [...(marketplaceThemes || [])];
 
   return (
     <DashboardLayout>
@@ -199,95 +201,119 @@ export default function ThemeMarketplace() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {themes.map((theme) => {
-            const isInstalled = false; // We use update mutation for now, so it replaces current
-            const isInstalling = installingId === theme.id;
-            
-            return (
-              <Card key={theme.id} className="group relative overflow-hidden border-border/50 bg-card hover:shadow-2xl transition-all duration-500 rounded-3xl flex flex-col">
-                {/* Image Preview */}
-                <div className="relative aspect-[16/10] overflow-hidden">
-                  <img 
-                    src={theme.image} 
-                    alt={theme.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
-                    <div className="flex gap-2 w-full">
-                      <Button variant="secondary" className="flex-1 bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border-white/20 gap-2">
-                        <Eye className="w-4 h-4" />
-                        Live Preview
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  {/* Badge */}
-                  <div className="absolute top-4 left-4">
-                    <span className={`px-3 py-1 rounded-lg text-xs font-bold backdrop-blur-md border ${
-                      theme.isFree 
-                      ? "bg-green-500/20 text-green-400 border-green-500/30" 
-                      : "bg-primary/20 text-primary-foreground border-primary/30"
-                    }`}>
-                      {theme.price}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-6 flex flex-col flex-1">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <p className="text-xs font-bold text-primary uppercase tracking-widest mb-1">{theme.category}</p>
-                      <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">{theme.name}</h3>
-                    </div>
-                    <div className="flex items-center gap-1 text-sm font-medium text-muted-foreground bg-accent/10 px-2 py-1 rounded-md">
-                       <Sparkles className="w-3 h-3 text-yellow-500" />
-                       <span>4.9</span>
-                    </div>
-                  </div>
-                  
-                  <p className="text-muted-foreground text-sm leading-relaxed mb-6 line-clamp-2">
-                    {theme.description}
-                  </p>
-
-                  <div className="mt-auto space-y-4">
-                    <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Zap className="w-3 h-3 text-primary" />
-                        <span>High Speed</span>
+          {themesLoading ? (
+            <div className="col-span-full flex justify-center py-20">
+              <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            </div>
+          ) : allThemes.length === 0 ? (
+            <Card className="col-span-full p-20 text-center border-dashed">
+              <ShoppingBag className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
+              <p className="text-muted-foreground font-medium italic">No themes in the marketplace yet. Be the first to publish one!</p>
+            </Card>
+          ) : (
+            allThemes.map((theme) => {
+              const isInstalling = installingId === theme.id.toString();
+              
+              return (
+                <Card key={theme.id} className="group relative overflow-hidden border-border/50 bg-card hover:shadow-2xl transition-all duration-500 rounded-3xl flex flex-col">
+                  {/* Image Preview */}
+                  <div className="relative aspect-[16/10] overflow-hidden bg-accent/5">
+                    {theme.previewImage ? (
+                      <img 
+                        src={theme.previewImage} 
+                        alt={theme.name}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center opacity-20">
+                        <Palette className="w-20 h-20" />
                       </div>
-                      <div className="flex items-center gap-1">
-                        <ShoppingBag className="w-3 h-3 text-primary" />
-                        <span>Ready to Sell</span>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
+                      <div className="flex gap-2 w-full">
+                        <Button variant="secondary" className="flex-1 bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border-white/20 gap-2">
+                          <Eye className="w-4 h-4" />
+                          Live Preview
+                        </Button>
                       </div>
                     </div>
                     
-                    <Button 
-                      onClick={() => handleInstall(theme)}
-                      disabled={isInstalling}
-                      className={`w-full h-12 rounded-xl text-md font-bold transition-all duration-300 ${
-                        isInstalling 
-                        ? "bg-muted text-muted-foreground" 
-                        : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5"
-                      }`}
-                    >
-                      {isInstalling ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                          Installing...
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="w-5 h-5 mr-2" />
-                          Add to Library
-                        </>
-                      )}
-                    </Button>
+                    {/* Badge */}
+                    <div className="absolute top-4 left-4">
+                      <span className={`px-3 py-1 rounded-lg text-xs font-bold backdrop-blur-md border ${
+                        parseFloat(theme.price || "0") === 0 
+                        ? "bg-green-500/20 text-green-400 border-green-500/30" 
+                        : "bg-primary/20 text-primary-foreground border-primary/30"
+                      }`}>
+                        {parseFloat(theme.price || "0") === 0 ? "Free" : `$${theme.price}`}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            );
-          })}
+  
+                  {/* Content */}
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <p className="text-xs font-bold text-primary uppercase tracking-widest mb-1">{theme.category || "General"}</p>
+                        <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">{theme.name}</h3>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm font-medium text-muted-foreground bg-accent/10 px-2 py-1 rounded-md">
+                         <Sparkles className="w-3 h-3 text-yellow-500" />
+                         <span>4.9</span>
+                      </div>
+                    </div>
+                    
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-6 line-clamp-2">
+                      {theme.description || "A beautiful custom-designed theme for your Sellora store."}
+                    </p>
+  
+                    <div className="mt-auto space-y-4">
+                      <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Zap className="w-3 h-3 text-primary" />
+                          <span>High Speed</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <ShoppingBag className="w-3 h-3 text-primary" />
+                          <span>Ready to Sell</span>
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        onClick={() => handleInstall({
+                          ...theme,
+                          id: theme.id.toString(),
+                          settings: { 
+                            sections: theme.sections, 
+                            colors: theme.colors as any, 
+                            typography: theme.typography as any 
+                          }
+                        } as any)}
+                        disabled={isInstalling}
+                        className={`w-full h-12 rounded-xl text-md font-bold transition-all duration-300 ${
+                          isInstalling 
+                          ? "bg-muted text-muted-foreground" 
+                          : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        {isInstalling ? (
+                          <>
+                            <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                            Installing...
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-5 h-5 mr-2" />
+                            Add to Library
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })
+          )}
         </div>
 
         {/* Call to Action */}

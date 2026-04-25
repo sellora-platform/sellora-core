@@ -10,6 +10,48 @@ export type HeroSettings = {
   showTrustBadges: boolean;
 };
 
+export const HeroSchema = {
+  name: "Hero Banner",
+  type: "hero",
+  settings: [
+    {
+      id: "heading",
+      type: "text",
+      label: "Heading",
+      default: "Elevate Your Style"
+    },
+    {
+      id: "subheading",
+      type: "textarea",
+      label: "Subheading",
+      default: "Discover our premium curated collection of high-quality products."
+    },
+    {
+      id: "buttonText",
+      type: "text",
+      label: "Button Text",
+      default: "Shop Now"
+    },
+    {
+      id: "alignment",
+      type: "select",
+      label: "Alignment",
+      options: [
+        { label: "Left", value: "left" },
+        { label: "Center", value: "center" },
+        { label: "Right", value: "right" }
+      ],
+      default: "center"
+    },
+    {
+      id: "showTrustBadges",
+      type: "checkbox",
+      label: "Show Trust Badges",
+      default: true
+    }
+  ]
+};
+
 export default function Hero({ settings }: { settings: HeroSettings }) {
   const alignmentClass = {
     left: "text-left items-start",

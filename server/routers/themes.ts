@@ -27,6 +27,14 @@ export const themesRouter = router({
         .where(eq(storeThemes.storeId, store.id));
     }),
 
+  // List all marketplace themes
+  listMarketplace: publicProcedure
+    .query(async () => {
+      return db.select()
+        .from(storeThemes)
+        .where(eq(storeThemes.isPublic, true));
+    }),
+
   // Get a specific theme by ID
   getById: protectedProcedure
     .input(z.object({ themeId: z.number() }))
@@ -55,6 +63,10 @@ export const themesRouter = router({
       colors: z.record(z.string()).optional(),
       typography: z.record(z.any()).optional(),
       sections: z.array(z.any()).optional(),
+      isPublic: z.boolean().optional(),
+      price: z.string().optional(),
+      category: z.string().optional(),
+      previewImage: z.string().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
       const store = await db.getStoreByMerchantId(ctx.user.id);
@@ -67,7 +79,11 @@ export const themesRouter = router({
         colors: input.colors || {},
         typography: input.typography || {},
         sections: input.sections || [],
-        isActive: false, // Always draft initially
+        isPublic: input.isPublic || false,
+        price: input.price || "0.00",
+        category: input.category || "General",
+        previewImage: input.previewImage,
+        isActive: false, 
       }).returning();
 
       return newTheme;
@@ -163,6 +179,10 @@ export const themesRouter = router({
       colors: z.record(z.string()).optional(),
       typography: z.record(z.any()).optional(),
       name: z.string().optional(),
+      isPublic: z.boolean().optional(),
+      price: z.string().optional(),
+      category: z.string().optional(),
+      previewImage: z.string().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
       const [theme] = await db.select()
@@ -184,6 +204,45 @@ export const themesRouter = router({
           sections: input.sections,
           colors: input.colors,
           typography: input.typography,
+          isPublic: input.isPublic,
+          price: input.price,
+          category: input.category,
+          previewImage: input.previewImage,
+          updatedAt: new Date(),
+        })
+        .where(eq(storeThemes.id, input.themeId))
+        .returning();
+
+      return updatedTheme;
+    }),
+
+  // Toggle Marketplace Status
+  toggleMarketplace: protectedProcedure
+    .input(z.object({ 
+      themeId: z.number(), 
+      isPublic: z.boolean(),
+      price: z.string().optional(),
+      category: z.string().optional()
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const [theme] = await db.select()
+        .from(storeThemes)
+        .where(eq(storeThemes.id, input.themeId))
+        .limit(1);
+
+      if (!theme) throw new Error("Theme not found");
+
+      // Verify store ownership (only store owner or admin can publish)
+      const store = await db.getStoreByMerchantId(ctx.user.id);
+      if (!store || store.id !== theme.storeId) {
+        throw new Error("Unauthorized");
+      }
+
+      const [updatedTheme] = await db.update(storeThemes)
+        .set({
+          isPublic: input.isPublic,
+          price: input.price,
+          category: input.category,
           updatedAt: new Date(),
         })
         .where(eq(storeThemes.id, input.themeId))
