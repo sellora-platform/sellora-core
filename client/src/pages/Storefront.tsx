@@ -17,6 +17,7 @@ import {
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import SectionRenderer from "@/storefront/SectionRenderer";
+import { CartProvider, useCart } from "@/storefront/CartContext";
 
 export default function Storefront({ params }: { params?: { slug?: string } }) {
   const [locationPath, setLocation] = useLocation();
@@ -141,6 +142,37 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
   };
 
   return (
+    <CartProvider>
+      <StorefrontContent 
+        store={store} 
+        products={products} 
+        theme={theme} 
+        pageKey={pageKey} 
+        sectionsToRender={sectionsToRender} 
+        selectedSectionId={selectedSectionId}
+        setLocation={setLocation}
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
+      />
+    </CartProvider>
+  );
+}
+
+function StorefrontContent({ 
+  store, 
+  products, 
+  theme, 
+  pageKey, 
+  sectionsToRender,
+  selectedSectionId,
+  setLocation,
+  mobileMenuOpen,
+  setMobileMenuOpen
+}: any) {
+  const { cartCount } = useCart();
+  const [search, setSearch] = useState("");
+
+  return (
     <div className="min-h-screen bg-background">
       {/* Visual Selection Styles */}
       <style dangerouslySetInnerHTML={{ __html: `
@@ -167,7 +199,7 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
       {/* Premium Navigation */}
       <nav className="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur-sm">
         <div className="container flex items-center justify-between h-16">
-          <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
+          <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setLocation(`/store/${store?.slug}`)}>
             <div
               className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold shadow-md"
               style={{ backgroundColor: store?.primaryColor || "#000" }}
@@ -184,28 +216,25 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
-            <Button variant="ghost" className="text-foreground hover:bg-accent/5 font-medium">
+            <Link href={`/store/${store?.slug}`} className="text-foreground hover:text-primary font-medium transition-colors">
+              Home
+            </Link>
+            <Link href={`/store/${store?.slug}/products`} className="text-foreground hover:text-primary font-medium transition-colors">
               Products
-            </Button>
-            <Button variant="ghost" className="text-foreground hover:bg-accent/5 font-medium">
-              About
-            </Button>
-            <Button variant="ghost" className="text-foreground hover:bg-accent/5 font-medium">
-              Contact
-            </Button>
+            </Link>
           </div>
 
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setLocation("/cart")}
+              onClick={() => setLocation(`/store/${store?.slug}/cart`)}
               className="relative text-foreground hover:bg-accent/5 transition-colors"
             >
               <ShoppingCart className="w-5 h-5" />
-              {cart.length > 0 && (
+              {cartCount > 0 && (
                 <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">
-                  {cart.length}
+                  {cartCount}
                 </span>
               )}
             </Button>
@@ -226,35 +255,25 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border/50 p-4 space-y-2 bg-background">
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-foreground hover:bg-accent/5 font-medium"
-            >
+          <div className="md:hidden border-t border-border/50 p-4 space-y-2 bg-background animate-in slide-in-from-top duration-300">
+            <Link href={`/store/${store?.slug}`} className="block px-4 py-3 text-foreground font-bold hover:bg-accent/5 rounded-xl">
+              Home
+            </Link>
+            <Link href={`/store/${store?.slug}/products`} className="block px-4 py-3 text-foreground font-bold hover:bg-accent/5 rounded-xl">
               Products
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-foreground hover:bg-accent/5 font-medium"
-            >
-              About
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-foreground hover:bg-accent/5 font-medium"
-            >
-              Contact
-            </Button>
+            </Link>
           </div>
         )}
       </nav>
 
-      {/* Dynamic Sections */}
-      <SectionRenderer 
-        sections={sectionsToRender as any || []} 
-        products={products} 
-        pageType={pageKey}
-      />
+      {/* Main Content */}
+      <main className="flex-1">
+        <SectionRenderer 
+          sections={sectionsToRender as any || []} 
+          products={products} 
+          pageType={pageKey}
+        />
+      </main>
 
 
       {/* Premium Footer */}

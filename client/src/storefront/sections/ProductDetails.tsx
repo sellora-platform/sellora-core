@@ -10,6 +10,7 @@ import {
   ShieldCheck, 
   RotateCcw 
 } from "lucide-react";
+import { useCart } from "../CartContext";
 
 interface ProductDetailsProps {
   settings: {
@@ -24,6 +25,7 @@ interface ProductDetailsProps {
 
 export default function ProductDetails({ settings, products }: ProductDetailsProps) {
   const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
   
   // In a real scenario, we'd get the current product from context or URL
   // For preview, we'll use the first product
@@ -103,6 +105,7 @@ export default function ProductDetails({ settings, products }: ProductDetailsPro
                 size="lg" 
                 className="flex-1 gap-2 font-bold h-12 shadow-lg shadow-primary/20"
                 style={{ backgroundColor: settings.buttonColor }}
+                onClick={() => addToCart(product, quantity)}
               >
                 <ShoppingCart className="w-5 h-5" />
                 {settings.buttonText || "Add to Cart"}

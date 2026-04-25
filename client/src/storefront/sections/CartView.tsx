@@ -8,7 +8,8 @@ import {
   ShieldCheck,
   Truck
 } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { useCart } from "../CartContext";
 
 interface CartViewProps {
   settings: {
@@ -20,21 +21,11 @@ interface CartViewProps {
 }
 
 export default function CartView({ settings }: CartViewProps) {
-  // Mock cart items for preview
-  const cartItems = [
-    {
-      id: 1,
-      name: "Premium Wireless Headphones",
-      price: 199.99,
-      quantity: 1,
-      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=200",
-      variant: "Space Gray"
-    }
-  ];
+  const { cart, cartTotal, updateQuantity, removeFromCart } = useCart();
+  const [, setLocation] = useLocation();
+  const storeSlug = window.location.pathname.split('/')[2];
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-  if (cartItems.length === 0) {
+  if (cart.length === 0) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-6 px-4 text-center">
         <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center">
@@ -58,7 +49,7 @@ export default function CartView({ settings }: CartViewProps) {
       <div className="grid lg:grid-cols-12 gap-12">
         {/* Cart Items List */}
         <div className="lg:col-span-8 space-y-6">
-          {cartItems.map((item) => (
+          {cart.map((item) => (
             <div key={item.id} className="flex gap-6 p-6 bg-white border border-border/50 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
               <div className="w-24 h-24 md:w-32 md:h-32 rounded-xl overflow-hidden bg-muted flex-shrink-0">
                 <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
@@ -70,20 +61,35 @@ export default function CartView({ settings }: CartViewProps) {
                     <h3 className="font-bold text-lg text-foreground hover:text-primary cursor-pointer transition-colors">
                       {item.name}
                     </h3>
-                    <p className="text-sm text-muted-foreground mt-1">Variant: {item.variant}</p>
+                    <p className="text-sm text-muted-foreground mt-1">Variant: {item.variant || "Standard"}</p>
                   </div>
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={() => removeFromCart(item.id)}
+                  >
                     <Trash2 className="w-5 h-5" />
                   </Button>
                 </div>
 
                 <div className="flex justify-between items-center mt-4">
                   <div className="flex items-center border rounded-lg overflow-hidden bg-muted/30">
-                    <button className="p-2 hover:bg-muted transition-colors"><Minus className="w-4 h-4" /></button>
+                    <button 
+                      className="p-2 hover:bg-muted transition-colors"
+                      onClick={() => updateQuantity(item.id, -1)}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
                     <span className="px-4 font-bold">{item.quantity}</span>
-                    <button className="p-2 hover:bg-muted transition-colors"><Plus className="w-4 h-4" /></button>
+                    <button 
+                      className="p-2 hover:bg-muted transition-colors"
+                      onClick={() => updateQuantity(item.id, 1)}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
                   </div>
-                  <div className="text-lg font-bold">${item.price}</div>
+                  <div className="text-lg font-bold">${(item.price * item.quantity).toFixed(2)}</div>
                 </div>
               </div>
             </div>
@@ -97,7 +103,7 @@ export default function CartView({ settings }: CartViewProps) {
             <div className="space-y-4 mb-8">
               <div className="flex justify-between text-muted-foreground">
                 <span>Subtotal</span>
-                <span className="font-medium text-foreground">${subtotal.toFixed(2)}</span>
+                <span className="font-medium text-foreground">${cartTotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-muted-foreground">
                 <span>Shipping</span>
@@ -105,11 +111,14 @@ export default function CartView({ settings }: CartViewProps) {
               </div>
               <div className="border-t border-border/50 pt-4 flex justify-between">
                 <span className="font-bold text-lg text-foreground">Total</span>
-                <span className="font-bold text-xl text-primary">${subtotal.toFixed(2)}</span>
+                <span className="font-bold text-xl text-primary">${cartTotal.toFixed(2)}</span>
               </div>
             </div>
 
-            <Button className="w-full h-14 text-lg font-bold gap-2 shadow-lg shadow-primary/20">
+            <Button 
+              className="w-full h-14 text-lg font-bold gap-2 shadow-lg shadow-primary/20"
+              onClick={() => setLocation(`/store/${storeSlug}/checkout`)}
+            >
               {settings.checkoutButtonText || "Checkout Now"}
               <ArrowRight className="w-5 h-5" />
             </Button>

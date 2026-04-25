@@ -2,13 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
-  CreditCard, 
-  Truck, 
-  MapPin, 
-  ChevronRight,
-  ShieldCheck,
-  Lock
+  Lock,
+  ShoppingBag
 } from "lucide-react";
+import { useCart } from "../CartContext";
+import { useLocation } from "wouter";
+import { toast } from "sonner";
 
 interface CheckoutFormProps {
   settings: {
@@ -20,6 +19,26 @@ interface CheckoutFormProps {
 }
 
 export default function CheckoutForm({ settings }: CheckoutFormProps) {
+  const { cart, cartTotal, clearCart } = useCart();
+  const [, setLocation] = useLocation();
+  const storeSlug = window.location.pathname.split('/')[2];
+
+  const handlePurchase = () => {
+    if (cart.length === 0) {
+      toast.error("Your cart is empty!");
+      return;
+    }
+    
+    // Simulate order placement
+    toast.success("Order Placed Successfully!", {
+      description: "Thank you for shopping with us."
+    });
+    
+    clearCart();
+    setTimeout(() => {
+      setLocation(`/store/${storeSlug}`);
+    }, 1500);
+  };
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 md:py-20">
       <div className="grid lg:grid-cols-12 gap-12">
@@ -113,22 +132,27 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
             <h2 className="text-xl font-bold mb-6">Order Summary</h2>
             
             <div className="space-y-4 mb-8">
-              <div className="flex gap-4 items-center">
-                <div className="w-16 h-16 rounded-lg bg-white border flex-shrink-0 flex items-center justify-center">
-                  <ShoppingBag className="w-8 h-8 text-muted-foreground" />
+              {cart.map((item) => (
+                <div key={item.id} className="flex gap-4 items-center">
+                  <div className="w-16 h-16 rounded-lg bg-white border flex-shrink-0 overflow-hidden">
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm truncate">{item.name}</p>
+                    <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                  </div>
+                  <span className="font-bold text-sm">${(item.price * item.quantity).toFixed(2)}</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm truncate">Premium Product Name</p>
-                  <p className="text-xs text-muted-foreground">Qty: 1</p>
-                </div>
-                <span className="font-bold text-sm">$49.99</span>
-              </div>
+              ))}
+              {cart.length === 0 && (
+                <p className="text-sm text-muted-foreground italic">Your cart is empty.</p>
+              )}
             </div>
 
             <div className="space-y-3 border-t pt-6 mb-6">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-medium">$49.99</span>
+                <span className="font-medium">${cartTotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Shipping</span>
@@ -136,13 +160,15 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
               </div>
               <div className="flex justify-between text-lg pt-2">
                 <span className="font-bold">Total</span>
-                <span className="font-bold text-primary">$49.99</span>
+                <span className="font-bold text-primary">${cartTotal.toFixed(2)}</span>
               </div>
             </div>
 
             <Button 
-              className="w-full h-14 text-lg font-bold rounded-xl gap-2 shadow-lg shadow-primary/10"
+              className="w-full h-14 text-lg font-bold rounded-xl gap-2 shadow-lg shadow-primary/10 transition-transform active:scale-95"
               style={{ backgroundColor: settings.buttonColor }}
+              onClick={handlePurchase}
+              disabled={cart.length === 0}
             >
               <Lock className="w-5 h-5" />
               {settings.buttonText || "Complete Purchase"}
