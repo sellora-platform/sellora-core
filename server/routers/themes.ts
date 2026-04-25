@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
-import { db } from "../db";
+import { db, getStoreByMerchantId } from "../db";
 import { storeThemes } from "../../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 
@@ -19,7 +19,7 @@ export const themesRouter = router({
   // List all themes for the current user's store
   listByStore: protectedProcedure
     .query(async ({ ctx }) => {
-      const store = await db.getStoreByMerchantId(ctx.user.id);
+      const store = await getStoreByMerchantId(ctx.user.id);
       if (!store) return [];
 
       return db.select()
@@ -60,16 +60,16 @@ export const themesRouter = router({
     .input(z.object({
       name: z.string(),
       description: z.string().optional(),
-      colors: z.record(z.string()).optional(),
-      typography: z.record(z.any()).optional(),
-      sections: z.array(z.any()).optional(),
+      colors: z.record(z.string(), z.any()).optional(),
+      typography: z.record(z.string(), z.any()).optional(),
+      sections: z.record(z.string(), z.any()).optional(),
       isPublic: z.boolean().optional(),
       price: z.string().optional(),
       category: z.string().optional(),
       previewImage: z.string().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
-      const store = await db.getStoreByMerchantId(ctx.user.id);
+      const store = await getStoreByMerchantId(ctx.user.id);
       if (!store) throw new Error("Store not found");
 
       const [newTheme] = await db.insert(storeThemes).values({
@@ -78,7 +78,7 @@ export const themesRouter = router({
         description: input.description,
         colors: input.colors || {},
         typography: input.typography || {},
-        sections: input.sections || [],
+        sections: (input.sections as any) || { index: [], product: [], cart: [], checkout: [] },
         isPublic: input.isPublic || false,
         price: input.price || "0.00",
         category: input.category || "General",
@@ -171,13 +171,13 @@ export const themesRouter = router({
   update: protectedProcedure
     .input(z.object({
       themeId: z.number(),
-      sections: z.record(z.array(z.object({
+      sections: z.record(z.string(), z.array(z.object({
         id: z.string(),
         type: z.string(),
-        settings: z.record(z.any()),
+        settings: z.record(z.string(), z.any()),
       }))).optional(),
-      colors: z.record(z.string()).optional(),
-      typography: z.record(z.any()).optional(),
+      colors: z.record(z.string(), z.any()).optional(),
+      typography: z.record(z.string(), z.any()).optional(),
       name: z.string().optional(),
       isPublic: z.boolean().optional(),
       price: z.string().optional(),
@@ -193,7 +193,7 @@ export const themesRouter = router({
       if (!theme) throw new Error("Theme not found");
 
       // Verify store ownership
-      const store = await db.getStoreByMerchantId(ctx.user.id);
+      const store = await getStoreByMerchantId(ctx.user.id);
       if (!store || store.id !== theme.storeId) {
         throw new Error("Unauthorized");
       }
@@ -201,9 +201,9 @@ export const themesRouter = router({
       const [updatedTheme] = await db.update(storeThemes)
         .set({
           name: input.name,
-          sections: input.sections,
-          colors: input.colors,
-          typography: input.typography,
+          sections: input.sections as any,
+          colors: input.colors as any,
+          typography: input.typography as any,
           isPublic: input.isPublic,
           price: input.price,
           category: input.category,
@@ -233,7 +233,7 @@ export const themesRouter = router({
       if (!theme) throw new Error("Theme not found");
 
       // Verify store ownership (only store owner or admin can publish)
-      const store = await db.getStoreByMerchantId(ctx.user.id);
+      const store = await getStoreByMerchantId(ctx.user.id);
       if (!store || store.id !== theme.storeId) {
         throw new Error("Unauthorized");
       }

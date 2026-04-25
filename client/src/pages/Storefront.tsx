@@ -19,7 +19,7 @@ import { trpc } from "@/lib/trpc";
 import SectionRenderer from "@/storefront/SectionRenderer";
 
 export default function Storefront({ params }: { params?: { slug?: string } }) {
-  const [locationPath] = useLocation();
+  const [locationPath, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState<any[]>([]);
@@ -91,6 +91,9 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
     { enabled: !!themeId }
   );
 
+  const products = productsQuery.data || [];
+  const theme = themeId ? themeByIdQuery.data : themeByStoreQuery.data;
+
   const getPageKey = () => {
     if (locationPath.endsWith("/products")) return "product";
     if (locationPath.endsWith("/cart")) return "cart";
@@ -101,9 +104,6 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
   
   const themeSections = theme?.sections as Record<string, any>;
   const sectionsToRender = previewSections || (themeSections?.[pageKey] || []);
-
-  const products = productsQuery.data || [];
-  const theme = themeId ? themeByIdQuery.data : themeByStoreQuery.data;
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
   );

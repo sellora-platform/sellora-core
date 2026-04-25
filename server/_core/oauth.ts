@@ -437,7 +437,11 @@ export function registerAuthRoutes(app: Express) {
         id: user.id,
         email: user.email!,
         name: user.name,
-        role: user.role,
+        role: user.role as "user" | "admin",
+        isVerified: user.isVerified ?? false,
+        tier: (user.tier as any) ?? "free",
+        subscriptionStatus: user.subscriptionStatus ?? "trialing",
+        trialEndsAt: user.trialEndsAt ? user.trialEndsAt.toISOString() : null,
       });
 
       const resetLink = `${req.get("origin")}/reset-password?token=${resetToken}`;
@@ -550,7 +554,7 @@ export function registerAuthRoutes(app: Express) {
         trialEndsAt: updatedUser.trialEndsAt ? updatedUser.trialEndsAt.toISOString() : null,
       });
 
-      res.cookie(SESSION_COOKIE_NAME, token, getSessionCookieOptions());
+      res.cookie(SESSION_COOKIE_NAME, token, getSessionCookieOptions(req));
       res.json({ success: true });
     } catch (error) {
       console.error("[Auth] Update subscription error:", error);

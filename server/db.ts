@@ -18,7 +18,6 @@ import {
   orderItems, type InsertOrderItem,
   discounts, type InsertDiscount,
   aiInteractions, type InsertAIInteraction,
-  aiInteractions, type InsertAIInteraction,
   storeThemes, type InsertStoreTheme,
   plans,
 } from "../drizzle/schema";

@@ -27,7 +27,8 @@ import {
   Box,
   MousePointer2,
   Copy,
-  Search
+  Search,
+  Loader2
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
