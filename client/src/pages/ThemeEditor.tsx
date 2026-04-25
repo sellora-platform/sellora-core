@@ -44,6 +44,14 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -67,6 +75,7 @@ export default function ThemeEditor() {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [selectedPage, setSelectedPage] = useState("Home Page");
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
+  const [searchQuery, setSearchQuery] = useState("");
   
   // Data State
   const [templates, setTemplates] = useState<Record<string, Section[]>>({
@@ -144,10 +153,24 @@ export default function ThemeEditor() {
     if (previewRef.current?.contentWindow) {
       previewRef.current.contentWindow.postMessage({ 
         type: "THEME_UPDATE", 
-        sections: localSections 
+        sections: localSections,
+        selectedSectionId: selectedSectionId
       }, "*");
     }
-  }, [localSections]);
+  }, [localSections, selectedSectionId]);
+
+  // Listen for Selection from Preview
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === "SECTION_SELECT") {
+        setSelectedSectionId(event.data.sectionId);
+        setActiveActivity("sections");
+        toast.info("Section selected", { duration: 1000 });
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
 
   const updateMutation = trpc.themes.update.useMutation({
     onSuccess: () => {
@@ -264,26 +287,28 @@ export default function ThemeEditor() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* 2. ACTIVITY BAR (Narrow Left) */}
-        <aside className="w-12 border-r border-[#d1d1d1] bg-white flex flex-col items-center py-4 gap-6">
+        <div className="w-16 bg-[#1a1a1a] flex flex-col items-center py-4 gap-4">
           <button 
             onClick={() => setActiveActivity("sections")}
-            className={`p-2 rounded-md transition-colors ${activeActivity === "sections" ? "bg-[#f1f1f1] text-[#008060]" : "text-[#616161] hover:bg-[#f1f1f1]"}`}
+            className={`p-3 rounded-xl transition-all ${activeActivity === "sections" ? "bg-[#008060] text-white shadow-lg" : "text-[#a1a1a1] hover:text-white"}`}
           >
-            <Layers className="w-6 h-6" />
+            <Layout className="w-6 h-6" />
           </button>
           <button 
             onClick={() => setActiveActivity("settings")}
-            className={`p-2 rounded-md transition-colors ${activeActivity === "settings" ? "bg-[#f1f1f1] text-[#008060]" : "text-[#616161] hover:bg-[#f1f1f1]"}`}
+            className={`p-3 rounded-xl transition-all ${activeActivity === "settings" ? "bg-[#008060] text-white shadow-lg" : "text-[#a1a1a1] hover:text-white"}`}
           >
-            <Settings className="w-6 h-6" />
+            <Palette className="w-6 h-6" />
           </button>
-          <button className="p-2 rounded-md text-[#616161] hover:bg-[#f1f1f1] mt-auto">
-            <Box className="w-6 h-6" />
-          </button>
-        </aside>
+          <div className="mt-auto">
+            <button className="p-3 text-[#a1a1a1] hover:text-white transition-all">
+              <Box className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
 
         {/* 3. CONFIGURATION PANE (Middle) */}
-        <aside className="w-[300px] border-r border-[#d1d1d1] bg-white flex flex-col shadow-sm">
+        <aside className="w-80 bg-white border-r border-[#d1d1d1] flex flex-col shadow-xl z-10">
           <div className="h-12 border-b border-[#f1f1f1] flex items-center px-4 font-bold text-sm bg-white sticky top-0 z-10">
             {selectedSectionId ? (
               <button onClick={() => setSelectedSectionId(null)} className="flex items-center gap-2 hover:text-[#008060] transition-colors">
@@ -365,8 +390,8 @@ export default function ThemeEditor() {
                     </div>
                   ))}
 
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                  <Dialog>
+                    <DialogTrigger asChild>
                       <Button 
                         variant="ghost" 
                         className="w-full justify-start text-[#008060] hover:bg-[#f1f1f1] text-sm font-semibold h-10 mt-4 border border-dashed border-[#008060]/30"
@@ -374,22 +399,49 @@ export default function ThemeEditor() {
                         <Plus className="w-4 h-4 mr-2" />
                         Add Section
                       </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-[280px]">
-                      {Object.values(SECTION_SCHEMAS).map((schema: any) => (
-                        <DropdownMenuItem 
-                          key={schema.type}
-                          onClick={() => addSection(schema.type)}
-                          className="py-3 cursor-pointer"
-                        >
-                          <div className="flex flex-col">
-                            <span className="font-bold text-sm">{schema.name}</span>
-                            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Type: {schema.type}</span>
-                          </div>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl rounded-3xl border-none shadow-2xl p-0 overflow-hidden">
+                      <div className="p-8 border-b bg-gradient-to-br from-[#008060] to-[#006e52] text-white">
+                        <h2 className="text-3xl font-black mb-2">Add Section</h2>
+                        <p className="text-white/80 text-sm">Choose a high-performance section to add to your page.</p>
+                      </div>
+                      <div className="p-6">
+                        <div className="relative mb-6">
+                          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input 
+                            placeholder="Search sections..." 
+                            className="pl-12 h-12 rounded-xl bg-muted/30 border-none"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2">
+                          {Object.entries(SECTION_SCHEMAS)
+                            .filter(([type, schema]: [string, any]) => 
+                              schema.name.toLowerCase().includes(searchQuery.toLowerCase())
+                            )
+                            .map(([type, schema]: [string, any]) => (
+                            <button
+                              key={type}
+                              onClick={() => {
+                                addSection(type);
+                                // The Dialog handles its own close state
+                              }}
+                              className="group flex flex-col items-start p-5 rounded-2xl border-2 border-transparent hover:border-[#008060] hover:bg-[#008060]/5 transition-all text-left bg-card shadow-sm"
+                            >
+                              <div className="w-10 h-10 rounded-xl bg-[#008060]/10 text-[#008060] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <Layout className="w-5 h-5" />
+                              </div>
+                              <span className="font-bold text-md block text-[#1a1a1a]">{schema.name}</span>
+                              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                                Optimized for high conversions and speed.
+                              </p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
 
                 <div className="p-3 rounded-md hover:bg-[#f1f1f1] flex items-center justify-between cursor-pointer group border border-transparent hover:border-[#d1d1d1] mt-4">

@@ -66,7 +66,17 @@ export default function SectionRenderer({
       {sections.map((section) => {
         const Component = SECTION_COMPONENTS[section.type];
         if (!Component) return null;
-        return <Component key={section.id} id={section.id} settings={section.settings} products={products} />;
+        
+        return (
+          <div 
+            key={section.id} 
+            data-section-id={section.id} 
+            className="section-wrapper relative group"
+          >
+            <Component id={section.id} settings={section.settings} products={products} />
+            <div className="absolute inset-0 border-2 border-primary/0 group-hover:border-primary/30 pointer-events-none transition-all z-50" />
+          </div>
+        );
       })}
     </>
   );

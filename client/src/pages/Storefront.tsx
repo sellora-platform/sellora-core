@@ -43,16 +43,34 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
   const themeId = themeIdParam ? parseInt(themeIdParam) : null;
 
   const [previewSections, setPreviewSections] = useState<any[] | null>(null);
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
 
   // Listen for editor updates
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === "THEME_UPDATE") {
         setPreviewSections(event.data.sections);
+        setSelectedSectionId(event.data.selectedSectionId);
       }
     };
     window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
+
+    // Click to select logic for Editor
+    const handleClick = (e: MouseEvent) => {
+      if (!isPreview) return;
+      const target = e.target as HTMLElement;
+      const sectionElement = target.closest("[data-section-id]");
+      if (sectionElement) {
+        const sectionId = sectionElement.getAttribute("data-section-id");
+        window.parent.postMessage({ type: "SECTION_SELECT", sectionId }, "*");
+      }
+    };
+    window.addEventListener("click", handleClick);
+
+    return () => {
+      window.removeEventListener("message", handleMessage);
+      window.removeEventListener("click", handleClick);
+    };
   }, []);
 
   const storeBySlugQuery = trpc.stores.getBySlug.useQuery(
@@ -124,6 +142,28 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Visual Selection Styles */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        [data-section-id="${selectedSectionId}"] {
+          outline: 3px solid #3b82f6 !important;
+          outline-offset: -3px;
+          position: relative;
+          z-index: 40;
+        }
+        [data-section-id="${selectedSectionId}"]::after {
+          content: "Selected";
+          position: absolute;
+          top: 0;
+          right: 0;
+          background: #3b82f6;
+          color: white;
+          font-size: 10px;
+          font-weight: bold;
+          padding: 2px 8px;
+          border-bottom-left-radius: 8px;
+          z-index: 50;
+        }
+      ` }} />
       {/* Premium Navigation */}
       <nav className="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur-sm">
         <div className="container flex items-center justify-between h-16">
