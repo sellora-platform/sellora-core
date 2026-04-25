@@ -61,21 +61,20 @@ function getJwtSecret(): Uint8Array {
  * Create a signed JWT session token for a user.
  */
 export async function createSessionToken(user: SessionUser): Promise<string> {
-  return new SignJWT({})
+  return new SignJWT({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    isVerified: user.isVerified,
+    plan: user.plan,
+    subscriptionStatus: user.subscriptionStatus,
+    trialEndsAt: user.trialEndsAt,
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(SESSION_DURATION)
     .setSubject(String(user.id))
-    .setPayload({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      isVerified: user.isVerified,
-      plan: user.plan,
-      subscriptionStatus: user.subscriptionStatus,
-      trialEndsAt: user.trialEndsAt,
-    })
     .sign(getJwtSecret());
 }
 
