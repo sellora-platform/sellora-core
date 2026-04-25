@@ -1,28 +1,48 @@
 import Hero, { HeroSchema } from "./sections/Hero";
 import FeaturedCollection, { FeaturedCollectionSchema } from "./sections/FeaturedCollection";
 import ImageBanner, { ImageBannerSchema } from "./sections/ImageBanner";
+import ProductDetails, { Schema as ProductDetailsSchema } from "./sections/ProductDetails";
+import CartView, { Schema as CartViewSchema } from "./sections/CartView";
+import CheckoutForm, { Schema as CheckoutFormSchema } from "./sections/CheckoutForm";
 
 export const SECTION_COMPONENTS: Record<string, any> = {
   hero: Hero,
   featured_collection: FeaturedCollection,
   image_banner: ImageBanner,
+  "product-details": ProductDetails,
+  "cart-view": CartView,
+  "checkout-form": CheckoutForm,
 };
 
 export const SECTION_SCHEMAS: Record<string, any> = {
   hero: HeroSchema,
   featured_collection: FeaturedCollectionSchema,
   image_banner: ImageBannerSchema,
+  "product-details": ProductDetailsSchema,
+  "cart-view": CartViewSchema,
+  "checkout-form": CheckoutFormSchema,
 };
 
 export default function SectionRenderer({ 
   sections, 
-  products 
+  products,
+  pageType = "index"
 }: { 
-  sections: Array<{ type: string; settings: any }>;
+  sections: Array<{ id: string; type: string; settings: any }>;
   products: any[];
+  pageType?: string;
 }) {
   if (!sections || sections.length === 0) {
-    // Default sections if none defined
+    if (pageType === "product") {
+      return <ProductDetails settings={{ showSocialSharing: true, showTrustBadges: true }} products={products} />;
+    }
+    if (pageType === "cart") {
+      return <CartView settings={{ title: "Your Cart", showTrustBadges: true }} />;
+    }
+    if (pageType === "checkout") {
+      return <CheckoutForm settings={{ heading: "Checkout" }} />;
+    }
+
     return (
       <>
         <Hero settings={{ 

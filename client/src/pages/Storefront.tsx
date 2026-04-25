@@ -213,6 +213,7 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
       <SectionRenderer 
         sections={sectionsToRender as any || []} 
         products={products} 
+        pageType={pageKey}
       />
 
 
