@@ -68,6 +68,8 @@ export default function ThemeEditor() {
   
   // Data State
   const [localSections, setLocalSections] = useState<Section[]>([]);
+  const [history, setHistory] = useState<Section[][]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
   const previewRef = useRef<HTMLIFrameElement>(null);
 
   // Queries
@@ -91,9 +93,36 @@ export default function ThemeEditor() {
 
   useEffect(() => {
     if (theme?.sections) {
-      setLocalSections(theme.sections as Section[]);
+      const sections = theme.sections as Section[];
+      setLocalSections(sections);
+      setHistory([sections]);
+      setHistoryIndex(0);
     }
   }, [theme]);
+
+  const pushToHistory = (sections: Section[]) => {
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(JSON.parse(JSON.stringify(sections)));
+    if (newHistory.length > 30) newHistory.shift();
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  };
+
+  const undo = () => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setLocalSections(history[newIndex]);
+      setHistoryIndex(newIndex);
+    }
+  };
+
+  const redo = () => {
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      setLocalSections(history[newIndex]);
+      setHistoryIndex(newIndex);
+    }
+  };
 
   // Sync to Preview
   useEffect(() => {
@@ -118,7 +147,9 @@ export default function ThemeEditor() {
   };
 
   const handleUpdateSection = (id: string, settings: any) => {
-    setLocalSections(prev => prev.map(s => s.id === id ? { ...s, settings } : s));
+    const newSections = localSections.map(s => s.id === id ? { ...s, settings } : s);
+    setLocalSections(newSections);
+    pushToHistory(newSections);
   };
 
   const addSection = (type: string) => {
@@ -129,7 +160,9 @@ export default function ThemeEditor() {
       defaultSettings[s.id] = s.default;
     });
     
-    setLocalSections([...localSections, { id: newId, type, settings: defaultSettings }]);
+    const newSections = [...localSections, { id: newId, type, settings: defaultSettings }];
+    setLocalSections(newSections);
+    pushToHistory(newSections);
     setSelectedSectionId(newId);
   };
 
@@ -180,13 +213,29 @@ export default function ThemeEditor() {
             </button>
           </div>
           <div className="flex items-center gap-1 border-r border-[#d1d1d1] pr-3 mr-3">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-[#616161]"><Undo2 className="w-4 h-4" /></Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-[#616161]"><Redo2 className="w-4 h-4" /></Button>
+            <Button 
+              variant="ghost" size="sm" 
+              className={`h-8 w-8 p-0 ${historyIndex <= 0 ? 'text-[#c1c1c1] cursor-not-allowed' : 'text-[#616161]'}`}
+              onClick={undo}
+              disabled={historyIndex <= 0}
+            >
+              <Undo2 className="w-4 h-4" />
+            </Button>
+            <Button 
+              variant="ghost" size="sm" 
+              className={`h-8 w-8 p-0 ${historyIndex >= history.length - 1 ? 'text-[#c1c1c1] cursor-not-allowed' : 'text-[#616161]'}`}
+              onClick={redo}
+              disabled={historyIndex >= history.length - 1}
+            >
+              <Redo2 className="w-4 h-4" />
+            </Button>
           </div>
           <Button 
             onClick={handleSave} 
-            className="bg-[#008060] hover:bg-[#006e52] text-white font-bold h-9 px-6 rounded-md shadow-sm"
+            disabled={updateMutation.isPending}
+            className="bg-[#008060] hover:bg-[#006e52] text-white font-bold h-9 px-6 rounded-md shadow-sm flex items-center gap-2"
           >
+            {updateMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             Save
           </Button>
         </div>
@@ -442,7 +491,9 @@ export default function ThemeEditor() {
                     variant="ghost" 
                     className="w-full text-red-600 hover:bg-red-50 hover:text-red-700 h-10 gap-2"
                     onClick={() => {
-                      setLocalSections(prev => prev.filter(s => s.id !== selectedSectionId));
+                      const newSections = localSections.filter(s => s.id !== selectedSectionId);
+                      setLocalSections(newSections);
+                      pushToHistory(newSections);
                       setSelectedSectionId(null);
                     }}
                   >
