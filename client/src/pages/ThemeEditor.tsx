@@ -26,14 +26,14 @@ import {
   Copy,
   Search,
   Loader2,
-  Sparkles
+  Sparkles,
+  ArrowLeft,
+  Undo2,
+  Redo2
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 import { SECTION_SCHEMAS } from "@/storefront/SectionRenderer";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
 import { 
   Select, 
   SelectContent, 
