@@ -127,19 +127,36 @@ export default function ThemeEditor() {
 
   const theme = themeId ? themeQuery.data : activeThemeQuery.data;
 
+  // Initial Load
   useEffect(() => {
-    if (theme?.sections) {
-      const sections = theme.sections as Record<string, Section[]>;
-      setTemplates(sections);
-      setHistory([sections]);
+    if (theme) {
+      if (theme.sections) {
+        setTemplates(theme.sections as any);
+      }
+      
+      const colors = theme.colors as any;
+      const typography = theme.typography as any;
+      
+      const newGlobal = {
+        primaryColor: colors?.primary || "#008060",
+        backgroundColor: colors?.background || "#ffffff",
+        textColor: colors?.text || "#1a1a1a",
+        fontFamily: typography?.family || "Inter"
+      };
+      
+      setGlobalSettings(newGlobal);
+      setHistory([{ 
+        templates: theme.sections || templates, 
+        globalSettings: newGlobal 
+      }]);
       setHistoryIndex(0);
     }
-  }, [theme]);
+  }, [themeQuery.data]);
 
-  const pushToHistory = (newTemplates: Record<string, Section[]>) => {
+  const pushToHistory = (newTemplates: Record<string, Section[]>, newGlobalSettings: typeof globalSettings) => {
     const newHistory = history.slice(0, historyIndex + 1);
-    newHistory.push(JSON.parse(JSON.stringify(newTemplates)));
-    if (newHistory.length > 50) newHistory.shift(); // Increased history limit
+    newHistory.push({ templates: JSON.parse(JSON.stringify(newTemplates)), globalSettings: JSON.parse(JSON.stringify(newGlobalSettings)) });
+    if (newHistory.length > 50) newHistory.shift(); 
     setHistory(newHistory);
     setHistoryIndex(newHistory.length - 1);
   };
@@ -147,7 +164,8 @@ export default function ThemeEditor() {
   const undo = () => {
     if (historyIndex > 0) {
       const newIndex = historyIndex - 1;
-      setTemplates(history[newIndex]);
+      setTemplates(history[newIndex].templates);
+      setGlobalSettings(history[newIndex].globalSettings);
       setHistoryIndex(newIndex);
       toast.info("Undo performed", { duration: 1000, icon: <Undo2 className="w-4 h-4" /> });
     }
@@ -156,7 +174,8 @@ export default function ThemeEditor() {
   const redo = () => {
     if (historyIndex < history.length - 1) {
       const newIndex = historyIndex + 1;
-      setTemplates(history[newIndex]);
+      setTemplates(history[newIndex].templates);
+      setGlobalSettings(history[newIndex].globalSettings);
       setHistoryIndex(newIndex);
       toast.info("Redo performed", { duration: 1000, icon: <Redo2 className="w-4 h-4" /> });
     }
@@ -209,7 +228,15 @@ export default function ThemeEditor() {
     if (!theme) return;
     updateMutation.mutate({
       themeId: theme.id,
-      sections: templates,
+      sections: templates as any,
+      colors: {
+        primary: globalSettings.primaryColor,
+        background: globalSettings.backgroundColor,
+        text: globalSettings.textColor
+      },
+      typography: {
+        family: globalSettings.fontFamily
+      }
     });
   };
 
@@ -217,7 +244,7 @@ export default function ThemeEditor() {
     const newSections = localSections.map(s => s.id === id ? { ...s, settings } : s);
     const newTemplates = { ...templates, [pageKey]: newSections };
     setTemplates(newTemplates);
-    pushToHistory(newTemplates);
+    pushToHistory(newTemplates, globalSettings);
   };
 
   const addSection = (type: string) => {
@@ -231,7 +258,7 @@ export default function ThemeEditor() {
     const newSections = [...localSections, { id: newId, type, settings: defaultSettings }];
     const newTemplates = { ...templates, [pageKey]: newSections };
     setTemplates(newTemplates);
-    pushToHistory(newTemplates);
+    pushToHistory(newTemplates, globalSettings);
     setSelectedSectionId(newId);
   };
 
@@ -335,7 +362,11 @@ export default function ThemeEditor() {
                       <Input 
                         type="color" 
                         value={globalSettings.primaryColor} 
-                        onChange={(e) => setGlobalSettings({...globalSettings, primaryColor: e.target.value})}
+                        onChange={(e) => {
+                          const newSettings = {...globalSettings, primaryColor: e.target.value};
+                          setGlobalSettings(newSettings);
+                          pushToHistory(templates, newSettings);
+                        }}
                         className="w-10 h-10 p-1 rounded-lg border-none bg-transparent cursor-pointer"
                       />
                     </div>
@@ -344,7 +375,11 @@ export default function ThemeEditor() {
                       <Input 
                         type="color" 
                         value={globalSettings.backgroundColor} 
-                        onChange={(e) => setGlobalSettings({...globalSettings, backgroundColor: e.target.value})}
+                        onChange={(e) => {
+                          const newSettings = {...globalSettings, backgroundColor: e.target.value};
+                          setGlobalSettings(newSettings);
+                          pushToHistory(templates, newSettings);
+                        }}
                         className="w-10 h-10 p-1 rounded-lg border-none bg-transparent cursor-pointer"
                       />
                     </div>
@@ -355,7 +390,11 @@ export default function ThemeEditor() {
                   <Label className="text-[10px] font-bold text-[#616161] uppercase tracking-widest">Typography</Label>
                   <Select 
                     value={globalSettings.fontFamily} 
-                    onValueChange={(val) => setGlobalSettings({...globalSettings, fontFamily: val})}
+                    onValueChange={(val) => {
+                      const newSettings = {...globalSettings, fontFamily: val};
+                      setGlobalSettings(newSettings);
+                      pushToHistory(templates, newSettings);
+                    }}
                   >
                     <SelectTrigger className="h-12 rounded-xl border-[#d1d1d1]">
                       <SelectValue />
@@ -404,7 +443,7 @@ export default function ThemeEditor() {
                               [newSections[idx-1], newSections[idx]] = [newSections[idx], newSections[idx-1]];
                               const newTemplates = { ...templates, [pageKey]: newSections };
                               setTemplates(newTemplates);
-                              pushToHistory(newTemplates);
+                              pushToHistory(newTemplates, globalSettings);
                             }
                           }}
                         >
@@ -419,7 +458,7 @@ export default function ThemeEditor() {
                               [newSections[idx], newSections[idx+1]] = [newSections[idx+1], newSections[idx]];
                               const newTemplates = { ...templates, [pageKey]: newSections };
                               setTemplates(newTemplates);
-                              pushToHistory(newTemplates);
+                              pushToHistory(newTemplates, globalSettings);
                             }
                           }}
                         >
@@ -434,7 +473,7 @@ export default function ThemeEditor() {
                             newSections.splice(idx + 1, 0, newSection);
                             const newTemplates = { ...templates, [pageKey]: newSections };
                             setTemplates(newTemplates);
-                            pushToHistory(newTemplates);
+                            pushToHistory(newTemplates, globalSettings);
                           }}
                         >
                           <Copy className="w-3.5 h-3.5" />
@@ -470,6 +509,7 @@ export default function ThemeEditor() {
                   </DropdownMenu>
                 </div>
 
+                {/* Theme Settings at Bottom */}
                 <div className="p-4 border-t mt-4 bg-[#f9f9f9]/50">
                   <span className="text-[10px] font-bold text-[#616161] uppercase tracking-wider mb-4 block">Theme Settings</span>
                   <div className="space-y-4">
@@ -478,13 +518,21 @@ export default function ThemeEditor() {
                       <Input 
                         type="color" 
                         value={globalSettings.primaryColor} 
-                        onChange={(e) => setGlobalSettings({...globalSettings, primaryColor: e.target.value})}
+                        onChange={(e) => {
+                          const newSettings = {...globalSettings, primaryColor: e.target.value};
+                          setGlobalSettings(newSettings);
+                          pushToHistory(templates, newSettings);
+                        }}
                         className="w-8 h-8 p-0 rounded-md border-none bg-transparent cursor-pointer"
                       />
                     </div>
                     <Select 
                       value={globalSettings.fontFamily} 
-                      onValueChange={(val) => setGlobalSettings({...globalSettings, fontFamily: val})}
+                      onValueChange={(val) => {
+                        const newSettings = {...globalSettings, fontFamily: val};
+                        setGlobalSettings(newSettings);
+                        pushToHistory(templates, newSettings);
+                      }}
                     >
                       <SelectTrigger className="h-8 text-xs">
                         <SelectValue placeholder="Font Family" />
@@ -493,6 +541,7 @@ export default function ThemeEditor() {
                         <SelectItem value="Inter">Inter</SelectItem>
                         <SelectItem value="Playfair Display">Playfair</SelectItem>
                         <SelectItem value="Montserrat">Montserrat</SelectItem>
+                        <SelectItem value="Roboto">Roboto</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -541,23 +590,30 @@ export default function ThemeEditor() {
                             {field.label}
                           </Label>
 
-                          {field.type === "text" && (
+                          {field.type === "text" || field.type === "url" ? (
                             <Input 
-                              className="h-10 border-[#d1d1d1] focus-visible:ring-[#008060]"
                               value={currentSection?.settings[field.id] || ""} 
-                              onChange={(e) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: e.target.value })}
+                              onChange={(e) => handleUpdateSection(currentSection!.id, {
+                                ...currentSection!.settings,
+                                [field.id]: e.target.value
+                              })}
+                              className="h-10 rounded-xl border-[#d1d1d1]"
                             />
-                          )}
-
-                          {field.type === "textarea" && (
+                          ) : field.type === "image" ? (
+                            <ImagePicker
+                              currentValue={currentSection?.settings[field.id] || ""}
+                              onSelect={(url) => handleUpdateSection(currentSection!.id, {
+                                ...currentSection!.settings,
+                                [field.id]: url
+                              })}
+                            />
+                          ) : field.type === "textarea" ? (
                             <Textarea 
                               className="min-h-[100px] border-[#d1d1d1] focus-visible:ring-[#008060] resize-none"
                               value={currentSection?.settings[field.id] || ""} 
                               onChange={(e) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: e.target.value })}
                             />
-                          )}
-
-                          {field.type === "select" && (
+                          ) : field.type === "select" ? (
                             <Select 
                               value={currentSection?.settings[field.id]} 
                               onValueChange={(val) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
