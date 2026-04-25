@@ -11,6 +11,7 @@ import { exportsRouter } from "./routers/exports";
 import { dashboardRouter } from "./routers/dashboard";
 import { subscriptionsRouter } from "./routers/subscriptions";
 import { themesRouter } from "./routers/themes";
+import { uploadRouter } from "./routers/upload";
 
 export const appRouter = router({
   system: systemRouter,
@@ -34,6 +35,7 @@ export const appRouter = router({
   discounts: discountsRouter,
   ai: aiRouter,
   dashboard: dashboardRouter,
+  upload: uploadRouter,
 });
 
 export type AppRouter = typeof appRouter;

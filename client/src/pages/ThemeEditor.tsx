@@ -55,8 +55,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import ImagePicker from "@/storefront/sections/ImagePicker";
 
 type Section = {
   id: string;
@@ -127,7 +130,7 @@ export default function ThemeEditor() {
   const pushToHistory = (newTemplates: Record<string, Section[]>) => {
     const newHistory = history.slice(0, historyIndex + 1);
     newHistory.push(JSON.parse(JSON.stringify(newTemplates)));
-    if (newHistory.length > 30) newHistory.shift();
+    if (newHistory.length > 50) newHistory.shift(); // Increased history limit
     setHistory(newHistory);
     setHistoryIndex(newHistory.length - 1);
   };
@@ -137,6 +140,7 @@ export default function ThemeEditor() {
       const newIndex = historyIndex - 1;
       setTemplates(history[newIndex]);
       setHistoryIndex(newIndex);
+      toast.info("Undo performed", { duration: 1000, icon: <Undo2 className="w-4 h-4" /> });
     }
   };
 
@@ -145,6 +149,7 @@ export default function ThemeEditor() {
       const newIndex = historyIndex + 1;
       setTemplates(history[newIndex]);
       setHistoryIndex(newIndex);
+      toast.info("Redo performed", { duration: 1000, icon: <Redo2 className="w-4 h-4" /> });
     }
   };
 
@@ -526,32 +531,12 @@ export default function ThemeEditor() {
                             </div>
                           )}
                           {field.type === "image" && (
-                            <div className="space-y-3">
-                              {currentSection?.settings[field.id] ? (
-                                <div className="relative aspect-video rounded-lg overflow-hidden border border-[#d1d1d1] group">
-                                  <img src={currentSection.settings[field.id]} className="w-full h-full object-cover" alt="Preview" />
-                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                    <Button 
-                                      size="sm" variant="secondary" className="h-8 text-[10px] font-bold"
-                                      onClick={() => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: "" })}
-                                    >
-                                      Remove
-                                    </Button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div 
-                                  className="aspect-video rounded-lg border-2 border-dashed border-[#d1d1d1] flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[#008060] transition-colors bg-[#f9f9f9]"
-                                  onClick={() => {
-                                    const url = prompt("Enter Image URL (Upload coming soon):");
-                                    if (url) handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: url });
-                                  }}
-                                >
-                                  <Plus className="w-6 h-6 text-[#616161]" />
-                                  <span className="text-[10px] font-bold text-[#616161] uppercase tracking-wider">Select Image</span>
-                                </div>
-                              )}
-                            </div>
+                            <ImagePicker 
+                              currentValue={currentSection?.settings[field.id]}
+                              onSelect={(url) => {
+                                handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: url });
+                              }}
+                            />
                           )}
                         </div>
                       ))}
