@@ -86,23 +86,25 @@ export function registerAuthRoutes(app: Express) {
       const userId = newUser.id;
 
       // Create session
-      let token: string;
-      try {
-        token = await createSessionToken({
-          id: newUser.id,
-          email: newUser.email!,
-          name: newUser.name,
-          role: "user",
-          isVerified: false,
-          plan: "free",
-          subscriptionStatus: "trialing",
-          trialEndsAt: trialEndsAt.toISOString(),
-        });
-      } catch (tokenError) {
-        console.error("[Auth] Token generation failed:", tokenError);
-        res.status(500).json({ error: "Session creation failed. Please try logging in." });
-        return;
+      let trialEndsAtStr: string | null = null;
+      if (trialEndsAt) {
+        try {
+          trialEndsAtStr = trialEndsAt.toISOString();
+        } catch (e) {
+          console.error("[Auth] Failed to stringify trialEndsAt during registration:", e);
+        }
       }
+
+      const token = await createSessionToken({
+        id: newUser.id,
+        email: newUser.email!,
+        name: newUser.name,
+        role: "user",
+        isVerified: false,
+        plan: "free",
+        subscriptionStatus: "trialing",
+        trialEndsAt: trialEndsAtStr,
+      });
 
       const cookieOpts = getSessionCookieOptions(req);
       res.cookie(SESSION_COOKIE_NAME, token, {
@@ -120,7 +122,7 @@ export function registerAuthRoutes(app: Express) {
           isVerified: false,
           plan: "free",
           subscriptionStatus: "trialing",
-          trialEndsAt: trialEndsAt.toISOString()
+          trialEndsAt: trialEndsAtStr
         },
       });
     } catch (error) {
@@ -252,6 +254,18 @@ export function registerAuthRoutes(app: Express) {
         .where(eq(users.id, user.id));
 
       // Create session
+      let trialEndsAtStr: string | null = null;
+      if (user.trialEndsAt) {
+        try {
+          const date = new Date(user.trialEndsAt);
+          if (!isNaN(date.getTime())) {
+            trialEndsAtStr = date.toISOString();
+          }
+        } catch (e) {
+          console.error("[Auth] Failed to parse trialEndsAt during login:", e);
+        }
+      }
+
       const token = await createSessionToken({
         id: user.id,
         email: user.email!,
@@ -260,18 +274,27 @@ export function registerAuthRoutes(app: Express) {
         isVerified: user.isVerified ?? false,
         plan: user.plan ?? "free",
         subscriptionStatus: user.subscriptionStatus ?? "trialing",
-        trialEndsAt: user.trialEndsAt ? user.trialEndsAt.toISOString() : null,
+        trialEndsAt: trialEndsAtStr,
       });
 
       const cookieOpts = getSessionCookieOptions(req);
       res.cookie(SESSION_COOKIE_NAME, token, {
         ...cookieOpts,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
       res.json({
         success: true,
-        user: { id: user.id, email: user.email, name: user.name, role: user.role, isVerified: user.isVerified },
+        user: { 
+          id: user.id, 
+          email: user.email, 
+          name: user.name, 
+          role: user.role, 
+          isVerified: user.isVerified,
+          plan: user.plan,
+          subscriptionStatus: user.subscriptionStatus,
+          trialEndsAt: trialEndsAtStr
+        },
       });
     } catch (error) {
       console.error("[Auth] Login error:", error);
@@ -327,11 +350,27 @@ export function registerAuthRoutes(app: Express) {
       }
 
       // Create session
+      let trialEndsAtStr: string | null = null;
+      if (user.trialEndsAt) {
+        try {
+          const date = new Date(user.trialEndsAt);
+          if (!isNaN(date.getTime())) {
+            trialEndsAtStr = date.toISOString();
+          }
+        } catch (e) {
+          console.error("[Auth] Failed to parse trialEndsAt for Google user:", e);
+        }
+      }
+
       const sessionToken = await createSessionToken({
         id: user.id,
         email: user.email!,
         name: user.name,
-        role: user.role,
+        role: user.role as "user" | "admin",
+        isVerified: user.isVerified ?? false,
+        plan: user.plan ?? "free",
+        subscriptionStatus: user.subscriptionStatus ?? "trialing",
+        trialEndsAt: trialEndsAtStr,
       });
 
       const cookieOpts = getSessionCookieOptions(req);
@@ -342,7 +381,16 @@ export function registerAuthRoutes(app: Express) {
 
       res.json({
         success: true,
-        user: { id: user.id, email: user.email, name: user.name, role: user.role },
+        user: { 
+          id: user.id, 
+          email: user.email, 
+          name: user.name, 
+          role: user.role, 
+          isVerified: user.isVerified,
+          plan: user.plan,
+          subscriptionStatus: user.subscriptionStatus,
+          trialEndsAt: trialEndsAtStr
+        },
       });
     } catch (error) {
       console.error("[Auth] Google Login error:", error);

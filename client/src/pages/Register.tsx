@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sparkles, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function Register() {
   const [, setLocation] = useLocation();
+  const { refresh } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
