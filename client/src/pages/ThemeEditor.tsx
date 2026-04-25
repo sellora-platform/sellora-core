@@ -153,10 +153,21 @@ export default function ThemeEditor() {
               {theme?.name || "Untitled Theme"}
             </span>
           </div>
-          <div className="flex items-center gap-2 bg-[#f1f1f1] px-3 py-1.5 rounded-md cursor-pointer hover:bg-[#e1e1e1] transition-colors border border-[#d1d1d1] ml-4">
-            <span className="text-sm font-medium">{selectedPage}</span>
-            <ChevronDown className="w-4 h-4 text-[#616161]" />
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center gap-2 bg-[#f1f1f1] px-3 py-1.5 rounded-md cursor-pointer hover:bg-[#e1e1e1] transition-all border border-[#d1d1d1] ml-4">
+                <span className="text-sm font-medium">{selectedPage}</span>
+                <ChevronDown className="w-4 h-4 text-[#616161]" />
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[200px]">
+              {["Home Page", "Products", "Cart", "Checkout"].map(page => (
+                <DropdownMenuItem key={page} onClick={() => setSelectedPage(page)}>
+                  {page}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div className="flex items-center gap-2">
@@ -392,6 +403,34 @@ export default function ThemeEditor() {
                               />
                             </div>
                           )}
+                          {field.type === "image" && (
+                            <div className="space-y-3">
+                              {currentSection?.settings[field.id] ? (
+                                <div className="relative aspect-video rounded-lg overflow-hidden border border-[#d1d1d1] group">
+                                  <img src={currentSection.settings[field.id]} className="w-full h-full object-cover" alt="Preview" />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <Button 
+                                      size="sm" variant="secondary" className="h-8 text-[10px] font-bold"
+                                      onClick={() => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: "" })}
+                                    >
+                                      Remove
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div 
+                                  className="aspect-video rounded-lg border-2 border-dashed border-[#d1d1d1] flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[#008060] transition-colors bg-[#f9f9f9]"
+                                  onClick={() => {
+                                    const url = prompt("Enter Image URL (Upload coming soon):");
+                                    if (url) handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: url });
+                                  }}
+                                >
+                                  <Plus className="w-6 h-6 text-[#616161]" />
+                                  <span className="text-[10px] font-bold text-[#616161] uppercase tracking-wider">Select Image</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -428,8 +467,8 @@ export default function ThemeEditor() {
           >
             <iframe 
               ref={previewRef}
-              src={`/store/${storeQuery.data?.slug}?preview=true`} 
-              className="w-full h-full pointer-events-none"
+              src={`/store/${storeQuery.data?.slug}${selectedPage !== "Home Page" ? "/" + selectedPage.toLowerCase() : ""}?preview=true`} 
+              className="w-full h-full border-none"
               title="Theme Preview"
             />
           </div>

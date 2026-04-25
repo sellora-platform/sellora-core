@@ -15,7 +15,7 @@ export const ImageBannerSchema = {
   settings: [
     {
       id: "imageUrl",
-      type: "text",
+      type: "image",
       label: "Image URL",
       default: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070"
     },
