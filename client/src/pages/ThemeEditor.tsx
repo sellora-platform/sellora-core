@@ -29,7 +29,11 @@ import {
   Sparkles,
   ArrowLeft,
   Undo2,
-  Redo2
+  Redo2,
+  ChevronRight,
+  Eye,
+  Settings,
+  Layers
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
@@ -91,7 +95,7 @@ export default function ThemeEditor() {
     textColor: "#1a1a1a",
     fontFamily: "Inter"
   });
-  const [history, setHistory] = useState<Record<string, Section[]>[]>([]);
+  const [history, setHistory] = useState<Array<{ templates: Record<string, Section[]>, globalSettings: any }>>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const previewRef = useRef<HTMLIFrameElement>(null);
 
@@ -566,7 +570,7 @@ export default function ThemeEditor() {
                           disabled={generateMutation.isPending}
                           onClick={() => generateMutation.mutate({ 
                             sectionType: currentSection!.type,
-                            storeNiche: storeQuery.data?.niche || "general" 
+                            storeNiche: (storeQuery.data as any)?.niche || "general" 
                           })}
                           className="w-full bg-gradient-to-r from-primary/10 to-purple-500/10 border-primary/20 text-primary font-bold gap-2 h-10 hover:from-primary/20 hover:to-purple-500/20"
                         >
@@ -665,7 +669,7 @@ export default function ThemeEditor() {
                       const newSections = localSections.filter(s => s.id !== selectedSectionId);
                       const newTemplates = { ...templates, [pageKey]: newSections };
                       setTemplates(newTemplates);
-                      pushToHistory(newTemplates);
+                      pushToHistory(newTemplates, globalSettings);
                       setSelectedSectionId(null);
                     }}
                   >
