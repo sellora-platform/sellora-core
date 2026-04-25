@@ -55,16 +55,28 @@ export default function ThemeEditor() {
 
   // Queries
   const storeQuery = trpc.stores.getMyStore.useQuery();
-  const themeQuery = trpc.themes.getMyTheme.useQuery(
-    { storeId: storeQuery.data?.id || 0 },
-    { enabled: !!storeQuery.data?.id }
+  const search = window.location.search;
+  const params = new URLSearchParams(search);
+  const themeId = parseInt(params.get("themeId") || "0");
+
+  const themeQuery = trpc.themes.getById.useQuery(
+    { themeId },
+    { enabled: !!themeId }
   );
 
+  // Fallback for old /editor route if no themeId
+  const activeThemeQuery = trpc.themes.getByStoreId.useQuery(
+    { storeId: storeQuery.data?.id || 0 },
+    { enabled: !themeId && !!storeQuery.data?.id }
+  );
+
+  const theme = themeId ? themeQuery.data : activeThemeQuery.data;
+
   useEffect(() => {
-    if (themeQuery.data?.sections) {
-      setLocalSections(themeQuery.data.sections as Section[]);
+    if (theme?.sections) {
+      setLocalSections(theme.sections as Section[]);
     }
-  }, [themeQuery.data]);
+  }, [theme]);
 
   // Sync to Preview
   useEffect(() => {
@@ -81,9 +93,9 @@ export default function ThemeEditor() {
   });
 
   const handleSave = () => {
-    if (!themeQuery.data) return;
+    if (!theme) return;
     updateMutation.mutate({
-      themeId: themeQuery.data.id,
+      themeId: theme.id,
       sections: localSections,
     });
   };
@@ -102,7 +114,7 @@ export default function ThemeEditor() {
     setSelectedSectionId(newId);
   };
 
-  if (themeQuery.isLoading) return <div className="h-screen flex items-center justify-center bg-[#f6f6f7]">Loading Shopify-style Editor...</div>;
+  if (themeQuery.isLoading || activeThemeQuery.isLoading) return <div className="h-screen flex items-center justify-center bg-[#f6f6f7]">Loading Shopify-style Editor...</div>;
 
   const currentSection = localSections.find(s => s.id === selectedSectionId);
 
@@ -114,7 +126,15 @@ export default function ThemeEditor() {
           <Button variant="ghost" size="sm" onClick={() => setLocation("/dashboard")} className="hover:bg-[#f1f1f1] h-9 w-9 p-0">
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div className="flex items-center gap-2 bg-[#f1f1f1] px-3 py-1.5 rounded-md cursor-pointer hover:bg-[#e1e1e1] transition-colors border border-[#d1d1d1]">
+          <div className="flex flex-col border-l border-[#d1d1d1] pl-4 ml-2">
+            <span className="text-[10px] font-bold text-[#616161] uppercase tracking-wider leading-none mb-1">
+              Editing
+            </span>
+            <span className="text-sm font-bold truncate max-w-[150px]">
+              {theme?.name || "Untitled Theme"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 bg-[#f1f1f1] px-3 py-1.5 rounded-md cursor-pointer hover:bg-[#e1e1e1] transition-colors border border-[#d1d1d1] ml-4">
             <span className="text-sm font-medium">{selectedPage}</span>
             <ChevronDown className="w-4 h-4 text-[#616161]" />
           </div>

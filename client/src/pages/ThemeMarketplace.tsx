@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Palette, Eye, Check, Loader2, Sparkles, Layout, Zap, ShoppingBag } from "lucide-react";
+import { Palette, Eye, Check, Loader2, Sparkles, Layout, Zap, ShoppingBag, ArrowLeft, Plus } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -100,19 +100,19 @@ export default function ThemeMarketplace() {
   const { data: store } = trpc.stores.getMyStore.useQuery();
   const utils = trpc.useUtils();
 
-  const installMutation = trpc.themes.update.useMutation({
+  const installMutation = trpc.themes.create.useMutation({
     onSuccess: () => {
-      toast.success("Theme applied successfully!");
-      utils.themes.getByStoreId.invalidate();
+      toast.success("Theme added to your library!");
+      utils.themes.listByStore.invalidate();
       setInstallingId(null);
     },
     onError: (err) => {
-      toast.error(err.message || "Failed to install theme");
+      toast.error(err.message || "Failed to add theme");
       setInstallingId(null);
     }
   });
 
-  const getMyThemeQuery = trpc.themes.getMyTheme.useQuery(
+  const getMyThemeQuery = trpc.themes.getByStoreId.useQuery(
     { storeId: store?.id ?? 0 },
     { enabled: !!store?.id }
   );
@@ -120,7 +120,7 @@ export default function ThemeMarketplace() {
   if (!isAuthenticated) return null;
 
   const handleInstall = async (theme: typeof themes[0]) => {
-    if (!store?.id || !getMyThemeQuery.data?.id) {
+    if (!store?.id) {
       toast.error("Store not initialized");
       return;
     }
@@ -131,8 +131,8 @@ export default function ThemeMarketplace() {
     setTimeout(async () => {
       try {
         await installMutation.mutateAsync({
-          themeId: getMyThemeQuery.data.id,
           name: theme.name,
+          description: theme.description,
           sections: theme.settings.sections,
           colors: theme.settings.colors,
           typography: theme.settings.typography,
@@ -150,6 +150,14 @@ export default function ThemeMarketplace() {
       <div className="space-y-8 pb-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="space-y-2">
+            <Button 
+              variant="ghost" 
+              onClick={() => setLocation("/themes")}
+              className="p-0 hover:bg-transparent text-muted-foreground hover:text-primary mb-2 flex items-center gap-1 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Themes</span>
+            </Button>
             <div className="flex items-center gap-2 text-primary font-medium px-3 py-1 bg-primary/10 rounded-full w-fit">
               <Sparkles className="w-4 h-4" />
               <span>Sellora Design Studio</span>
@@ -270,8 +278,8 @@ export default function ThemeMarketplace() {
                         </>
                       ) : (
                         <>
-                          <Palette className="w-5 h-5 mr-2" />
-                          Apply This Theme
+                          <Plus className="w-5 h-5 mr-2" />
+                          Add to Library
                         </>
                       )}
                     </Button>

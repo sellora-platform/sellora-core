@@ -16,43 +16,147 @@ export const themesRouter = router({
       return theme;
     }),
 
-  // Get merchant's theme (for editor)
-  getMyTheme: protectedProcedure
-    .input(z.object({ storeId: z.number() }))
-    .query(async ({ input, ctx }) => {
-      // Verify store ownership
+  // List all themes for the current user's store
+  listByStore: protectedProcedure
+    .query(async ({ ctx }) => {
       const store = await db.getStoreByMerchantId(ctx.user.id);
-      if (!store || store.id !== input.storeId) {
-        throw new Error("Unauthorized");
-      }
+      if (!store) return [];
 
+      return db.select()
+        .from(storeThemes)
+        .where(eq(storeThemes.storeId, store.id));
+    }),
+
+  // Get a specific theme by ID
+  getById: protectedProcedure
+    .input(z.object({ themeId: z.number() }))
+    .query(async ({ input, ctx }) => {
       const [theme] = await db.select()
         .from(storeThemes)
-        .where(eq(storeThemes.storeId, input.storeId))
+        .where(eq(storeThemes.id, input.themeId))
         .limit(1);
-      
-      if (!theme) {
-        // Create a default theme if none exists
-        const [newTheme] = await db.insert(storeThemes).values({
-          storeId: input.storeId,
-          name: "Default Theme",
-          isActive: true,
-          sections: [
-            { type: "hero", settings: { heading: "Welcome to Our Store", alignment: "center" } },
-            { type: "featured_collection", settings: { title: "Featured Products", columns: 4, productLimit: 8 } }
-          ],
-        }).returning();
-        return newTheme;
+
+      if (!theme) throw new Error("Theme not found");
+
+      // Verify store ownership
+      const store = await db.getStoreByMerchantId(ctx.user.id);
+      if (!store || store.id !== theme.storeId) {
+        throw new Error("Unauthorized");
       }
 
       return theme;
     }),
 
-  // Update theme settings (sections, colors, etc.)
+  // Create a new theme (Add to Library)
+  create: protectedProcedure
+    .input(z.object({
+      name: z.string(),
+      description: z.string().optional(),
+      colors: z.record(z.string()).optional(),
+      typography: z.record(z.any()).optional(),
+      sections: z.array(z.any()).optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const store = await db.getStoreByMerchantId(ctx.user.id);
+      if (!store) throw new Error("Store not found");
+
+      const [newTheme] = await db.insert(storeThemes).values({
+        storeId: store.id,
+        name: input.name,
+        description: input.description,
+        colors: input.colors || {},
+        typography: input.typography || {},
+        sections: input.sections || [],
+        isActive: false, // Always draft initially
+      }).returning();
+
+      return newTheme;
+    }),
+
+  // Publish a theme (Make it Live)
+  publish: protectedProcedure
+    .input(z.object({ themeId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const [theme] = await db.select()
+        .from(storeThemes)
+        .where(eq(storeThemes.id, input.themeId))
+        .limit(1);
+
+      if (!theme) throw new Error("Theme not found");
+
+      // Verify store ownership
+      const store = await db.getStoreByMerchantId(ctx.user.id);
+      if (!store || store.id !== theme.storeId) {
+        throw new Error("Unauthorized");
+      }
+
+      // 1. Set all store themes to inactive
+      await db.update(storeThemes)
+        .set({ isActive: false })
+        .where(eq(storeThemes.storeId, store.id));
+
+      // 2. Set this theme to active
+      const [updatedTheme] = await db.update(storeThemes)
+        .set({ isActive: true })
+        .where(eq(storeThemes.id, input.themeId))
+        .returning();
+
+      return updatedTheme;
+    }),
+
+  // Delete a theme
+  delete: protectedProcedure
+    .input(z.object({ themeId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const [theme] = await db.select()
+        .from(storeThemes)
+        .where(eq(storeThemes.id, input.themeId))
+        .limit(1);
+
+      if (!theme) throw new Error("Theme not found");
+      if (theme.isActive) throw new Error("Cannot delete active theme");
+
+      // Verify store ownership
+      const store = await db.getStoreByMerchantId(ctx.user.id);
+      if (!store || store.id !== theme.storeId) {
+        throw new Error("Unauthorized");
+      }
+
+      await db.delete(storeThemes).where(eq(storeThemes.id, input.themeId));
+      return { success: true };
+    }),
+
+  // Duplicate a theme
+  duplicate: protectedProcedure
+    .input(z.object({ themeId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const [theme] = await db.select()
+        .from(storeThemes)
+        .where(eq(storeThemes.id, input.themeId))
+        .limit(1);
+
+      if (!theme) throw new Error("Theme not found");
+
+      const [newTheme] = await db.insert(storeThemes).values({
+        storeId: theme.storeId,
+        name: `${theme.name} (Copy)`,
+        description: theme.description,
+        colors: theme.colors,
+        typography: theme.typography,
+        layout: theme.layout,
+        sections: theme.sections,
+        isActive: false,
+      }).returning();
+
+      return newTheme;
+    }),
+
+  // Update theme settings
   update: protectedProcedure
     .input(z.object({
       themeId: z.number(),
       sections: z.array(z.object({
+        id: z.string().optional(),
         type: z.string(),
         settings: z.record(z.any()),
       })).optional(),

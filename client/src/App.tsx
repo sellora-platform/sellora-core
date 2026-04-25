@@ -32,6 +32,8 @@ import Billing from "./pages/Billing";
 import AdminSubscriptions from "./pages/AdminSubscriptions";
 import ThemeEditor from "./pages/ThemeEditor";
 import ThemeMarketplace from "./pages/ThemeMarketplace";
+import ThemeManager from "./pages/ThemeManager";
+
 
 
 import { useState, useEffect } from "react";
@@ -153,7 +155,9 @@ function Router() {
       <Route path={"/checkout"} component={Checkout} />
       <Route path={"/onboarding"} component={Onboarding} />
       <Route path={"/marketplace"} component={Marketplace} />
-      <Route path={"/themes"} component={ThemeMarketplace} />
+      <Route path={"/themes"} component={ThemeManager} />
+      <Route path={"/themes/marketplace"} component={ThemeMarketplace} />
+
 
       <Route path={"/export-data"} component={ExportData} />
       <Route path={"/404"} component={NotFound} />
