@@ -30,6 +30,7 @@ import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import Billing from "./pages/Billing";
 import AdminSubscriptions from "./pages/AdminSubscriptions";
+import ThemeEditor from "./pages/ThemeEditor";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "./_core/hooks/useAuth";
@@ -131,6 +132,7 @@ function Router() {
       <Route path={"/verify-email"} component={VerifyEmail} />
       <Route path={"/billing"} component={Billing} />
       <Route path={"/admin/subscriptions"} component={AdminSubscriptions} />
+      <Route path={"/editor"} component={ThemeEditor} />
       <Route path={"/features"} component={Features} />
       <Route path={"/benefits"} component={Benefits} />
       <Route path={"/dashboard"} component={Dashboard} />

@@ -10,10 +10,12 @@ import { aiRouter } from "./routers/ai";
 import { exportsRouter } from "./routers/exports";
 import { dashboardRouter } from "./routers/dashboard";
 import { subscriptionsRouter } from "./routers/subscriptions";
+import { themesRouter } from "./routers/themes";
 
 export const appRouter = router({
   system: systemRouter,
   subscriptions: subscriptionsRouter,
+  themes: themesRouter,
   exports: exportsRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),

@@ -323,6 +323,7 @@ export const storeThemes = pgTable("store_themes", {
   colors: jsonb("colors").$type<Record<string, string>>().default({}),
   typography: jsonb("typography").$type<Record<string, unknown>>().default({}),
   layout: jsonb("layout").$type<Record<string, unknown>>().default({}),
+  sections: jsonb("sections").$type<Array<{ type: string; settings: Record<string, any> }>>().default([]),
   isActive: boolean("is_active").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
