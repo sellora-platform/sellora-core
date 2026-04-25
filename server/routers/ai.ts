@@ -89,4 +89,49 @@ export const aiRouter = router({
 
       return db.getAIInteractionsByStoreId(input.storeId);
     }),
+
+  // Specialized content generation for theme sections
+  generateSectionContent: protectedProcedure
+    .input(z.object({
+      sectionType: z.string(),
+      storeNiche: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const { sectionType, storeNiche = "general e-commerce" } = input;
+      
+      let systemPrompt = `You are an expert e-commerce content creator. 
+      Your task is to generate JSON content for a ${sectionType} section for a store in the ${storeNiche} niche.
+      Return ONLY valid JSON that matches the required schema. No conversational text.`;
+
+      let userPrompt = "";
+
+      if (sectionType === "faq") {
+        userPrompt = `Generate 4 frequently asked questions and answers for a ${storeNiche} store. 
+        Format: { "items": [ { "question": "...", "answer": "..." } ] }`;
+      } else if (sectionType === "testimonials") {
+        userPrompt = `Generate 3 customer testimonials for a ${storeNiche} store. 
+        Include name, role, content (persuasive), and rating (4-5).
+        Format: { "testimonials": [ { "name": "...", "role": "...", "content": "...", "rating": 5, "avatar": "https://i.pravatar.cc/150?u=..." } ] }`;
+      } else if (sectionType === "newsletter") {
+        userPrompt = `Generate catchy heading and subheading for a newsletter signup for a ${storeNiche} store.
+        Format: { "heading": "...", "subheading": "..." }`;
+      }
+
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+      });
+
+      try {
+        // Extract JSON from response (handling potential markdown blocks)
+        const jsonMatch = response.content.match(/\{[\s\S]*\}/);
+        const data = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(response.content);
+        return { success: true, data };
+      } catch (err) {
+        console.error("AI JSON Parse Error:", err);
+        throw new Error("Failed to generate structured content");
+      }
+    }),
 });

@@ -28,7 +28,8 @@ import {
   MousePointer2,
   Copy,
   Search,
-  Loader2
+  Loader2,
+  Sparkles
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
@@ -183,6 +184,16 @@ export default function ThemeEditor() {
       utils.themes.getById.invalidate({ themeId });
       utils.themes.getByStoreId.invalidate({ storeId: storeQuery.data?.id || 0 });
     },
+  });
+
+  const generateMutation = trpc.ai.generateSectionContent.useMutation({
+    onSuccess: (res) => {
+      if (res.success && currentSection) {
+        handleUpdateSection(currentSection.id, { ...currentSection.settings, ...res.data });
+        toast.success("AI Content Applied!", { icon: <Sparkles className="w-4 h-4" /> });
+      }
+    },
+    onError: () => toast.error("Failed to generate content")
   });
 
   const handleSave = () => {
@@ -465,6 +476,27 @@ export default function ThemeEditor() {
 
                   return (
                     <div className="space-y-6">
+                      {/* AI Magic Button for supported types */}
+                      {["faq", "testimonials", "newsletter"].includes(currentSection?.type || "") && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={generateMutation.isPending}
+                          onClick={() => generateMutation.mutate({ 
+                            sectionType: currentSection!.type,
+                            storeNiche: storeQuery.data?.niche || "general" 
+                          })}
+                          className="w-full bg-gradient-to-r from-primary/10 to-purple-500/10 border-primary/20 text-primary font-bold gap-2 h-10 hover:from-primary/20 hover:to-purple-500/20"
+                        >
+                          {generateMutation.isPending ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Sparkles className="w-4 h-4" />
+                          )}
+                          {generateMutation.isPending ? "Generating..." : "Auto-Generate with AI"}
+                        </Button>
+                      )}
+
                       {schema.settings.map((field: any) => (
                         <div key={field.id} className="space-y-2">
                           <Label className="text-[10px] font-bold text-[#616161] uppercase tracking-wider">
