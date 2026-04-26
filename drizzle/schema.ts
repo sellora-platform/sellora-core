@@ -316,20 +316,12 @@ export type InsertAIInteraction = typeof aiInteractions.$inferInsert;
 // ============================================================================
 
 export const storeThemes = pgTable("store_themes", {
-  id: serial("id").primaryKey(),
+  id: varchar("id", { length: 36 }).primaryKey(), // Using varchar for UUID compatibility
   storeId: integer("store_id").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
-  description: text("description"),
-  colors: jsonb("colors").$type<Record<string, string>>().default({}),
-  typography: jsonb("typography").$type<Record<string, unknown>>().default({}),
-  layout: jsonb("layout").$type<Record<string, unknown>>().default({}),
-  sections: jsonb("sections").$type<Record<string, Array<{ id: string; type: string; settings: Record<string, any> }>>>().default({ index: [], product: [], cart: [], checkout: [] }),
-  isActive: boolean("is_active").default(false),
-  // Marketplace Fields
-  isPublic: boolean("is_public").default(false),
-  price: numeric("price", { precision: 10, scale: 2 }).default("0.00"),
-  category: varchar("category", { length: 100 }),
-  previewImage: varchar("preview_image", { length: 512 }),
+  draftConfig: jsonb("draft_config").$type<any>().notNull(),
+  publishedConfig: jsonb("published_config").$type<any>(),
+  schemaVersion: integer("schema_version").default(1).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({

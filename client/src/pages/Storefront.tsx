@@ -41,7 +41,7 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
   const searchParams = new URLSearchParams(window.location.search);
   const isPreview = searchParams.get("preview") === "true";
   const themeIdParam = searchParams.get("themeId");
-  const themeId = themeIdParam ? parseInt(themeIdParam) : null;
+  const themeId = themeIdParam || null; // IDs are now strings (UUID/nanoid)
 
   const [previewSections, setPreviewSections] = useState<any[] | null>(null);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
@@ -80,7 +80,7 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
       window.removeEventListener("message", handleMessage);
       window.removeEventListener("click", handleClick);
     };
-  }, []);
+  }, [isPreview]);
 
   const storeBySlugQuery = trpc.stores.getBySlug.useQuery(
     { slug: previewSlug || "" },
@@ -108,29 +108,34 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
     { enabled: !!store?.id }
   );
 
-  const themeByStoreQuery = trpc.themes.getByStoreId.useQuery(
+  const themeByStoreQuery = trpc.themes.getTheme.useQuery(
     { storeId: store?.id || 0 },
     { enabled: !!store?.id && !themeId }
   );
 
   const themeByIdQuery = trpc.themes.getById.useQuery(
-    { themeId: themeId || 0 },
+    { themeId: themeId || "" },
     { enabled: !!themeId }
   );
 
   const products = productsQuery.data || [];
-  const theme = themeId ? themeByIdQuery.data : themeByStoreQuery.data;
+  const themeRecord = themeId ? themeByIdQuery.data : themeByStoreQuery.data;
 
   const getPageKey = () => {
     if (locationPath.endsWith("/products")) return "product";
     if (locationPath.endsWith("/cart")) return "cart";
     if (locationPath.endsWith("/checkout")) return "checkout";
-    return "index";
+    return "home"; // Changed from "index" to match our mockTheme "home"
   };
   const pageKey = getPageKey();
   
-  const themeSections = theme?.sections as Record<string, any>;
-  const sectionsToRender = previewSections || (themeSections?.[pageKey] || []);
+  // Use draftConfig for preview, publishedConfig for live
+  const activeConfig = isPreview ? themeRecord?.draftConfig : (themeRecord?.publishedConfig || themeRecord?.draftConfig);
+  const themeSections = activeConfig?.templates?.[pageKey]?.sections || {};
+  
+  // Convert sections map to array for renderer
+  const sectionsArray = Object.values(themeSections);
+  const sectionsToRender = previewSections || (sectionsArray.length > 0 ? sectionsArray : []);
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -154,7 +159,7 @@ export default function Storefront({ params }: { params?: { slug?: string } }) {
       <StorefrontContent 
         store={store} 
         products={products} 
-        theme={theme} 
+        theme={themeRecord} 
         pageKey={pageKey} 
         sectionsToRender={sectionsToRender} 
         selectedSectionId={selectedSectionId}

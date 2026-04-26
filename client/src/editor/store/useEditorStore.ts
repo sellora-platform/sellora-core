@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { Theme, mockTheme } from "../mockTheme";
 import { SECTION_REGISTRY } from "../../sections/registry";
 import { BLOCK_REGISTRY } from "../../blocks/registry";
+import { trpcClient } from "../../lib/trpc-client";
+import { importTheme } from "../utils/importTheme";
 
 interface EditorState {
   theme: Theme;
@@ -9,9 +11,11 @@ interface EditorState {
   selectedBlockId: string | null;
   history: Theme[];
   historyIndex: number;
+  isSaving: boolean;
 
   // Actions
   setTheme: (theme: Theme) => void;
+  getThemeSnapshot: () => Theme;
   setSelectedSection: (id: string | null) => void;
   setSelectedBlock: (id: string | null) => void;
   updateSection: (sectionId: string, settings: any) => void;
@@ -25,6 +29,11 @@ interface EditorState {
   deleteBlock: (sectionId: string, blockId: string) => void;
   reorderBlocks: (sectionId: string, newOrder: string[]) => void;
   updateBlock: (sectionId: string, blockId: string, settings: any) => void;
+
+  // Persistence Actions
+  loadThemeFromServer: (storeId: number) => Promise<void>;
+  saveThemeToServer: (storeId: number) => Promise<void>;
+  publishTheme: (storeId: number) => Promise<void>;
 
   undo: () => void;
   redo: () => void;
@@ -40,18 +49,75 @@ const getDefaultsFromSchema = (schema: any) => {
   return defaults;
 };
 
-export const useEditorStore = create<EditorState>((set) => ({
+// Debounce timer
+let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+
+export const useEditorStore = create<EditorState>((set, get) => ({
   theme: mockTheme,
   selectedSectionId: "hero-1",
   selectedBlockId: null,
   history: [structuredClone(mockTheme)],
   historyIndex: 0,
+  isSaving: false,
 
   setTheme: (theme) => set({ theme }),
+  
+  getThemeSnapshot: () => {
+    return structuredClone(get().theme);
+  },
   
   setSelectedSection: (id) => set({ selectedSectionId: id, selectedBlockId: null }),
   
   setSelectedBlock: (id) => set({ selectedBlockId: id }),
+
+  // Persistence Implementation
+  loadThemeFromServer: async (storeId) => {
+    try {
+      const data = await trpcClient.themes.getTheme.query({ storeId });
+      if (data && data.draftConfig) {
+        const theme = importTheme(data.draftConfig);
+        set({ 
+          theme, 
+          history: [structuredClone(theme)], 
+          historyIndex: 0 
+        });
+      }
+    } catch (error) {
+      console.error("Failed to load theme:", error);
+    }
+  },
+
+  saveThemeToServer: async (storeId) => {
+    // Clear existing timeout
+    if (saveTimeout) clearTimeout(saveTimeout);
+
+    set({ isSaving: true });
+
+    saveTimeout = setTimeout(async () => {
+      try {
+        const theme = get().getThemeSnapshot();
+        await trpcClient.themes.saveTheme.mutate({
+          storeId,
+          themeJson: theme
+        });
+      } catch (error) {
+        console.error("Failed to save theme:", error);
+      } finally {
+        set({ isSaving: false });
+      }
+    }, 500); // 500ms debounce
+  },
+
+  publishTheme: async (storeId) => {
+    try {
+      set({ isSaving: true });
+      await trpcClient.themes.publishTheme.mutate({ storeId });
+    } catch (error) {
+      console.error("Failed to publish theme:", error);
+    } finally {
+      set({ isSaving: false });
+    }
+  },
 
   updateSection: (sectionId, newSettings) => {
     set((state) => {
@@ -67,6 +133,8 @@ export const useEditorStore = create<EditorState>((set) => ({
 
       return pushToHistory(state, newTheme);
     });
+    // Trigger auto-save
+    get().saveThemeToServer(1); // Assuming storeId 1 for now
   },
 
   reorderSections: (newOrder) => {
@@ -75,6 +143,7 @@ export const useEditorStore = create<EditorState>((set) => ({
       newTheme.templates.home.order = newOrder;
       return pushToHistory(state, newTheme);
     });
+    get().saveThemeToServer(1);
   },
 
   addSection: (type) => {
@@ -103,6 +172,7 @@ export const useEditorStore = create<EditorState>((set) => ({
         selectedBlockId: null,
       };
     });
+    get().saveThemeToServer(1);
   },
 
   deleteSection: (sectionId) => {
@@ -117,6 +187,7 @@ export const useEditorStore = create<EditorState>((set) => ({
         selectedBlockId: null,
       };
     });
+    get().saveThemeToServer(1);
   },
 
   duplicateSection: (sectionId) => {
@@ -136,6 +207,7 @@ export const useEditorStore = create<EditorState>((set) => ({
 
       return pushToHistory(state, newTheme);
     });
+    get().saveThemeToServer(1);
   },
 
   addBlock: (sectionId, type) => {
@@ -165,6 +237,7 @@ export const useEditorStore = create<EditorState>((set) => ({
         selectedBlockId: newId,
       };
     });
+    get().saveThemeToServer(1);
   },
 
   deleteBlock: (sectionId, blockId) => {
@@ -181,6 +254,7 @@ export const useEditorStore = create<EditorState>((set) => ({
         selectedBlockId: state.selectedBlockId === blockId ? null : state.selectedBlockId,
       };
     });
+    get().saveThemeToServer(1);
   },
 
   reorderBlocks: (sectionId, newOrder) => {
@@ -192,6 +266,7 @@ export const useEditorStore = create<EditorState>((set) => ({
       section.block_order = newOrder;
       return pushToHistory(state, newTheme);
     });
+    get().saveThemeToServer(1);
   },
 
   updateBlock: (sectionId, blockId, newSettings) => {
@@ -207,6 +282,7 @@ export const useEditorStore = create<EditorState>((set) => ({
 
       return pushToHistory(state, newTheme);
     });
+    get().saveThemeToServer(1);
   },
 
   undo: () => {
@@ -218,6 +294,7 @@ export const useEditorStore = create<EditorState>((set) => ({
         historyIndex: newIndex,
       };
     });
+    get().saveThemeToServer(1);
   },
 
   redo: () => {
@@ -229,6 +306,7 @@ export const useEditorStore = create<EditorState>((set) => ({
         historyIndex: newIndex,
       };
     });
+    get().saveThemeToServer(1);
   },
 }));
 

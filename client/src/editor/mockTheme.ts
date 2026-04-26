@@ -8,11 +8,12 @@ export interface SectionData {
   id: string;
   type: string;
   settings: Record<string, any>;
-  blocks?: Record<string, BlockData>;
-  block_order?: string[];
+  blocks: Record<string, BlockData>;
+  block_order: string[];
 }
 
 export interface Theme {
+  schemaVersion: number;
   templates: {
     home: {
       sections: Record<string, SectionData>;
@@ -22,6 +23,7 @@ export interface Theme {
 }
 
 export const mockTheme: Theme = {
+  schemaVersion: 1,
   templates: {
     home: {
       sections: {
