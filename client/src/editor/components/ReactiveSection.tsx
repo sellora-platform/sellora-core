@@ -1,19 +1,17 @@
 import React, { memo, useMemo } from "react";
 import { useEditorStore } from "../store/useEditorStore";
 import { SECTION_REGISTRY } from "../../sections/registry";
-import { projectBlock } from "../utils/rebuildTheme";
+import { makeSectionSelector, makeBlockSelector } from "../core/selectors";
 
 interface SectionRendererProps {
   sectionId: string;
 }
 
-/**
- * A highly optimized Section Renderer that uses React.memo and granular Zustand selectors.
- * It only re-renders if its own section data or specific affecting events change.
- */
 export const ReactiveSection = memo(({ sectionId }: SectionRendererProps) => {
-  // Granular selector: only subscribe to THIS section's data in the theme
-  const section = useEditorStore((state) => state.theme.templates.home.sections[sectionId]);
+  // Create a stable selector for this specific sectionId
+  const sectionSelector = useMemo(() => makeSectionSelector(sectionId), [sectionId]);
+  const section = useEditorStore(sectionSelector);
+  
   const isSelected = useEditorStore((state) => state.selectedSectionId === sectionId);
   const setSelectedSection = useEditorStore((state) => state.setSelectedSection);
 
@@ -54,10 +52,10 @@ interface BlockRendererProps {
  * Block-level isolation: Only re-renders if this specific block's settings change.
  */
 const ReactiveBlock = memo(({ sectionId, blockId }: BlockRendererProps) => {
-  // Subscribe only to the specific block data
-  const block = useEditorStore((state) => 
-    state.theme.templates.home.sections[sectionId]?.blocks?.[blockId]
-  );
+  // Create a stable selector for this specific blockId
+  const blockSelector = useMemo(() => makeBlockSelector(sectionId, blockId), [sectionId, blockId]);
+  const block = useEditorStore(blockSelector);
+  
   const isSelected = useEditorStore((state) => state.selectedBlockId === blockId);
   const setSelectedBlock = useEditorStore((state) => state.setSelectedBlock);
 
