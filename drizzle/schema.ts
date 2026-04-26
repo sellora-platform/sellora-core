@@ -322,6 +322,7 @@ export const storeThemes = pgTable("store_themes", {
   draftConfig: jsonb("draft_config").$type<any>().notNull(),
   publishedConfig: jsonb("published_config").$type<any>(),
   schemaVersion: integer("schema_version").default(1).notNull(),
+  version: integer("version").default(1).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
@@ -330,6 +331,20 @@ export const storeThemes = pgTable("store_themes", {
 
 export type StoreTheme = typeof storeThemes.$inferSelect;
 export type InsertStoreTheme = typeof storeThemes.$inferInsert;
+
+export const editorEvents = pgTable("editor_events", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  storeId: integer("store_id").notNull(),
+  type: varchar("type", { length: 50 }).notNull(),
+  payload: jsonb("payload").$type<any>().notNull(),
+  version: integer("version").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  storeIdIdx: index("editor_events_store_id_idx").on(table.storeId),
+}));
+
+export type EditorEvent = typeof editorEvents.$inferSelect;
+export type InsertEditorEvent = typeof editorEvents.$inferInsert;
 
 export const subscriptionRequestStatusEnum = pgEnum("subscription_request_status", ["pending", "approved", "rejected"]);
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { db } from "../db";
-import { storeThemes } from "../../drizzle/schema";
+import { storeThemes, editorEvents } from "../../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
@@ -43,31 +43,38 @@ export const themesRouter = router({
   saveTheme: protectedProcedure
     .input(z.object({ 
       storeId: z.number(), 
-      themeJson: z.any() 
+      themeJson: z.any(),
+      expectedVersion: z.number().optional()
     }))
     .mutation(async ({ input }) => {
-      // 1. Validate the theme structure
       const validated = ThemeConfigSchema.parse(input.themeJson);
 
-      // 2. Check if theme record exists
       const [existing] = await db.select()
         .from(storeThemes)
         .where(eq(storeThemes.storeId, input.storeId))
         .limit(1);
 
       if (existing) {
-        // Update existing draft
+        // Conflict Detection
+        if (input.expectedVersion !== undefined && existing.version > input.expectedVersion) {
+          return {
+            status: "conflict",
+            serverTheme: existing.draftConfig,
+            serverVersion: existing.version
+          };
+        }
+
         const [updated] = await db.update(storeThemes)
           .set({
             draftConfig: validated,
             schemaVersion: validated.schemaVersion,
+            version: existing.version + 1,
             updatedAt: new Date(),
           })
           .where(eq(storeThemes.storeId, input.storeId))
           .returning();
-        return updated;
+        return { status: "success", theme: updated };
       } else {
-        // Create new theme record
         const [created] = await db.insert(storeThemes)
           .values({
             id: nanoid(),
@@ -75,9 +82,10 @@ export const themesRouter = router({
             name: "Default Theme",
             draftConfig: validated,
             schemaVersion: validated.schemaVersion,
+            version: 1,
           })
           .returning();
-        return created;
+        return { status: "success", theme: created };
       }
     }),
 
@@ -116,5 +124,45 @@ export const themesRouter = router({
         .returning();
 
       return published;
+    }),
+
+  /**
+   * Append granular events to the store's event log
+   */
+  appendEvents: protectedProcedure
+    .input(z.object({
+      storeId: z.number(),
+      events: z.array(z.object({
+        type: z.string(),
+        payload: z.any().optional(),
+        sectionId: z.string().optional(),
+        blockId: z.string().optional(),
+        timestamp: z.number()
+      })),
+      baseVersion: z.number()
+    }))
+    .mutation(async ({ input }) => {
+      // 1. Batch insert events
+      const eventValues = input.events.map((e, i) => ({
+        id: nanoid(),
+        storeId: input.storeId,
+        type: e.type,
+        payload: e.payload,
+        version: input.baseVersion + i + 1,
+        createdAt: new Date(e.timestamp)
+      }));
+
+      await db.insert(editorEvents).values(eventValues);
+
+      // 2. Update the theme's current version
+      const newVersion = input.baseVersion + input.events.length;
+      await db.update(storeThemes)
+        .set({ 
+          version: newVersion,
+          updatedAt: new Date()
+        })
+        .where(eq(storeThemes.storeId, input.storeId));
+
+      return { status: "success", newVersion };
     }),
 });
