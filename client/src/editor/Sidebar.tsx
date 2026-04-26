@@ -6,7 +6,7 @@ import { useEditorStore } from "./store/useEditorStore";
 export const Sidebar: React.FC = () => {
   const { theme, selectedSectionId, updateSection } = useEditorStore();
 
-  const selectedSection = theme.sections.find((s) => s.id === selectedSectionId);
+  const selectedSection = selectedSectionId ? theme.templates.home.sections[selectedSectionId] : null;
   const registryEntry = selectedSection ? SECTION_REGISTRY[selectedSection.type] : null;
 
   const handleFieldChange = (fieldId: string, newValue: any) => {

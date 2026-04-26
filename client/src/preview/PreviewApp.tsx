@@ -27,10 +27,14 @@ export default function PreviewApp() {
 
   return (
     <div>
-      {theme.sections.map((section) => {
-        const Component = SECTION_REGISTRY[section.type];
+      {theme.templates.home.order.map((sectionId) => {
+        const section = theme.templates.home.sections[sectionId];
+        if (!section) return null;
+        
+        const Component = SECTION_REGISTRY[section.type]?.component;
         if (!Component) return null;
-        return <Component key={section.id} settings={section.settings} />;
+        
+        return <Component key={sectionId} settings={section.settings} />;
       })}
     </div>
   );
