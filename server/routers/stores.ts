@@ -1,14 +1,15 @@
 import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, auditedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 import { addDomainToVercel } from "../_core/vercel-api";
 import { ENV } from "../_core/env";
 import { canAccess } from "../utils/capabilities";
 import { SubscriptionTier } from "../utils/featureRegistry";
+import { UsageEngine } from "../utils/usage";
 
 export const storesRouter = router({
   // Create a new store for the merchant
-  create: protectedProcedure
+  create: auditedProcedure
     .input(
       z.object({
         name: z.string().min(1, "Store name is required"),
@@ -38,6 +39,9 @@ export const storesRouter = router({
         const fullSubdomain = `${input.slug}.${ENV.platformRoot}`;
         // We MUST await this on Vercel or the function will terminate before the API call finishes
         await addDomainToVercel(fullSubdomain).catch(err => console.error("Vercel automation failed:", err));
+
+        // 3. Usage Tracking
+        await UsageEngine.increment(ctx.user.id, "stores_count");
 
         return store;
       } catch (err: any) {
@@ -72,7 +76,7 @@ export const storesRouter = router({
     }),
 
   // Update store settings
-  update: protectedProcedure
+  update: auditedProcedure
     .input(
       z.object({
         storeId: z.number(),

@@ -362,6 +362,36 @@ export type InsertEditorEvent = typeof editorEvents.$inferInsert;
 export type ThemeSnapshot = typeof themeSnapshots.$inferSelect;
 export type InsertThemeSnapshot = typeof themeSnapshots.$inferInsert;
 
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id"),
+  actionType: varchar("action_type", { length: 100 }).notNull(), // e.g., "CREATE_STORE", "PLAN_VIOLATION"
+  resourceType: varchar("resource_type", { length: 50 }), // e.g., "STORE", "THEME"
+  resourceId: varchar("resource_id", { length: 100 }),
+  metadata: jsonb("metadata").$type<any>().default({}),
+  success: boolean("success").default(true).notNull(),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("audit_logs_user_id_idx").on(table.userId),
+  actionTypeIdx: index("audit_logs_action_type_idx").on(table.actionType),
+}));
+
+export const tenantUsage = pgTable("tenant_usage", {
+  id: serial("id").primaryKey(),
+  merchantId: integer("merchant_id").notNull(),
+  metricName: varchar("metric_name", { length: 50 }).notNull(), // e.g., "stores_count", "staff_count"
+  currentCount: integer("current_count").default(0).notNull(),
+  lastUpdated: timestamp("last_updated").defaultNow().notNull(),
+}, (table) => ({
+  merchantMetricIdx: index("tenant_usage_merchant_metric_idx").on(table.merchantId, table.metricName),
+}));
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = typeof auditLogs.$inferInsert;
+export type TenantUsage = typeof tenantUsage.$inferSelect;
+export type InsertTenantUsage = typeof tenantUsage.$inferInsert;
+
 export const subscriptionRequestStatusEnum = pgEnum("subscription_request_status", ["pending", "approved", "rejected"]);
 
 // ============================================================================

@@ -1,17 +1,18 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, auditedProcedure, router } from "../_core/trpc";
 import { db } from "../db";
 import { users } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { canAccess } from "../utils/capabilities";
 import { SubscriptionTier } from "../utils/featureRegistry";
 import { TRPCError } from "@trpc/server";
+import { UsageEngine } from "../utils/usage";
 
 export const staffRouter = router({
   /**
    * Invite a new staff member (Enforced by Plan Limits)
    */
-  invite: protectedProcedure
+  invite: auditedProcedure
     .input(z.object({
       name: z.string(),
       email: z.string().email(),
@@ -40,6 +41,9 @@ export const staffRouter = router({
         subscriptionStatus: "active",
         tier: ctx.user.tier as SubscriptionTier, // Staff inherits merchant's tier for feature gating
       }).returning();
+
+      // 4. Usage Tracking
+      await UsageEngine.increment(ctx.user.id, "staff_count");
 
       return staff;
     }),

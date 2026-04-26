@@ -1,11 +1,12 @@
 import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, auditedProcedure, publicProcedure, router } from "../_core/trpc";
 import { db } from "../db";
 import { storeThemes, editorEvents, themeSnapshots } from "../../drizzle/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { canAccess } from "../utils/capabilities";
 import { SubscriptionTier } from "../utils/featureRegistry";
+import { UsageEngine } from "../utils/usage";
 
 // Validation schema for theme config
 const ThemeConfigSchema = z.object({
@@ -38,7 +39,7 @@ export const themesRouter = router({
   /**
    * Create a new theme from a template/marketplace item
    */
-  create: protectedProcedure
+  create: auditedProcedure
     .input(z.object({
       name: z.string(),
       description: z.string().optional(),
@@ -78,6 +79,9 @@ export const themesRouter = router({
         })
         .returning();
 
+      // 3. Usage Tracking
+      await UsageEngine.increment(storeId, "themes_count");
+
       return created;
     }),
 
@@ -104,7 +108,7 @@ export const themesRouter = router({
   /**
    * Save a theme as a draft
    */
-  saveTheme: protectedProcedure
+  saveTheme: auditedProcedure
     .input(z.object({ 
       storeId: z.number(), 
       themeJson: z.any(),

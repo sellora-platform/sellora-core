@@ -1,12 +1,14 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, auditedProcedure, router } from "../_core/trpc";
 import { db } from "../db";
 import { subscriptionRequests, users } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { BillingSyncEngine } from "../utils/billing";
+import { AuditEngine } from "../utils/audit";
 
 export const subscriptionsRouter = router({
   // Submit a manual payment request
-  submitManualPayment: protectedProcedure
+  submitManualPayment: auditedProcedure
     .input(
       z.object({
         tier: z.enum(["starter", "growth", "scale", "empire"]),
@@ -49,7 +51,7 @@ export const subscriptionsRouter = router({
   }),
 
   // Admin: Approve a request
-  approveRequest: protectedProcedure
+  approveRequest: auditedProcedure
     .input(z.object({ requestId: z.number() }))
     .mutation(async ({ input, ctx }) => {
       if (ctx.user.role !== "admin") {
@@ -70,20 +72,23 @@ export const subscriptionsRouter = router({
         .set({ status: "approved", updatedAt: new Date() })
         .where(eq(subscriptionRequests.id, input.requestId));
 
-      // 2. Update user's tier
-      await db.update(users)
-        .set({ 
-          tier: request.tier,
-          subscriptionStatus: "active",
-          trialEndsAt: null
-        })
-        .where(eq(users.id, request.merchantId));
+      // 2. Authoritative Sync from Billing Engine
+      await BillingSyncEngine.syncUserPlanFromBilling(request.merchantId);
+
+      // 3. Log Audit Event
+      await AuditEngine.log({
+        userId: ctx.user.id,
+        actionType: "SUBSCRIPTION_APPROVED",
+        resourceType: "SUBSCRIPTION",
+        resourceId: input.requestId.toString(),
+        metadata: { merchantId: request.merchantId, tier: request.tier }
+      });
 
       return { success: true };
     }),
 
   // Admin: Reject a request
-  rejectRequest: protectedProcedure
+  rejectRequest: auditedProcedure
     .input(z.object({ requestId: z.number(), reason: z.string().optional() }))
     .mutation(async ({ input, ctx }) => {
       if (ctx.user.role !== "admin") {
@@ -97,6 +102,15 @@ export const subscriptionsRouter = router({
           updatedAt: new Date() 
         })
         .where(eq(subscriptionRequests.id, input.requestId));
+
+      // Log Audit Event
+      await AuditEngine.log({
+        userId: ctx.user.id,
+        actionType: "SUBSCRIPTION_REJECTED",
+        resourceType: "SUBSCRIPTION",
+        resourceId: input.requestId.toString(),
+        metadata: { reason: input.reason }
+      });
 
       return { success: true };
     }),
