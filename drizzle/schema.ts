@@ -1,4 +1,5 @@
 import { boolean, index, integer, jsonb, numeric, pgEnum, pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 /**
  * Sellora Database Schema — PostgreSQL (Neon)
@@ -331,6 +332,8 @@ export const storeThemes = pgTable("store_themes", {
   name: varchar("name", { length: 255 }).notNull(),
   draftConfig: jsonb("draft_config").$type<any>().notNull(),
   publishedConfig: jsonb("published_config").$type<any>(),
+  description: text("description"),
+  isActive: boolean("is_active").default(false).notNull(),
   schemaVersion: integer("schema_version").default(1).notNull(),
   version: integer("version").default(1).notNull(),
   isPublic: boolean("is_public").default(false).notNull(),

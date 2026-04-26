@@ -40,7 +40,7 @@ export default function ThemeManager() {
     onSuccess: () => {
       toast.success("Theme published successfully!");
       utils.themes.listByStore.invalidate();
-      utils.themes.getByStoreId.invalidate();
+      utils.themes.getTheme.invalidate();
     },
   });
 

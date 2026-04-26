@@ -227,7 +227,7 @@ export default function ThemeEditor() {
     if (!theme) return;
     saveMutation.mutate({
       storeId: theme.storeId,
-      config: {
+      themeJson: {
         schemaVersion: 1,
         templates: {
           home: {
@@ -331,10 +331,10 @@ export default function ThemeEditor() {
           </div>
           <Button 
             onClick={handleSave} 
-            disabled={updateMutation.isPending}
+            disabled={saveMutation.isPending}
             className="bg-[#008060] hover:bg-[#006e52] text-white font-bold h-9 px-6 rounded-md shadow-sm flex items-center gap-2"
           >
-            {updateMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+            {saveMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             Save
           </Button>
         </div>

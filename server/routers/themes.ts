@@ -2,7 +2,7 @@ import { z } from "zod";
 import { protectedProcedure, auditedProcedure, publicProcedure, router } from "../_core/trpc";
 import { db } from "../db";
 import { storeThemes, editorEvents, themeSnapshots } from "../../drizzle/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and, inArray, desc, asc } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { canAccess } from "../utils/capabilities";
 import { SubscriptionTier } from "../utils/featureRegistry";
