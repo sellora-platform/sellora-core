@@ -19,6 +19,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { useEditorStore } from "./store/useEditorStore";
 import { SECTION_REGISTRY } from "../sections/registry";
 import { GripVertical, Trash2, Copy } from "lucide-react";
+import { SectionLibraryModal } from "./SectionLibraryModal";
 
 interface SortableItemProps {
   id: string;
@@ -103,6 +104,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
 };
 
 export const SectionList: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
   const {
     theme,
     selectedSectionId,
@@ -164,13 +166,15 @@ export const SectionList: React.FC = () => {
 
       <button
         className="w-full mt-4 py-2 px-4 border border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:border-blue-400 hover:text-blue-500 transition-colors flex items-center justify-center gap-2"
-        onClick={() => {
-          /* Phase 5: Add Section logic */
-          alert("Add Section clicked! (Coming in Phase 5)");
-        }}
+        onClick={() => setIsModalOpen(true)}
       >
         <span>+ Add Section</span>
       </button>
+
+      <SectionLibraryModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   );
 };

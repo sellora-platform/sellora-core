@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { Theme, mockTheme } from "../mockTheme";
+import { SECTION_REGISTRY } from "../../sections/registry";
 
 interface EditorState {
   theme: Theme;
@@ -12,11 +13,20 @@ interface EditorState {
   setSelectedSection: (id: string | null) => void;
   updateSection: (sectionId: string, settings: any) => void;
   reorderSections: (newOrder: string[]) => void;
+  addSection: (type: string) => void;
   deleteSection: (sectionId: string) => void;
   duplicateSection: (sectionId: string) => void;
   undo: () => void;
   redo: () => void;
 }
+
+const getDefaultsFromSchema = (schema: any) => {
+  const defaults: Record<string, any> = {};
+  schema.settings.forEach((s: any) => {
+    defaults[s.id] = s.default;
+  });
+  return defaults;
+};
 
 export const useEditorStore = create<EditorState>((set) => ({
   theme: mockTheme,
@@ -49,6 +59,31 @@ export const useEditorStore = create<EditorState>((set) => ({
       const newTheme = structuredClone(state.theme);
       newTheme.templates.home.order = newOrder;
       return pushToHistory(state, newTheme);
+    });
+  },
+
+  addSection: (type) => {
+    const entry = SECTION_REGISTRY[type];
+    if (!entry) return;
+
+    set((state) => {
+      const newTheme = structuredClone(state.theme);
+      const newId = `${type}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      const defaults = getDefaultsFromSchema(entry.schema);
+      
+      newTheme.templates.home.sections[newId] = {
+        id: newId,
+        type,
+        settings: defaults,
+      };
+      
+      newTheme.templates.home.order.push(newId);
+
+      return {
+        ...pushToHistory(state, newTheme),
+        selectedSectionId: newId,
+      };
     });
   },
 
