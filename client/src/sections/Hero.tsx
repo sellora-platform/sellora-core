@@ -1,5 +1,29 @@
 import React from "react";
 
+export const HeroSchema = {
+  name: "Hero Banner",
+  settings: [
+    {
+      id: "heading",
+      type: "text",
+      label: "Heading Text",
+      default: "Welcome to Sellora",
+    },
+    {
+      id: "subheading",
+      type: "text",
+      label: "Subheading Text",
+      default: "The ultimate eCommerce platform",
+    },
+    {
+      id: "bgColor",
+      type: "color",
+      label: "Background Color",
+      default: "#008060",
+    },
+  ],
+};
+
 interface HeroProps {
   settings: {
     heading: string;
