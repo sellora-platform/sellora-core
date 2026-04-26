@@ -1,32 +1,17 @@
 import React from "react";
 import { SECTION_REGISTRY } from "../sections/registry";
 import { RenderField } from "./RenderField";
-import { Theme } from "./mockTheme";
+import { useEditorStore } from "./store/useEditorStore";
 
-interface SidebarProps {
-  theme: Theme;
-  selectedSectionId: string | null;
-  onThemeUpdate: (newTheme: Theme) => void;
-}
+export const Sidebar: React.FC = () => {
+  const { theme, selectedSectionId, updateSection } = useEditorStore();
 
-export const Sidebar: React.FC<SidebarProps> = ({
-  theme,
-  selectedSectionId,
-  onThemeUpdate,
-}) => {
   const selectedSection = theme.sections.find((s) => s.id === selectedSectionId);
   const registryEntry = selectedSection ? SECTION_REGISTRY[selectedSection.type] : null;
 
   const handleFieldChange = (fieldId: string, newValue: any) => {
-    if (!selectedSection) return;
-
-    const newTheme = structuredClone(theme);
-    const sectionIndex = newTheme.sections.findIndex((s) => s.id === selectedSectionId);
-    
-    if (sectionIndex !== -1) {
-      newTheme.sections[sectionIndex].settings[fieldId] = newValue;
-      onThemeUpdate(newTheme);
-    }
+    if (!selectedSectionId) return;
+    updateSection(selectedSectionId, { [fieldId]: newValue });
   };
 
   if (!selectedSection || !registryEntry) {
