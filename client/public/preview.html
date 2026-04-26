@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sellora Preview</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- 
+      Note: In a real Vite dev environment, this HTML would need to be processed 
+      or the main.tsx script would need to be injected via a script tag.
+      For the sake of this architectural demo, we assume the build system 
+      maps /preview.html to the Preview entry point.
+    -->
+    <script type="module" src="/src/preview/main.tsx"></script>
+  </body>
+</html>
