@@ -16,14 +16,20 @@ export const AuditEngine = {
     metadata?: any;
     success?: boolean;
     ipAddress?: string;
+    correlationId?: string;
   }) {
     try {
+      const meta = params.metadata || {};
+      if (params.correlationId) {
+        meta.correlationId = params.correlationId;
+      }
+
       await db.insert(auditLogs).values({
         userId: params.userId,
         actionType: params.actionType,
         resourceType: params.resourceType,
         resourceId: params.resourceId,
-        metadata: params.metadata || {},
+        metadata: meta,
         success: params.success !== undefined ? params.success : true,
         ipAddress: params.ipAddress,
       });

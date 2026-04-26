@@ -27,6 +27,7 @@ const auditMiddleware = t.middleware(async (opts) => {
       userId: ctx.user.id,
       actionType: `TRPC_MUTATION:${path}`,
       success: result.ok,
+      correlationId: ctx.correlationId,
       metadata: {
         path,
         errorCode,
