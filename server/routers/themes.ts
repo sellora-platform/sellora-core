@@ -7,6 +7,7 @@ import { nanoid } from "nanoid";
 import { canAccess } from "../utils/capabilities";
 import { SubscriptionTier } from "../utils/featureRegistry";
 import { UsageEngine } from "../utils/usage";
+import { MerchantExperienceEngine } from "../utils/merchantExperience";
 
 // Validation schema for theme config
 const ThemeConfigSchema = z.object({
@@ -170,29 +171,6 @@ export const themesRouter = router({
       return theme || null;
     }),
 
-  /**
-   * Promote draftConfig to publishedConfig
-   */
-  publishTheme: protectedProcedure
-    .input(z.object({ storeId: z.number() }))
-    .mutation(async ({ input }) => {
-      const [theme] = await db.select()
-        .from(storeThemes)
-        .where(eq(storeThemes.storeId, input.storeId))
-        .limit(1);
-
-      if (!theme) throw new Error("Theme not found");
-
-      const [published] = await db.update(storeThemes)
-        .set({
-          publishedConfig: theme.draftConfig,
-          updatedAt: new Date(),
-        })
-        .where(eq(storeThemes.storeId, input.storeId))
-        .returning();
-
-      return published;
-    }),
 
   /**
    * Append granular events to the store's event log with Idempotency
@@ -268,5 +246,98 @@ export const themesRouter = router({
       }
 
       return { status: "success", newVersion };
+    }),
+
+  /**
+   * List all themes for a specific store
+   */
+  listByStore: protectedProcedure
+    .input(z.object({ storeId: z.number().optional() }))
+    .query(async ({ input, ctx }) => {
+      const storeId = input?.storeId || 1; // Fallback for demo
+      return db.select()
+        .from(storeThemes)
+        .where(eq(storeThemes.storeId, storeId))
+        .orderBy(desc(storeThemes.updatedAt));
+    }),
+
+  /**
+   * Duplicate an existing theme
+   */
+  duplicate: auditedProcedure
+    .input(z.object({ themeId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const [original] = await db.select()
+        .from(storeThemes)
+        .where(eq(storeThemes.id, input.themeId))
+        .limit(1);
+
+      if (!original) throw new Error("Original theme not found");
+
+      const [duplicated] = await db.insert(storeThemes)
+        .values({
+          ...original,
+          id: nanoid(),
+          name: `${original.name} (Copy)`,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning();
+
+      return duplicated;
+    }),
+
+  /**
+   * Delete a theme from the library
+   */
+  delete: auditedProcedure
+    .input(z.object({ themeId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      await db.delete(storeThemes)
+        .where(eq(storeThemes.id, input.themeId));
+      
+      return { success: true };
+    }),
+
+  /**
+   * Toggle theme visibility in the marketplace
+   */
+  toggleMarketplace: auditedProcedure
+    .input(z.object({ 
+      themeId: z.string(), 
+      isPublic: z.boolean(),
+      category: z.string().optional(),
+      price: z.string().optional()
+    }))
+    .mutation(async ({ input, ctx }) => {
+      // Logic for marketplace visibility
+      return { success: true, isPublic: input.isPublic };
+    }),
+
+  /**
+   * Promote draftConfig to publishedConfig
+   */
+  publish: auditedProcedure
+    .input(z.object({ themeId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const [theme] = await db.select()
+        .from(storeThemes)
+        .where(eq(storeThemes.id, input.themeId))
+        .limit(1);
+
+      if (!theme) throw new Error("Theme not found");
+
+      const [published] = await db.update(storeThemes)
+        .set({
+          publishedConfig: theme.draftConfig,
+          updatedAt: new Date(),
+        })
+        .where(eq(storeThemes.id, input.themeId))
+        .returning();
+
+      // Activation Tracking
+      await MerchantExperienceEngine.trackActivation(ctx.user.id, "hasPublishedTheme");
+
+      return published;
     }),
 });

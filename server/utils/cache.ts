@@ -4,7 +4,7 @@
  */
 export const CacheEngine = {
   // In-memory store (simplified for demo, would use Redis in prod)
-  private _store: Map<string, { value: any; expiry: number }> = new Map(),
+  _store: new Map<string, { value: any; expiry: number }>(),
 
   /**
    * Sets a value in the cache with a Time-To-Live (TTL).
@@ -41,11 +41,11 @@ export const CacheEngine = {
    */
   invalidateTenant(tenantId: number | string) {
     const prefix = `tenant:${tenantId}:`;
-    for (const key of this._store.keys()) {
+    Array.from(this._store.keys()).forEach(key => {
       if (key.startsWith(prefix)) {
         this._store.delete(key);
       }
-    }
+    });
   },
 
   /**

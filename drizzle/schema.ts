@@ -36,11 +36,21 @@ export const users = pgTable("users", {
   lastSignedIn: timestamp("last_signed_in").defaultNow().notNull(),
   isVerified: boolean("is_verified").default(false),
   verificationCode: varchar("verification_code", { length: 6 }),
-  plan: varchar("plan", { length: 50 }).default("free"),
   // Subscription Info
   tier: subscriptionTierEnum("tier").default("free").notNull(),
   subscriptionStatus: subscriptionStatusEnum("subscription_status").default("trialing"),
-  trialEndsAt: timestamp("trial_ends_at"),
+  lifecycleStatus: varchar("lifecycle_status", { length: 20 }).default("trialing").notNull(),
+  onboardingStatus: jsonb("onboarding_status").$type<{
+    step: "account_setup" | "store_created" | "theme_selected" | "first_publish" | "completed";
+    completedSteps: string[];
+  }>().default({ step: "account_setup", completedSteps: [] }),
+  activationStatus: jsonb("activation_status").$type<{
+    hasCreatedStore: boolean;
+    hasAddedProduct: boolean;
+    hasPublishedTheme: boolean;
+    activatedAt: string | null;
+  }>().default({ hasCreatedStore: false, hasAddedProduct: false, hasPublishedTheme: false, activatedAt: null }),
+  trialEndsAt: timestamp("trial_ends_at").default(sql`CURRENT_TIMESTAMP + interval '7 days'`),
   stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
   stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }),
   // Staff/Team Management
@@ -323,6 +333,7 @@ export const storeThemes = pgTable("store_themes", {
   publishedConfig: jsonb("published_config").$type<any>(),
   schemaVersion: integer("schema_version").default(1).notNull(),
   version: integer("version").default(1).notNull(),
+  isPublic: boolean("is_public").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({

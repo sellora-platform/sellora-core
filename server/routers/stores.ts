@@ -6,6 +6,7 @@ import { ENV } from "../_core/env";
 import { canAccess } from "../utils/capabilities";
 import { SubscriptionTier } from "../utils/featureRegistry";
 import { UsageEngine } from "../utils/usage";
+import { MerchantExperienceEngine } from "../utils/merchantExperience";
 
 export const storesRouter = router({
   // Create a new store for the merchant
@@ -42,6 +43,9 @@ export const storesRouter = router({
 
         // 3. Usage Tracking
         await UsageEngine.increment(ctx.user.id, "stores_count");
+
+        // 4. Merchant Activation Tracking
+        await MerchantExperienceEngine.trackActivation(ctx.user.id, "hasCreatedStore");
 
         return store;
       } catch (err: any) {

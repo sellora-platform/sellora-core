@@ -111,7 +111,7 @@ export default function ThemeEditor() {
   const storeQuery = trpc.stores.getMyStore.useQuery();
   const search = window.location.search;
   const params = new URLSearchParams(search);
-  const themeId = parseInt(params.get("themeId") || "0");
+  const themeId = params.get("themeId") || "";
 
   const themeQuery = trpc.themes.getById.useQuery(
     { themeId },
@@ -119,7 +119,7 @@ export default function ThemeEditor() {
   );
 
   // Fallback for old /editor route if no themeId
-  const activeThemeQuery = trpc.themes.getByStoreId.useQuery(
+  const activeThemeQuery = trpc.themes.getTheme.useQuery(
     { storeId: storeQuery.data?.id || 0 },
     { enabled: !themeId && !!storeQuery.data?.id }
   );
@@ -129,28 +129,28 @@ export default function ThemeEditor() {
   // Initial Load
   useEffect(() => {
     if (theme) {
-      if (theme.sections) {
-        setTemplates(theme.sections as any);
+      if (theme.draftConfig?.templates) {
+        // Map templates back to sections array for editor
+        const sections = theme.draftConfig.templates.home?.sections || {};
+        const sectionsArray = Object.values(sections);
+        setTemplates({ index: sectionsArray as any });
       }
       
-      const colors = theme.colors as any;
-      const typography = theme.typography as any;
-      
       const newGlobal = {
-        primaryColor: colors?.primary || "#008060",
-        backgroundColor: colors?.background || "#ffffff",
-        textColor: colors?.text || "#1a1a1a",
-        fontFamily: typography?.family || "Inter"
+        primaryColor: (theme.draftConfig as any)?.colors?.primary || "#008060",
+        backgroundColor: (theme.draftConfig as any)?.colors?.background || "#ffffff",
+        textColor: (theme.draftConfig as any)?.colors?.text || "#1a1a1a",
+        fontFamily: (theme.draftConfig as any)?.typography?.family || "Inter"
       };
       
       setGlobalSettings(newGlobal);
       setHistory([{ 
-        templates: theme.sections || templates, 
+        templates: templates, 
         globalSettings: newGlobal 
       }]);
       setHistoryIndex(0);
     }
-  }, [themeQuery.data]);
+  }, [themeQuery.data, activeThemeQuery.data]);
 
   const pushToHistory = (newTemplates: Record<string, Section[]>, newGlobalSettings: typeof globalSettings) => {
     const newHistory = history.slice(0, historyIndex + 1);
@@ -205,11 +205,11 @@ export default function ThemeEditor() {
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
-  const updateMutation = trpc.themes.update.useMutation({
+  const saveMutation = trpc.themes.saveTheme.useMutation({
     onSuccess: () => {
       toast.success("Changes saved!");
-      utils.themes.getById.invalidate({ themeId });
-      utils.themes.getByStoreId.invalidate({ storeId: storeQuery.data?.id || 0 });
+      if (themeId) utils.themes.getById.invalidate({ themeId });
+      utils.themes.getTheme.invalidate({ storeId: storeQuery.data?.id || 0 });
     },
   });
 
@@ -225,17 +225,21 @@ export default function ThemeEditor() {
 
   const handleSave = () => {
     if (!theme) return;
-    updateMutation.mutate({
-      themeId: theme.id,
-      sections: templates as any,
-      colors: {
-        primary: globalSettings.primaryColor,
-        background: globalSettings.backgroundColor,
-        text: globalSettings.textColor
-      },
-      typography: {
-        family: globalSettings.fontFamily
-      }
+    saveMutation.mutate({
+      storeId: theme.storeId,
+      config: {
+        schemaVersion: 1,
+        templates: {
+          home: {
+            sections: localSections.reduce((acc, s, i) => {
+              const id = s.id || `sec-${i}`;
+              acc[id] = { ...s, id };
+              return acc;
+            }, {} as any),
+            order: localSections.map(s => s.id)
+          }
+        }
+      } as any
     });
   };
 

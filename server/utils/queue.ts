@@ -3,8 +3,8 @@
  * Includes retry logic and idempotency guarantees.
  */
 export const JobQueue = {
-  private _queue: Array<{ id: string; task: () => Promise<any>; retries: number }> = [],
-  private _processing: boolean = false,
+  _queue: [] as Array<{ id: string; task: () => Promise<any>; retries: number }>,
+  _processing: false,
 
   /**
    * Adds a task to the queue with a retry policy.

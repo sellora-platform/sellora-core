@@ -1,6 +1,7 @@
 import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, auditedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { MerchantExperienceEngine } from "../utils/merchantExperience";
 
 const productImageSchema = z.object({
   url: z.string(),
@@ -10,7 +11,7 @@ const productImageSchema = z.object({
 
 export const productsRouter = router({
   // Create a product
-  create: protectedProcedure
+  create: auditedProcedure
     .input(
       z.object({
         storeId: z.number(),
@@ -40,7 +41,7 @@ export const productsRouter = router({
         throw new Error("Unauthorized");
       }
 
-      return db.createProduct({
+      const product = await db.createProduct({
         storeId: input.storeId,
         categoryId: input.categoryId,
         name: input.name,
@@ -60,6 +61,11 @@ export const productsRouter = router({
         seoTitle: input.seoTitle,
         seoDescription: input.seoDescription,
       });
+
+      // Activation Tracking
+      await MerchantExperienceEngine.trackActivation(ctx.user.id, "hasAddedProduct");
+
+      return product;
     }),
 
   // Get products by store
@@ -79,7 +85,7 @@ export const productsRouter = router({
     }),
 
   // Update a product
-  update: protectedProcedure
+  update: auditedProcedure
     .input(
       z.object({
         productId: z.number(),

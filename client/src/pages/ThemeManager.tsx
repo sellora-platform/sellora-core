@@ -32,7 +32,7 @@ export default function ThemeManager() {
   const utils = trpc.useUtils();
 
   const { data: store } = trpc.stores.getMyStore.useQuery();
-  const { data: themes, isLoading } = trpc.themes.listByStore.useQuery(undefined, {
+  const { data: themes, isLoading } = trpc.themes.listByStore.useQuery({ storeId: store?.id }, {
     enabled: !!store,
   });
 
