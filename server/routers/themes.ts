@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { db } from "../db";
-import { storeThemes, editorEvents } from "../../drizzle/schema";
-import { eq, and } from "drizzle-orm";
+import { storeThemes, editorEvents, themeSnapshots } from "../../drizzle/schema";
+import { eq, and, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 // Validation schema for theme config
@@ -127,12 +127,15 @@ export const themesRouter = router({
     }),
 
   /**
-   * Append granular events to the store's event log
+   * Append granular events to the store's event log with Idempotency
    */
   appendEvents: protectedProcedure
     .input(z.object({
       storeId: z.number(),
+      themeId: z.string(),
+      clientId: z.string(),
       events: z.array(z.object({
+        eventId: z.string(), // Client-side UUID
         type: z.string(),
         payload: z.any().optional(),
         sectionId: z.string().optional(),
@@ -142,10 +145,27 @@ export const themesRouter = router({
       baseVersion: z.number()
     }))
     .mutation(async ({ input }) => {
-      // 1. Batch insert events
-      const eventValues = input.events.map((e, i) => ({
+      const themeId = input.themeId;
+
+      // 1. Idempotency Check: Filter out already processed eventIds
+      const eventIds = input.events.map(e => e.eventId);
+      const existingEvents = await db.select({ eventId: editorEvents.eventId })
+        .from(editorEvents)
+        .where(inArray(editorEvents.eventId, eventIds));
+      
+      const existingIds = new Set(existingEvents.map(e => e.eventId));
+      const newEvents = input.events.filter(e => !existingIds.has(e.eventId));
+
+      if (newEvents.length === 0) {
+        return { status: "success", message: "All events already processed" };
+      }
+
+      // 2. Batch insert new events
+      const eventValues = newEvents.map((e, i) => ({
         id: nanoid(),
-        storeId: input.storeId,
+        eventId: e.eventId,
+        themeId: themeId,
+        clientId: input.clientId,
         type: e.type,
         payload: e.payload,
         version: input.baseVersion + i + 1,
@@ -154,14 +174,30 @@ export const themesRouter = router({
 
       await db.insert(editorEvents).values(eventValues);
 
-      // 2. Update the theme's current version
-      const newVersion = input.baseVersion + input.events.length;
+      // 3. Update theme version
+      const newVersion = input.baseVersion + newEvents.length;
       await db.update(storeThemes)
         .set({ 
           version: newVersion,
           updatedAt: new Date()
         })
         .where(eq(storeThemes.storeId, input.storeId));
+
+      // 4. Snapshot Optimization (Every 100 events)
+      if (newVersion % 100 === 0) {
+        // Fetch current full theme state to create snapshot
+        // In a real system, we'd rebuild it or use the draftConfig
+        const [theme] = await db.select().from(storeThemes).where(eq(storeThemes.storeId, input.storeId)).limit(1);
+        if (theme) {
+          await db.insert(themeSnapshots).values({
+            id: nanoid(),
+            themeId: themeId,
+            state: theme.draftConfig,
+            lastEventId: eventValues[eventValues.length - 1].eventId,
+            version: newVersion,
+          });
+        }
+      }
 
       return { status: "success", newVersion };
     }),

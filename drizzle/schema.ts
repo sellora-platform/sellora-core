@@ -334,17 +334,33 @@ export type InsertStoreTheme = typeof storeThemes.$inferInsert;
 
 export const editorEvents = pgTable("editor_events", {
   id: varchar("id", { length: 36 }).primaryKey(),
-  storeId: integer("store_id").notNull(),
+  eventId: varchar("event_id", { length: 36 }).unique().notNull(), // Client-generated UUID for idempotency
+  themeId: varchar("theme_id", { length: 36 }).notNull(),
+  clientId: varchar("client_id", { length: 50 }).notNull(), // Tab/Session identifier
   type: varchar("type", { length: 50 }).notNull(),
-  payload: jsonb("payload").$type<any>().notNull(),
+  payload: jsonb("payload").$type<any>(),
   version: integer("version").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => ({
-  storeIdIdx: index("editor_events_store_id_idx").on(table.storeId),
+  themeIdIdx: index("editor_events_theme_id_idx").on(table.themeId),
+  eventIdIdx: index("editor_events_idempotency_idx").on(table.eventId),
+}));
+
+export const themeSnapshots = pgTable("theme_snapshots", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  themeId: varchar("theme_id", { length: 36 }).notNull(),
+  state: jsonb("state").$type<any>().notNull(),
+  lastEventId: varchar("last_event_id", { length: 36 }).notNull(),
+  version: integer("version").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  themeIdIdx: index("theme_snapshots_theme_id_idx").on(table.themeId),
 }));
 
 export type EditorEvent = typeof editorEvents.$inferSelect;
 export type InsertEditorEvent = typeof editorEvents.$inferInsert;
+export type ThemeSnapshot = typeof themeSnapshots.$inferSelect;
+export type InsertThemeSnapshot = typeof themeSnapshots.$inferInsert;
 
 export const subscriptionRequestStatusEnum = pgEnum("subscription_request_status", ["pending", "approved", "rejected"]);
 

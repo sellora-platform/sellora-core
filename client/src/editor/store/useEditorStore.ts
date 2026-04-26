@@ -17,6 +17,7 @@ interface EditorState {
   syncStatus: "idle" | "syncing" | "conflict" | "error";
   currentVersion: number;
   eventQueue: EditorEvent[];
+  clientId: string;
 
   // Actions
   setTheme: (theme: Theme) => void;
@@ -25,7 +26,7 @@ interface EditorState {
   setSelectedBlock: (id: string | null) => void;
   
   // Event-Driven Actions
-  emitEvent: (event: Omit<EditorEvent, "timestamp">) => void;
+  emitEvent: (event: Omit<EditorEvent, "timestamp" | "eventId" | "clientId" | "themeId">) => void;
   
   // High-level Actions (Refactored to emit events)
   updateSection: (sectionId: string, settings: any) => void;
@@ -60,10 +61,13 @@ const getDefaultsFromSchema = (schema: any) => {
 let syncTimeout: ReturnType<typeof setTimeout> | null = null;
 const syncChannel = new BroadcastChannel("sellora-editor-sync");
 
+// Generate a persistent clientId for this tab session
+const SESSION_CLIENT_ID = `client-${Math.random().toString(36).substr(2, 9)}`;
+
 export const useEditorStore = create<EditorState>((set, get) => {
   
   syncChannel.onmessage = (event) => {
-    if (event.data.type === "THEME_UPDATED") {
+    if (event.data.type === "THEME_UPDATED" && event.data.clientId !== SESSION_CLIENT_ID) {
       set({ 
         theme: event.data.theme,
         currentVersion: event.data.version,
@@ -83,6 +87,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     syncStatus: "idle",
     currentVersion: 0,
     eventQueue: [],
+    clientId: SESSION_CLIENT_ID,
 
     setTheme: (theme) => set({ theme }),
     
@@ -93,29 +98,86 @@ export const useEditorStore = create<EditorState>((set, get) => {
     setSelectedBlock: (id) => set({ selectedBlockId: id }),
 
     emitEvent: (e) => {
-      const event: EditorEvent = { ...e, timestamp: Date.now() };
+      const event: EditorEvent = { 
+        ...e, 
+        eventId: crypto.randomUUID(),
+        clientId: SESSION_CLIENT_ID,
+        themeId: "default-theme", 
+        timestamp: Date.now() 
+      };
       
       set((state) => {
-        // 1. Update state using reconstruction engine (local optimistic update)
-        const newTheme = rebuildThemeFromEvents(state.theme, [event]);
-        
-        // 2. Add to local queue for batch syncing
-        const newQueue = [...state.eventQueue, event];
+        // Surgical Immutable Update
+        let nextTheme = state.theme;
+
+        if (event.type === "SECTION_UPDATED") {
+          const sectionId = event.sectionId!;
+          nextTheme = {
+            ...state.theme,
+            templates: {
+              ...state.theme.templates,
+              home: {
+                ...state.theme.templates.home,
+                sections: {
+                  ...state.theme.templates.home.sections,
+                  [sectionId]: {
+                    ...state.theme.templates.home.sections[sectionId],
+                    settings: { 
+                      ...state.theme.templates.home.sections[sectionId].settings, 
+                      ...event.payload 
+                    }
+                  }
+                }
+              }
+            }
+          };
+        } else if (event.type === "BLOCK_UPDATED") {
+          const { sectionId, blockId } = event;
+          const section = state.theme.templates.home.sections[sectionId!];
+          nextTheme = {
+            ...state.theme,
+            templates: {
+              ...state.theme.templates,
+              home: {
+                ...state.theme.templates.home,
+                sections: {
+                  ...state.theme.templates.home.sections,
+                  [sectionId!]: {
+                    ...section,
+                    blocks: {
+                      ...section.blocks,
+                      [blockId!]: {
+                        ...section.blocks[blockId!],
+                        settings: {
+                          ...section.blocks[blockId!].settings,
+                          ...event.payload
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          };
+        } else {
+          // Structural changes use the reconstruction engine
+          nextTheme = rebuildThemeFromEvents(state.theme, [event]);
+        }
         
         return {
-          theme: newTheme,
-          eventQueue: newQueue,
-          ...pushToHistory(state, newTheme)
+          theme: nextTheme,
+          eventQueue: [...state.eventQueue, event],
+          ...pushToHistory(state, nextTheme)
         };
       });
 
-      // 3. Schedule batch sync
-      get().syncEventsToServer(1); // Assuming storeId 1
+      get().syncEventsToServer(1);
     },
 
     loadThemeFromServer: async (storeId) => {
       try {
         set({ syncStatus: "syncing" });
+        // In a hardened system, we'd fetch the latest snapshot + events after snapshot
         const data = await trpcClient.themes.getTheme.query({ storeId });
         if (data && data.draftConfig) {
           const theme = importTheme(data.draftConfig);
@@ -145,23 +207,26 @@ export const useEditorStore = create<EditorState>((set, get) => {
           const baseVersion = get().currentVersion;
           const response: any = await trpcClient.themes.appendEvents.mutate({
             storeId,
+            themeId: "default-theme",
+            clientId: SESSION_CLIENT_ID,
             events,
             baseVersion
           });
 
           if (response.status === "success") {
+            const newVersion = response.newVersion || baseVersion;
             set((state) => ({ 
               isSaving: false, 
               syncStatus: "idle",
-              currentVersion: response.newVersion,
-              // Clear only the events we just synced
+              currentVersion: newVersion,
               eventQueue: state.eventQueue.filter(e => !events.includes(e))
             }));
 
             syncChannel.postMessage({
               type: "THEME_UPDATED",
               theme: get().theme,
-              version: response.newVersion
+              version: newVersion,
+              clientId: SESSION_CLIENT_ID
             });
           }
         } catch (error) {
@@ -181,7 +246,6 @@ export const useEditorStore = create<EditorState>((set, get) => {
       }
     },
 
-    // High-level Actions refactored to use Events
     updateSection: (sectionId, settings) => {
       get().emitEvent({ type: "SECTION_UPDATED", sectionId, payload: settings });
     },
@@ -250,8 +314,6 @@ export const useEditorStore = create<EditorState>((set, get) => {
         if (state.historyIndex <= 0) return state;
         const newIndex = state.historyIndex - 1;
         const newTheme = structuredClone(state.history[newIndex]);
-        // Note: In a pure event-driven system, undo would be an event too.
-        // For now, we stick to state-based undo for UI simplicity.
         return {
           theme: newTheme,
           historyIndex: newIndex,
