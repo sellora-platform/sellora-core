@@ -12,11 +12,13 @@ import { dashboardRouter } from "./routers/dashboard";
 import { subscriptionsRouter } from "./routers/subscriptions";
 import { themesRouter } from "./routers/themes";
 import { uploadRouter } from "./routers/upload";
+import { staffRouter } from "./routers/staff";
 
 export const appRouter = router({
   system: systemRouter,
   subscriptions: subscriptionsRouter,
   themes: themesRouter,
+  staff: staffRouter,
   exports: exportsRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),

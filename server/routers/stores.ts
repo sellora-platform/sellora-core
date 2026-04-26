@@ -3,6 +3,8 @@ import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 import { addDomainToVercel } from "../_core/vercel-api";
 import { ENV } from "../_core/env";
+import { canAccess } from "../utils/capabilities";
+import { SubscriptionTier } from "../utils/featureRegistry";
 
 export const storesRouter = router({
   // Create a new store for the merchant
@@ -15,16 +17,8 @@ export const storesRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      // 1. Check plan limits
-      const userStores = await db.getStoresByMerchantId(ctx.user.id);
-      const userPlan = await db.getPlanByTier(ctx.user.tier);
-      
-      // If no plan found (should not happen), default to free tier limits
-      const maxStores = userPlan?.maxStores ?? 1;
-
-      if (userStores.length >= maxStores) {
-        throw new Error(`Your current plan (${ctx.user.tier}) only allows up to ${maxStores} store(s). Please upgrade to create more.`);
-      }
+      // 1. Centralized Backend Enforcement
+      await canAccess.createStore(ctx.user.id, ctx.user.tier as SubscriptionTier);
 
       // 2. Check if slug is already taken
       const existing = await db.getStoreBySlug(input.slug);
@@ -97,14 +91,17 @@ export const storesRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { storeId, ...updateData } = input;
       
-      // Verify ownership
+      // 1. Verify ownership
       const currentStore = await db.getStoreByMerchantId(ctx.user.id);
       if (!currentStore || currentStore.id !== storeId) {
         throw new Error("Unauthorized");
       }
 
-      // AUTOMATION: If custom domain is being added/changed, register it on Vercel
+      // 2. Feature Gating: Custom Domains
       if (input.customDomain && input.customDomain !== currentStore.customDomain) {
+        canAccess.feature(ctx.user.tier as SubscriptionTier, "customDomains");
+        
+        // AUTOMATION: If custom domain is being added/changed, register it on Vercel
         await addDomainToVercel(input.customDomain).catch(err => console.error("Vercel custom domain automation failed:", err));
       }
 

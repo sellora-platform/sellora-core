@@ -2,10 +2,15 @@ import { protectedProcedure, router } from "../_core/trpc";
 import * as dbOperations from "../db";
 import { orders, customers, products, orderItems } from "../../drizzle/schema";
 import { eq, sql } from "drizzle-orm";
+import { canAccess } from "../utils/capabilities";
+import { SubscriptionTier } from "../utils/featureRegistry";
 
 export const dashboardRouter = router({
   getStats: protectedProcedure.query(async ({ ctx }) => {
-    // 1. Ensure user has a store
+    // 1. Feature Enforcement
+    canAccess.feature(ctx.user.tier as SubscriptionTier, "advancedAnalytics");
+
+    // 2. Ensure user has a store
     const store = await dbOperations.getStoreByMerchantId(ctx.user.id);
     if (!store) {
       throw new Error("Store not found");

@@ -4,10 +4,12 @@ import { db } from "../db";
 import { storeThemes, editorEvents, themeSnapshots } from "../../drizzle/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { canAccess } from "../utils/capabilities";
+import { SubscriptionTier } from "../utils/featureRegistry";
 
 // Validation schema for theme config
 const ThemeConfigSchema = z.object({
-  schemaVersion: z.number(),
+  schemaVersion: z.number().default(1),
   templates: z.object({
     home: z.object({
       sections: z.record(z.string(), z.any()),
@@ -17,6 +19,68 @@ const ThemeConfigSchema = z.object({
 });
 
 export const themesRouter = router({
+  /**
+   * List all themes available in the marketplace
+   */
+  listMarketplace: protectedProcedure
+    .query(async ({ ctx }) => {
+      // 1. Backend Enforcement: Only certain tiers can access marketplace
+      canAccess.feature(ctx.user.tier as SubscriptionTier, "themeMarketplace");
+
+      // For now, return a set of "Marketplace" themes (In production, these would be in a separate table)
+      return [
+        { id: "lumina", name: "Lumina Fashion", category: "Fashion", price: "0", previewImage: "/themes/lumina.png" },
+        { id: "organic", name: "Organic Fresh", category: "Grocery", price: "0", previewImage: "/themes/organic.png" },
+        { id: "titan", name: "Titan Tech", category: "Electronics", price: "49.99", previewImage: "/themes/titan.png" },
+      ];
+    }),
+
+  /**
+   * Create a new theme from a template/marketplace item
+   */
+  create: protectedProcedure
+    .input(z.object({
+      name: z.string(),
+      description: z.string().optional(),
+      sections: z.array(z.any()),
+      colors: z.any(),
+      typography: z.any(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const storeId = 1; // In a multi-store system, this would be passed in or fetched
+
+      // 1. Backend Enforcement: Check theme count limits
+      await canAccess.createTheme(storeId, ctx.user.tier as SubscriptionTier);
+
+      // 2. Create the theme
+      const themeConfig = {
+        schemaVersion: 1,
+        templates: {
+          home: {
+            sections: input.sections.reduce((acc, s, i) => {
+              const id = `sec-${i}`;
+              acc[id] = { ...s, id };
+              return acc;
+            }, {}),
+            order: input.sections.map((_, i) => `sec-${i}`),
+          }
+        }
+      };
+
+      const [created] = await db.insert(storeThemes)
+        .values({
+          id: nanoid(),
+          storeId,
+          name: input.name,
+          draftConfig: themeConfig,
+          schemaVersion: 1,
+          version: 1,
+        })
+        .returning();
+
+      return created;
+    }),
+
   /**
    * Get the current draft theme for a store
    */
