@@ -1,42 +1,57 @@
 import { create } from "zustand";
 import { Theme, mockTheme } from "../mockTheme";
 import { SECTION_REGISTRY } from "../../sections/registry";
+import { BLOCK_REGISTRY } from "../../blocks/registry";
 
 interface EditorState {
   theme: Theme;
   selectedSectionId: string | null;
+  selectedBlockId: string | null;
   history: Theme[];
   historyIndex: number;
 
   // Actions
   setTheme: (theme: Theme) => void;
   setSelectedSection: (id: string | null) => void;
+  setSelectedBlock: (id: string | null) => void;
   updateSection: (sectionId: string, settings: any) => void;
   reorderSections: (newOrder: string[]) => void;
   addSection: (type: string) => void;
   deleteSection: (sectionId: string) => void;
   duplicateSection: (sectionId: string) => void;
+  
+  // Block Actions
+  addBlock: (sectionId: string, type: string) => void;
+  deleteBlock: (sectionId: string, blockId: string) => void;
+  reorderBlocks: (sectionId: string, newOrder: string[]) => void;
+  updateBlock: (sectionId: string, blockId: string, settings: any) => void;
+
   undo: () => void;
   redo: () => void;
 }
 
 const getDefaultsFromSchema = (schema: any) => {
   const defaults: Record<string, any> = {};
-  schema.settings.forEach((s: any) => {
-    defaults[s.id] = s.default;
-  });
+  if (schema.settings) {
+    schema.settings.forEach((s: any) => {
+      defaults[s.id] = s.default;
+    });
+  }
   return defaults;
 };
 
 export const useEditorStore = create<EditorState>((set) => ({
   theme: mockTheme,
   selectedSectionId: "hero-1",
+  selectedBlockId: null,
   history: [structuredClone(mockTheme)],
   historyIndex: 0,
 
   setTheme: (theme) => set({ theme }),
   
-  setSelectedSection: (id) => set({ selectedSectionId: id }),
+  setSelectedSection: (id) => set({ selectedSectionId: id, selectedBlockId: null }),
+  
+  setSelectedBlock: (id) => set({ selectedBlockId: id }),
 
   updateSection: (sectionId, newSettings) => {
     set((state) => {
@@ -76,6 +91,8 @@ export const useEditorStore = create<EditorState>((set) => ({
         id: newId,
         type,
         settings: defaults,
+        blocks: {},
+        block_order: [],
       };
       
       newTheme.templates.home.order.push(newId);
@@ -83,6 +100,7 @@ export const useEditorStore = create<EditorState>((set) => ({
       return {
         ...pushToHistory(state, newTheme),
         selectedSectionId: newId,
+        selectedBlockId: null,
       };
     });
   },
@@ -95,7 +113,8 @@ export const useEditorStore = create<EditorState>((set) => ({
       
       return {
         ...pushToHistory(state, newTheme),
-        selectedSectionId: state.selectedSectionId === sectionId ? null : state.selectedSectionId
+        selectedSectionId: state.selectedSectionId === sectionId ? null : state.selectedSectionId,
+        selectedBlockId: null,
       };
     });
   },
@@ -114,6 +133,77 @@ export const useEditorStore = create<EditorState>((set) => ({
       
       const index = newTheme.templates.home.order.indexOf(sectionId);
       newTheme.templates.home.order.splice(index + 1, 0, newId);
+
+      return pushToHistory(state, newTheme);
+    });
+  },
+
+  addBlock: (sectionId, type) => {
+    const entry = BLOCK_REGISTRY[type];
+    if (!entry) return;
+
+    set((state) => {
+      const newTheme = structuredClone(state.theme);
+      const section = newTheme.templates.home.sections[sectionId];
+      if (!section) return state;
+
+      const newId = `${type}-${Math.random().toString(36).substr(2, 9)}`;
+      const defaults = getDefaultsFromSchema(entry.schema);
+
+      if (!section.blocks) section.blocks = {};
+      if (!section.block_order) section.block_order = [];
+
+      section.blocks[newId] = {
+        id: newId,
+        type,
+        settings: defaults,
+      };
+      section.block_order.push(newId);
+
+      return {
+        ...pushToHistory(state, newTheme),
+        selectedBlockId: newId,
+      };
+    });
+  },
+
+  deleteBlock: (sectionId, blockId) => {
+    set((state) => {
+      const newTheme = structuredClone(state.theme);
+      const section = newTheme.templates.home.sections[sectionId];
+      if (!section || !section.blocks) return state;
+
+      delete section.blocks[blockId];
+      section.block_order = section.block_order?.filter(id => id !== blockId) || [];
+
+      return {
+        ...pushToHistory(state, newTheme),
+        selectedBlockId: state.selectedBlockId === blockId ? null : state.selectedBlockId,
+      };
+    });
+  },
+
+  reorderBlocks: (sectionId, newOrder) => {
+    set((state) => {
+      const newTheme = structuredClone(state.theme);
+      const section = newTheme.templates.home.sections[sectionId];
+      if (!section) return state;
+
+      section.block_order = newOrder;
+      return pushToHistory(state, newTheme);
+    });
+  },
+
+  updateBlock: (sectionId, blockId, newSettings) => {
+    set((state) => {
+      const newTheme = structuredClone(state.theme);
+      const section = newTheme.templates.home.sections[sectionId];
+      if (!section || !section.blocks?.[blockId]) return state;
+
+      section.blocks[blockId].settings = {
+        ...section.blocks[blockId].settings,
+        ...newSettings,
+      };
 
       return pushToHistory(state, newTheme);
     });

@@ -34,7 +34,14 @@ export default function PreviewApp() {
         const Component = SECTION_REGISTRY[section.type]?.component;
         if (!Component) return null;
         
-        return <Component key={sectionId} settings={section.settings} />;
+        return (
+          <Component 
+            key={sectionId} 
+            settings={section.settings} 
+            blocks={section.blocks}
+            block_order={section.block_order}
+          />
+        );
       })}
     </div>
   );
