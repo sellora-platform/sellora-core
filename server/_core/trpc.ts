@@ -100,6 +100,7 @@ const storeGuard = t.middleware(async (opts) => {
   return next({
     ctx: {
       ...ctx,
+      user: ctx.user,
       storeId,
     },
   });
