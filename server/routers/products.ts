@@ -1,17 +1,11 @@
 import { z } from "zod";
-import { protectedProcedure, auditedProcedure, publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, auditedProcedure, publicProcedure, router, protectedStoreProcedure, auditedStoreProcedure } from "../_core/trpc";
 import * as db from "../db";
 import { MerchantExperienceEngine } from "../utils/merchantExperience";
 
-const productImageSchema = z.object({
-  url: z.string(),
-  alt: z.string(),
-  displayOrder: z.number(),
-});
-
 export const productsRouter = router({
   // Create a product
-  create: auditedProcedure
+  create: auditedStoreProcedure
     .input(
       z.object({
         storeId: z.number(),
@@ -30,11 +24,7 @@ export const productsRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      // Verify store ownership
-      const store = await db.getStoreByMerchantId(ctx.user.id);
-      if (!store || store.id !== input.storeId) {
-        throw new Error("Unauthorized");
-      }
+      // Manual verification removed - handled by auditedStoreProcedure
 
       // Map simple string images to the DB JSONB format
       const dbImages = input.images.map((url, index) => ({
@@ -44,7 +34,7 @@ export const productsRouter = router({
       }));
 
       const product = await db.createProduct({
-        storeId: input.storeId,
+        storeId: ctx.storeId, // Using verified storeId from context
         categoryId: input.categoryId,
         name: input.name,
         slug: input.slug,
@@ -65,8 +55,16 @@ export const productsRouter = router({
       return product;
     }),
 
-  // Get products by store
-  listByStore: publicProcedure
+  // Get products by store (Merchant view - protected)
+  listByStore: protectedStoreProcedure
+    .input(z.object({ storeId: z.number() }))
+    .query(async ({ ctx }) => {
+      // Verified storeId injected by middleware
+      return db.getProductsByStoreId(ctx.storeId);
+    }),
+
+  // Public list (e.g. for storefront)
+  publicList: publicProcedure
     .input(z.object({ storeId: z.number() }))
     .query(async ({ input }) => {
       return db.getProductsByStoreId(input.storeId);
@@ -82,7 +80,7 @@ export const productsRouter = router({
     }),
 
   // Update a product
-  update: auditedProcedure
+  update: auditedStoreProcedure
     .input(
       z.object({
         productId: z.number(),
@@ -99,12 +97,7 @@ export const productsRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      // Verify ownership
-      const store = await db.getStoreByMerchantId(ctx.user.id);
-      if (!store || store.id !== input.storeId) {
-        throw new Error("Unauthorized");
-      }
-
+      // Verification handled by middleware
       const { productId, storeId, price, compareAtPrice, costPrice, images, ...updateData } = input;
       
       const dbImages = images ? images.map((url, index) => ({
@@ -124,15 +117,10 @@ export const productsRouter = router({
     }),
 
   // Delete a product
-  delete: protectedProcedure
+  delete: protectedStoreProcedure
     .input(z.object({ productId: z.number(), storeId: z.number() }))
     .mutation(async ({ input, ctx }) => {
-      // Verify ownership
-      const store = await db.getStoreByMerchantId(ctx.user.id);
-      if (!store || store.id !== input.storeId) {
-        throw new Error("Unauthorized");
-      }
-
+      // Verification handled by middleware
       return db.deleteProduct(input.productId);
     }),
 });

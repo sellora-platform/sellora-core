@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, publicProcedure, router, protectedStoreProcedure } from "../_core/trpc";
 import * as db from "../db";
 
 export const ordersRouter = router({
@@ -64,16 +64,10 @@ export const ordersRouter = router({
     }),
 
   // Get orders by store (merchant-facing)
-  listByStore: protectedProcedure
+  listByStore: protectedStoreProcedure
     .input(z.object({ storeId: z.number() }))
-    .query(async ({ input, ctx }) => {
-      // Verify ownership
-      const store = await db.getStoreByMerchantId(ctx.user.id);
-      if (!store || store.id !== input.storeId) {
-        throw new Error("Unauthorized");
-      }
-
-      return db.getOrdersByStoreId(input.storeId);
+    .query(async ({ ctx }) => {
+      return db.getOrdersByStoreId(ctx.storeId);
     }),
 
   // Get a single order
@@ -88,7 +82,7 @@ export const ordersRouter = router({
     }),
 
   // Update order status (merchant-facing)
-  updateStatus: protectedProcedure
+  updateStatus: protectedStoreProcedure
     .input(
       z.object({
         orderId: z.number(),
@@ -96,13 +90,7 @@ export const ordersRouter = router({
         status: z.enum(["pending", "processing", "shipped", "delivered", "cancelled", "refunded"]),
       })
     )
-    .mutation(async ({ input, ctx }) => {
-      // Verify ownership
-      const store = await db.getStoreByMerchantId(ctx.user.id);
-      if (!store || store.id !== input.storeId) {
-        throw new Error("Unauthorized");
-      }
-
+    .mutation(async ({ input }) => {
       return db.updateOrder(input.orderId, { status: input.status });
     }),
 });
