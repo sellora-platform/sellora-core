@@ -14,7 +14,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ 
   storage,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 4.5 * 1024 * 1024, // Vercel Serverless Function limit is 4.5MB
   }
 });
 
