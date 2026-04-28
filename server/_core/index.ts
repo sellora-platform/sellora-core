@@ -9,6 +9,7 @@ import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerAuthRoutes } from "./oauth";
+import { registerUploadRoutes } from "./upload";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -42,6 +43,9 @@ async function startServer() {
 
   // Auth routes (register, login, logout, me)
   registerAuthRoutes(app);
+
+  // Upload routes (Cloudinary)
+  registerUploadRoutes(app);
 
   // tRPC API
   app.use(
