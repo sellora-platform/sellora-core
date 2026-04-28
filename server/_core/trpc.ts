@@ -72,25 +72,32 @@ const storeGuard = t.middleware(async (opts) => {
     throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
   }
 
-  // 1. Robust Extraction Logic
+  // 1. BULLETPROOF EXTRACTION: Deep Recursive Search
   let storeId: any;
 
-  // Function to find storeId in any object (handles nested/batched tRPC structures)
-  const findStoreId = (obj: any): any => {
+  /**
+   * Deeply scans an object or array for the 'storeId' key.
+   * This handles tRPC batching, SuperJSON nesting ({json: {...}}), 
+   * and any other middleware wrapping.
+   */
+  const deepSearchStoreId = (obj: any): any => {
     if (!obj || typeof obj !== 'object') return undefined;
-    if ('storeId' in obj) return obj.storeId;
     
-    // Check first index if it's a batched array/object
-    const keys = Object.keys(obj);
-    if (keys.length > 0) {
-      const firstKey = keys[0];
-      if (/^\d+$/.test(firstKey)) return findStoreId(obj[firstKey]);
+    // Direct match
+    if ('storeId' in obj && obj.storeId !== undefined) return obj.storeId;
+    
+    // Recursive search in properties/elements
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const found = deepSearchStoreId(obj[key]);
+        if (found !== undefined) return found;
+      }
     }
     return undefined;
   };
 
-  // Priority: Parsed Input > Raw Input > Query Params
-  storeId = findStoreId(input) ?? findStoreId(rawInput);
+  // Check all possible sources: Parsed Input, Raw Input, and Query Params
+  storeId = deepSearchStoreId(input) ?? deepSearchStoreId(rawInput);
 
   if (storeId === undefined && ctx.req.query.storeId) {
     storeId = ctx.req.query.storeId;
@@ -102,7 +109,7 @@ const storeGuard = t.middleware(async (opts) => {
   if (!numericStoreId || isNaN(numericStoreId)) {
     throw new TRPCError({ 
       code: "BAD_REQUEST", 
-      message: `Operation requires a valid storeId (found: ${storeId}). Please ensure your request includes a storeId in the input object.` 
+      message: `Operation requires a valid storeId (found: ${storeId}). Please ensure your request includes a storeId.` 
     });
   }
 
