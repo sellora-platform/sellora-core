@@ -72,28 +72,26 @@ const storeGuard = t.middleware(async (opts) => {
     throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
   }
 
-  // 1. Extract storeId from all possible sources
-  // Priority: Parsed Input > Raw Input (handle batching) > Query Params
+  // 1. Robust Extraction Logic
   let storeId: any;
 
-  // Case A: Already parsed input (if middleware runs after .input())
-  if (input && typeof input === 'object' && 'storeId' in input) {
-    storeId = (input as any).storeId;
-  } 
-  // Case B: Raw Input (handle tRPC batching where rawInput might be { "0": { ... } })
-  else if (rawInput && typeof rawInput === 'object') {
-    if ('storeId' in rawInput) {
-      storeId = (rawInput as any).storeId;
-    } else {
-      // Check for batching index (usually "0", "1", etc.)
-      const firstKey = Object.keys(rawInput)[0];
-      if (firstKey && /^\d+$/.test(firstKey)) {
-        storeId = (rawInput as any)[firstKey]?.storeId;
-      }
+  // Function to find storeId in any object (handles nested/batched tRPC structures)
+  const findStoreId = (obj: any): any => {
+    if (!obj || typeof obj !== 'object') return undefined;
+    if ('storeId' in obj) return obj.storeId;
+    
+    // Check first index if it's a batched array/object
+    const keys = Object.keys(obj);
+    if (keys.length > 0) {
+      const firstKey = keys[0];
+      if (/^\d+$/.test(firstKey)) return findStoreId(obj[firstKey]);
     }
-  }
+    return undefined;
+  };
 
-  // Case C: Query Params fallback
+  // Priority: Parsed Input > Raw Input > Query Params
+  storeId = findStoreId(input) ?? findStoreId(rawInput);
+
   if (storeId === undefined && ctx.req.query.storeId) {
     storeId = ctx.req.query.storeId;
   }
@@ -104,7 +102,7 @@ const storeGuard = t.middleware(async (opts) => {
   if (!numericStoreId || isNaN(numericStoreId)) {
     throw new TRPCError({ 
       code: "BAD_REQUEST", 
-      message: `Operation requires a valid storeId (found: ${storeId})` 
+      message: `Operation requires a valid storeId (found: ${storeId}). Please ensure your request includes a storeId in the input object.` 
     });
   }
 

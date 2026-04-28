@@ -61,13 +61,15 @@ export default function ProductCreate() {
   if (!isAuthenticated) return null;
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.price || !formData.description || !storeQuery.data) {
+    const storeId = storeQuery.data?.id;
+
+    if (!formData.name || !formData.price || !formData.description || !storeId) {
       toast.error("Please fill in all required fields (Title, Description, Price)");
       return;
     }
 
     await createMutation.mutateAsync({
-      storeId: storeQuery.data.id,
+      storeId,
       name: formData.name,
       slug: formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""),
       description: formData.description,
