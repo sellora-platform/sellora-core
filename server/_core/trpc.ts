@@ -65,35 +65,56 @@ export const protectedProcedure = t.procedure.use(requireUser);
  * Injects verified storeId into the context.
  */
 const storeGuard = t.middleware(async (opts) => {
-  const { ctx, rawInput, next } = opts;
+  const { ctx, input, next } = opts;
+  const rawInput = (opts as any).rawInput;
   
   if (!ctx.user) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
   }
 
-  // 1. Extract storeId from input or query
-  const input = rawInput as { storeId?: number };
-  let storeId = input?.storeId;
+  // 1. Extract storeId from all possible sources
+  // Priority: Parsed Input > Raw Input (handle batching) > Query Params
+  let storeId: any;
 
-  if (storeId === undefined && ctx.req.query.storeId) {
-    storeId = parseInt(ctx.req.query.storeId as string);
+  // Case A: Already parsed input (if middleware runs after .input())
+  if (input && typeof input === 'object' && 'storeId' in input) {
+    storeId = (input as any).storeId;
+  } 
+  // Case B: Raw Input (handle tRPC batching where rawInput might be { "0": { ... } })
+  else if (rawInput && typeof rawInput === 'object') {
+    if ('storeId' in rawInput) {
+      storeId = (rawInput as any).storeId;
+    } else {
+      // Check for batching index (usually "0", "1", etc.)
+      const firstKey = Object.keys(rawInput)[0];
+      if (firstKey && /^\d+$/.test(firstKey)) {
+        storeId = (rawInput as any)[firstKey]?.storeId;
+      }
+    }
   }
 
-  if (!storeId || isNaN(storeId)) {
+  // Case C: Query Params fallback
+  if (storeId === undefined && ctx.req.query.storeId) {
+    storeId = ctx.req.query.storeId;
+  }
+
+  // 2. Convert to number and validate
+  const numericStoreId = typeof storeId === "string" ? parseInt(storeId, 10) : Number(storeId);
+
+  if (!numericStoreId || isNaN(numericStoreId)) {
     throw new TRPCError({ 
       code: "BAD_REQUEST", 
-      message: "Operation requires a valid storeId" 
+      message: `Operation requires a valid storeId (found: ${storeId})` 
     });
   }
 
-  // 2. Verify ownership in DB
-  // Merchant must be the owner of the requested storeId
+  // 3. Verify ownership in DB
   const store = await db.getStoreByMerchantId(ctx.user.id);
   
-  if (!store || store.id !== storeId) {
+  if (!store || store.id !== numericStoreId) {
     throw new TRPCError({ 
       code: "FORBIDDEN", 
-      message: "You do not have permission to access this store's data." 
+      message: `Unauthorized access: Store ${numericStoreId} does not belong to user ${ctx.user.id}.` 
     });
   }
 
@@ -101,7 +122,7 @@ const storeGuard = t.middleware(async (opts) => {
     ctx: {
       ...ctx,
       user: ctx.user,
-      storeId,
+      storeId: numericStoreId,
     },
   });
 });
