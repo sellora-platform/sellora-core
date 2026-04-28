@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { protectedProcedure, auditedProcedure, publicProcedure, router, protectedStoreProcedure, auditedStoreProcedure } from "../_core/trpc";
 import * as db from "../db";
 import { MerchantExperienceEngine } from "../utils/merchantExperience";
@@ -24,7 +25,10 @@ export const productsRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      // Manual verification removed - handled by auditedStoreProcedure
+      // 1. Double check storeId (middleware usually handles this, but being explicit as requested)
+      if (!ctx.storeId) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "storeId is required" });
+      }
 
       // Map simple string images to the DB JSONB format
       const dbImages = input.images.map((url, index) => ({

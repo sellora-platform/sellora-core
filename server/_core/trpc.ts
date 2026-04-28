@@ -72,32 +72,20 @@ const storeGuard = t.middleware(async (opts) => {
     throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
   }
 
-  // 1. BULLETPROOF EXTRACTION: Deep Recursive Search
+  // 1. CLEAN EXTRACTION: From Input or RawInput
   let storeId: any;
 
-  /**
-   * Deeply scans an object or array for the 'storeId' key.
-   * This handles tRPC batching, SuperJSON nesting ({json: {...}}), 
-   * and any other middleware wrapping.
-   */
-  const deepSearchStoreId = (obj: any): any => {
-    if (!obj || typeof obj !== 'object') return undefined;
-    
-    // Direct match
-    if ('storeId' in obj && obj.storeId !== undefined) return obj.storeId;
-    
-    // Recursive search in properties/elements
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        const found = deepSearchStoreId(obj[key]);
-        if (found !== undefined) return found;
-      }
+  if (input && typeof input === 'object' && 'storeId' in input) {
+    storeId = (input as any).storeId;
+  } else if (rawInput && typeof rawInput === 'object' && 'storeId' in rawInput) {
+    storeId = (rawInput as any).storeId;
+  } else if (rawInput && typeof rawInput === 'object') {
+    // Handle tRPC batching index
+    const firstKey = Object.keys(rawInput)[0];
+    if (firstKey && /^\d+$/.test(firstKey)) {
+      storeId = (rawInput as any)[firstKey]?.storeId;
     }
-    return undefined;
-  };
-
-  // Check all possible sources: Parsed Input, Raw Input, and Query Params
-  storeId = deepSearchStoreId(input) ?? deepSearchStoreId(rawInput);
+  }
 
   if (storeId === undefined && ctx.req.query.storeId) {
     storeId = ctx.req.query.storeId;
@@ -109,7 +97,7 @@ const storeGuard = t.middleware(async (opts) => {
   if (!numericStoreId || isNaN(numericStoreId)) {
     throw new TRPCError({ 
       code: "BAD_REQUEST", 
-      message: `Operation requires a valid storeId (found: ${storeId}). Please ensure your request includes a storeId.` 
+      message: `storeId is required` 
     });
   }
 

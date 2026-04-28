@@ -61,9 +61,18 @@ export default function ProductCreate() {
   if (!isAuthenticated) return null;
 
   const handleSubmit = async () => {
-    const storeId = storeQuery.data?.id;
+    // 1. Root Cause Check: Prevent submission while loading
+    if (storeQuery.isLoading) return;
 
-    if (!formData.name || !formData.price || !formData.description || !storeId) {
+    const storeId = storeQuery.data?.id;
+    console.log("[ProductCreate] Current store data:", storeQuery.data);
+
+    if (!storeId) {
+      toast.error("No store found. Please create a store first.");
+      return;
+    }
+
+    if (!formData.name || !formData.price || !formData.description) {
       toast.error("Please fill in all required fields (Title, Description, Price)");
       return;
     }
@@ -109,11 +118,11 @@ export default function ProductCreate() {
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={createMutation.isPending}
+              disabled={createMutation.isPending || storeQuery.isLoading || !storeQuery.data?.id}
               className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 h-12 px-8 font-bold shadow-lg shadow-primary/20"
             >
               <Save className="w-4 h-4" />
-              {createMutation.isPending ? "Creating..." : "Save Product"}
+              {storeQuery.isLoading ? "Loading store..." : createMutation.isPending ? "Creating..." : "Save Product"}
             </Button>
           </div>
         </div>
