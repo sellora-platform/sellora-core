@@ -20,6 +20,7 @@ export const storesRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       // 1. Centralized Backend Enforcement
+      console.log("Creating store for user:", ctx.user.id, ctx.user.tier);
       await canAccess.createStore(ctx.user.id, ctx.user.tier as SubscriptionTier);
 
       // 2. Check if slug is already taken
@@ -49,7 +50,8 @@ export const storesRouter = router({
 
         return store;
       } catch (err: any) {
-        throw new Error("Failed to create store. Please try again.");
+        console.error("STORE CREATE REAL ERROR:", err);
+        throw new Error(err.message || "Failed to create store. Please try again.");
       }
     }),
 
