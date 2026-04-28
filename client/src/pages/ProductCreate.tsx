@@ -5,249 +5,304 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Save, X } from "lucide-react";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Save, X, Trash2, Tag, Box, DollarSign, LayoutList } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
+import { ImageUploader } from "@/components/ImageUploader";
+
+/**
+ * Sellora Product Creation Page
+ * 
+ * Features:
+ * - Multi-image upload via Cloudinary
+ * - Status management (Draft/Active)
+ * - Real-time profit calculation
+ * - Fully validated via Zod + tRPC
+ */
 
 export default function ProductCreate() {
-  const { isAuthenticated, loading } = useAuth({ redirectOnUnauthenticated: true });
+  const { isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
 
   const storeQuery = trpc.stores.getMyStore.useQuery();
   const createMutation = trpc.products.create.useMutation({
     onSuccess: () => {
+      toast.success("Product created successfully");
       setLocation("/products");
     },
+    onError: (error) => {
+      toast.error(error.message || "Failed to create product");
+    }
   });
 
+  const [images, setImages] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
-    shortDescription: "",
     description: "",
     sku: "",
     price: "",
+    compareAtPrice: "",
     costPrice: "",
-    quantity: "",
-    categoryId: "",
+    quantity: "0",
+    weight: "",
+    category: "",
+    status: "draft" as "draft" | "active",
   });
 
-  if (!isAuthenticated) {
-    setLocation("/");
-    return null;
-  }
+  if (!isAuthenticated) return null;
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.price || !storeQuery.data) return;
+    if (!formData.name || !formData.price || !formData.description || !storeQuery.data) {
+      toast.error("Please fill in all required fields (Title, Description, Price)");
+      return;
+    }
 
     await createMutation.mutateAsync({
       storeId: storeQuery.data.id,
       name: formData.name,
-      slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, "-"),
-      shortDescription: formData.shortDescription,
+      slug: formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""),
       description: formData.description,
       sku: formData.sku,
       price: formData.price,
-      costPrice: formData.costPrice,
-      categoryId: formData.categoryId ? parseInt(formData.categoryId) : undefined,
+      compareAtPrice: formData.compareAtPrice || undefined,
+      costPrice: formData.costPrice || undefined,
+      quantity: parseInt(formData.quantity) || 0,
+      weight: formData.weight ? parseInt(formData.weight) : undefined,
+      images,
+      isActive: formData.status === "active",
     });
   };
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="max-w-5xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              Create Product
+            <h1 className="text-4xl font-bold text-foreground tracking-tight flex items-center gap-3">
+              <Box className="w-8 h-8 text-primary" />
+              Add Product
             </h1>
-            <p className="text-foreground/60 mt-1">
-              Add a new product to your store
+            <p className="text-foreground/60 mt-2">
+              Fill in the details to list your item on the marketplace
             </p>
           </div>
-          <Button
-            onClick={() => setLocation("/products")}
-            variant="outline"
-            className="border-border/50 hover:bg-accent/5 gap-2"
-          >
-            <X className="w-4 h-4" />
-            Cancel
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => setLocation("/products")}
+              variant="outline"
+              className="border-border/50 hover:bg-accent/5 transition-all h-12 px-6"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Discard
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={createMutation.isPending}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 h-12 px-8 font-bold shadow-lg shadow-primary/20"
+            >
+              <Save className="w-4 h-4" />
+              {createMutation.isPending ? "Creating..." : "Save Product"}
+            </Button>
+          </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Main Form */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Basic Info */}
-            <Card className="p-6 border-border/50">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
-                Basic Information
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Product Name *
-                  </label>
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Main Column */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* General Info */}
+            <Card className="p-8 border-border/50 shadow-sm space-y-6">
+              <div className="flex items-center gap-2 pb-4 border-b">
+                <Tag className="w-5 h-5 text-primary" />
+                <h2 className="text-xl font-bold">General Information</h2>
+              </div>
+              
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-foreground/80">Product Title *</label>
                   <Input
                     placeholder="e.g., Premium Wireless Headphones"
                     value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className="border-border/50 focus:border-primary"
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="h-12 border-border/50 focus:ring-primary/20 text-lg font-medium"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Short Description
-                  </label>
-                  <Input
-                    placeholder="Brief product summary"
-                    value={formData.shortDescription}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        shortDescription: e.target.value,
-                      })
-                    }
-                    className="border-border/50 focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Full Description
-                  </label>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-foreground/80">Description *</label>
                   <Textarea
-                    placeholder="Detailed product description"
+                    placeholder="Describe your product in detail..."
                     value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                    className="border-border/50 focus:border-primary resize-none"
-                    rows={4}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="min-h-[200px] border-border/50 focus:ring-primary/20 resize-none leading-relaxed"
                   />
                 </div>
               </div>
             </Card>
 
-            {/* Pricing & Inventory */}
-            <Card className="p-6 border-border/50">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
-                Pricing & Inventory
-              </h2>
-              <div className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      SKU
-                    </label>
-                    <Input
-                      placeholder="e.g., WH-001"
-                      value={formData.sku}
-                      onChange={(e) =>
-                        setFormData({ ...formData, sku: e.target.value })
-                      }
-                      className="border-border/50 focus:border-primary"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Price *
-                    </label>
-                    <Input
-                      type="number"
-                      placeholder="0.00"
-                      value={formData.price}
-                      onChange={(e) =>
-                        setFormData({ ...formData, price: e.target.value })
-                      }
-                      className="border-border/50 focus:border-primary"
-                    />
-                  </div>
-                </div>
+            {/* Media */}
+            <Card className="p-8 border-border/50 shadow-sm space-y-6">
+              <div className="flex items-center gap-2 pb-4 border-b">
+                <LayoutList className="w-5 h-5 text-primary" />
+                <h2 className="text-xl font-bold">Media</h2>
+              </div>
 
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Cost per item
-                    </label>
-                    <Input
-                      type="number"
-                      placeholder="0.00"
-                      value={formData.costPrice}
-                      onChange={(e) =>
-                        setFormData({ ...formData, costPrice: e.target.value })
-                      }
-                      className="border-border/50 focus:border-primary"
-                    />
-                    <p className="text-[11px] text-muted-foreground mt-1.5">
-                      Customers won't see this
-                    </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {images.map((url, idx) => (
+                  <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border group">
+                    <img src={url} className="w-full h-full object-cover" />
+                    <button 
+                      onClick={() => setImages(images.filter((_, i) => i !== idx))}
+                      className="absolute top-2 right-2 p-1.5 bg-destructive text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Profit
-                    </label>
-                    <div className="h-10 flex items-center px-3 rounded-md bg-accent/5 border border-border/50 text-sm text-foreground/60">
-                      {formData.price && formData.costPrice 
-                        ? `$${(parseFloat(formData.price) - parseFloat(formData.costPrice)).toFixed(2)} (${((parseFloat(formData.price) - parseFloat(formData.costPrice)) / parseFloat(formData.price) * 100).toFixed(1)}% margin)`
-                        : "-"}
-                    </div>
-                  </div>
+                ))}
+                {images.length < 5 && (
+                  <ImageUploader 
+                    onUpload={(url) => setImages([...images, url])}
+                    storeId={storeQuery.data?.id?.toString()}
+                    className="aspect-square"
+                    label="Add"
+                    description="Up to 5 images"
+                  />
+                )}
+              </div>
+            </Card>
+
+            {/* Inventory */}
+            <Card className="p-8 border-border/50 shadow-sm space-y-6">
+              <div className="flex items-center gap-2 pb-4 border-b">
+                <Box className="w-5 h-5 text-primary" />
+                <h2 className="text-xl font-bold">Inventory & Shipping</h2>
+              </div>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-foreground/80">SKU (Stock Keeping Unit)</label>
+                  <Input
+                    placeholder="e.g., WH-001"
+                    value={formData.sku}
+                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                    className="h-12 border-border/50"
+                  />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Stock Quantity
-                  </label>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-foreground/80">Stock Quantity</label>
+                  <Input
+                    type="number"
+                    value={formData.quantity}
+                    onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                    className="h-12 border-border/50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-foreground/80">Weight (Grams)</label>
                   <Input
                     type="number"
                     placeholder="0"
-                    value={formData.quantity}
-                    onChange={(e) =>
-                      setFormData({ ...formData, quantity: e.target.value })
-                    }
-                    className="border-border/50 focus:border-primary"
+                    value={formData.weight}
+                    onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                    className="h-12 border-border/50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-foreground/80">Category</label>
+                  <Input
+                    placeholder="e.g., Electronics"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="h-12 border-border/50"
                   />
                 </div>
               </div>
             </Card>
-
-            {/* Submit */}
-            <Button
-              onClick={handleSubmit}
-              disabled={!formData.name || !formData.price || createMutation.isPending}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground gap-2 h-12"
-            >
-              <Save className="w-4 h-4" />
-              Create Product
-            </Button>
           </div>
 
-          {/* Preview */}
-          <div>
-            <Card className="p-6 border-border/50 sticky top-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
-                Preview
-              </h2>
-              <div className="space-y-4">
-                <div className="w-full h-32 bg-gradient-to-br from-accent/10 to-accent/5 rounded-lg flex items-center justify-center">
-                  <span className="text-foreground/30 text-sm">Product Image</span>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground mb-1">
-                    {formData.name || "Product Name"}
-                  </h3>
-                  <p className="text-sm text-foreground/60 mb-3">
-                    {formData.shortDescription || "Short description"}
-                  </p>
-                  <p className="text-2xl font-bold text-primary mb-4">
-                    ${formData.price || "0.00"}
-                  </p>
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                    Add to Cart
-                  </Button>
-                </div>
+          {/* Sidebar */}
+          <div className="space-y-8">
+            {/* Pricing */}
+            <Card className="p-8 border-border/50 shadow-sm space-y-6">
+              <div className="flex items-center gap-2 pb-4 border-b">
+                <DollarSign className="w-5 h-5 text-primary" />
+                <h2 className="text-xl font-bold">Pricing</h2>
               </div>
+
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-foreground/80">Price *</label>
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    className="h-12 border-border/50 font-bold text-lg"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-foreground/80">Compare-at Price</label>
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    value={formData.compareAtPrice}
+                    onChange={(e) => setFormData({ ...formData, compareAtPrice: e.target.value })}
+                    className="h-12 border-border/50 text-muted-foreground"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-foreground/80">Cost Price</label>
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    value={formData.costPrice}
+                    onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })}
+                    className="h-12 border-border/50"
+                  />
+                  <p className="text-[11px] text-muted-foreground px-1">Used to calculate profit margins</p>
+                </div>
+
+                {formData.price && formData.costPrice && (
+                  <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-100 space-y-1">
+                    <p className="text-xs font-bold text-emerald-800 uppercase tracking-tight">Estimated Profit</p>
+                    <p className="text-xl font-black text-emerald-700">
+                      ${(parseFloat(formData.price) - parseFloat(formData.costPrice)).toFixed(2)}
+                      <span className="text-sm font-bold ml-2 opacity-70">
+                        ({((parseFloat(formData.price) - parseFloat(formData.costPrice)) / parseFloat(formData.price) * 100).toFixed(1)}%)
+                      </span>
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* Status */}
+            <Card className="p-8 border-border/50 shadow-sm space-y-6">
+              <h2 className="text-xl font-bold pb-4 border-b">Status</h2>
+              <Select 
+                value={formData.status} 
+                onValueChange={(val: any) => setFormData({ ...formData, status: val })}
+              >
+                <SelectTrigger className="h-12 font-medium">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft" className="font-medium">Draft</SelectItem>
+                  <SelectItem value="active" className="font-bold text-emerald-600">Active</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Draft products are hidden from your store. Active products are visible to customers immediately.
+              </p>
             </Card>
           </div>
         </div>

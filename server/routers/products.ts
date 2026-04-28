@@ -16,22 +16,17 @@ export const productsRouter = router({
       z.object({
         storeId: z.number(),
         categoryId: z.number().optional(),
-        name: z.string().min(1),
+        name: z.string().min(1, "Title is required"),
         slug: z.string().min(1),
-        description: z.string().optional(),
-        shortDescription: z.string().optional(),
-        price: z.string().regex(/^\d+(\.\d{1,2})?$/),
+        description: z.string().min(1, "Description is required"),
+        price: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid price format"),
         compareAtPrice: z.string().optional(),
-        costPrice: z.string().regex(/^\d+(\.\d{1,2})?$/).optional(),
+        costPrice: z.string().optional(),
         sku: z.string().optional(),
-        barcode: z.string().optional(),
         quantity: z.number().default(0),
-        trackQuantity: z.boolean().default(true),
-        weight: z.string().optional(),
-        weightUnit: z.string().default("kg"),
-        images: z.array(productImageSchema).default([]),
-        seoTitle: z.string().optional(),
-        seoDescription: z.string().optional(),
+        weight: z.number().optional(), // In grams
+        images: z.array(z.string()).default([]), // Array of URLs
+        isActive: z.boolean().default(false),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -41,25 +36,27 @@ export const productsRouter = router({
         throw new Error("Unauthorized");
       }
 
+      // Map simple string images to the DB JSONB format
+      const dbImages = input.images.map((url, index) => ({
+        url,
+        alt: input.name,
+        displayOrder: index,
+      }));
+
       const product = await db.createProduct({
         storeId: input.storeId,
         categoryId: input.categoryId,
         name: input.name,
         slug: input.slug,
         description: input.description,
-        shortDescription: input.shortDescription,
         price: parseFloat(input.price) as any,
-        compareAtPrice: input.compareAtPrice ? parseFloat(input.compareAtPrice) as any : undefined,
-        costPrice: input.costPrice ? parseFloat(input.costPrice) as any : "0.00",
+        compareAtPrice: input.compareAtPrice ? (parseFloat(input.compareAtPrice) as any) : undefined,
+        costPrice: input.costPrice ? (parseFloat(input.costPrice) as any) : "0.00",
         sku: input.sku,
-        barcode: input.barcode,
         quantity: input.quantity,
-        trackQuantity: input.trackQuantity,
-        weight: input.weight ? parseFloat(input.weight) as any : undefined,
-        weightUnit: input.weightUnit,
-        images: input.images,
-        seoTitle: input.seoTitle,
-        seoDescription: input.seoDescription,
+        weight: input.weight ? (input.weight.toString() as any) : undefined,
+        images: dbImages as any,
+        isActive: input.isActive,
       });
 
       // Activation Tracking
@@ -93,9 +90,12 @@ export const productsRouter = router({
         name: z.string().optional(),
         description: z.string().optional(),
         price: z.string().optional(),
+        compareAtPrice: z.string().optional(),
         costPrice: z.string().optional(),
         quantity: z.number().optional(),
-        images: z.array(productImageSchema).optional(),
+        weight: z.number().optional(),
+        images: z.array(z.string()).optional(),
+        isActive: z.boolean().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -105,11 +105,21 @@ export const productsRouter = router({
         throw new Error("Unauthorized");
       }
 
-      const { productId, storeId, price, costPrice, ...updateData } = input;
+      const { productId, storeId, price, compareAtPrice, costPrice, images, ...updateData } = input;
+      
+      const dbImages = images ? images.map((url, index) => ({
+        url,
+        alt: input.name || "Product Image",
+        displayOrder: index,
+      })) : undefined;
+
       return db.updateProduct(productId, {
         ...updateData,
         price: price ? (parseFloat(price) as any) : undefined,
+        compareAtPrice: compareAtPrice ? (parseFloat(compareAtPrice) as any) : undefined,
         costPrice: costPrice ? (parseFloat(costPrice) as any) : undefined,
+        weight: input.weight ? (input.weight.toString() as any) : undefined,
+        images: dbImages as any,
       });
     }),
 

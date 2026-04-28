@@ -5,21 +5,48 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   Plus,
   Search,
   Edit2,
   Trash2,
-  Image,
-  DollarSign,
+  Image as ImageIcon,
   Package,
-  TrendingUp,
+  MoreVertical,
+  ExternalLink,
+  ShoppingBag,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { toast } from "sonner";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+
+/**
+ * Sellora Products List Page
+ * 
+ * Features:
+ * - Tabular view of all products
+ * - Search by title
+ * - Status indicators (Active/Draft)
+ * - Inventory tracking
+ * - Quick actions (Edit, Delete, Preview)
+ */
 
 export default function Products() {
-  const { isAuthenticated, loading } = useAuth({ redirectOnUnauthenticated: true });
+  const { isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
 
@@ -28,12 +55,18 @@ export default function Products() {
     { storeId: storeQuery.data?.id || 0 },
     { enabled: !!storeQuery.data?.id }
   );
-  const deleteProductMutation = trpc.products.delete.useMutation();
+  
+  const deleteProductMutation = trpc.products.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Product deleted successfully");
+      productsQuery.refetch();
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to delete product");
+    }
+  });
 
-  if (!isAuthenticated) {
-    setLocation("/");
-    return null;
-  }
+  if (!isAuthenticated) return null;
 
   const products = productsQuery.data || [];
   const filteredProducts = products.filter((p) =>
@@ -41,176 +74,163 @@ export default function Products() {
   );
 
   const handleDelete = async (productId: number) => {
-    if (confirm("Are you sure you want to delete this product?")) {
-      try {
-        await deleteProductMutation.mutateAsync({ 
-          productId,
-          storeId: storeQuery.data?.id || 0
-        });
-        toast.success("Product deleted successfully");
-        productsQuery.refetch();
-      } catch (error) {
-        toast.error("Failed to delete product");
-      }
+    if (confirm("Are you sure you want to permanently delete this product?")) {
+      await deleteProductMutation.mutateAsync({ 
+        productId,
+        storeId: storeQuery.data?.id || 0
+      });
     }
   };
 
   return (
     <DashboardLayout>
       <div className="space-y-8">
-        {/* Premium Header */}
-        <div className="flex items-center justify-between">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-foreground tracking-tight">
-              Products
-            </h1>
-            <p className="text-foreground/60 mt-2">
-              Manage your product catalog ({products.length} total)
-            </p>
+            <h1 className="text-4xl font-bold text-foreground tracking-tight">Products</h1>
+            <p className="text-foreground/60 mt-1">Manage your inventory and product listings</p>
           </div>
           <Button
             onClick={() => setLocation("/products/new")}
-            className="bg-gradient-to-r from-primary to-primary/80 hover:shadow-lg text-primary-foreground gap-2 transition-all duration-300"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 h-12 px-6 font-bold shadow-lg shadow-primary/20 transition-all active:scale-95"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-5 h-5" />
             Add Product
           </Button>
         </div>
 
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-foreground/40" />
-          <Input
-            placeholder="Search products by name..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-12 py-3 border-border/50 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all"
-          />
+        {/* Filters & Search */}
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search products by title..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-11 h-12 border-border/50 bg-background/50 focus:bg-background transition-all"
+            />
+          </div>
         </div>
 
-        {/* Products Grid */}
-        {filteredProducts.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map((product) => (
-              <Card
-                key={product.id}
-                className="overflow-hidden border-border/50 hover:shadow-lg hover:border-accent/50 transition-all duration-300 group"
-              >
-                {/* Product Image */}
-                <div className="relative h-48 bg-gradient-to-br from-accent/10 to-accent/5 flex items-center justify-center overflow-hidden">
-                  {product.images && Array.isArray(product.images) && product.images.length > 0 ? (
-                    <img
-                      src={typeof product.images[0] === 'string' ? product.images[0] : product.images[0]?.url || ''}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center gap-2">
-                      <Image className="w-12 h-12 text-foreground/20" />
-                      <span className="text-sm text-foreground/40">No image</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Product Info */}
-                <div className="p-6 space-y-4">
-                  <div>
-                    <h3 className="font-bold text-lg text-foreground line-clamp-2 mb-2">
-                      {product.name}
-                    </h3>
-                    <p className="text-sm text-foreground/60 line-clamp-2">
-                      {product.description || "No description"}
-                    </p>
-                  </div>
-
-                  {/* Product Stats */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 rounded-lg bg-accent/5 hover:bg-accent/10 transition-colors">
-                      <p className="text-xs text-foreground/60 font-medium mb-1">
-                        Price
-                      </p>
-                      <p className="font-bold text-foreground flex items-center gap-1">
-                        <DollarSign className="w-4 h-4 text-primary" />
-                        ${parseFloat(product.price.toString()).toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-accent/5 hover:bg-accent/10 transition-colors">
-                      <p className="text-xs text-foreground/60 font-medium mb-1">
-                        Stock
-                      </p>
-                      <p className="font-bold text-foreground flex items-center gap-1">
-                        <Package className="w-4 h-4 text-emerald-600" />
-                        {product.quantity ?? 0}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Status Badge */}
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`text-xs font-bold px-3 py-1 rounded-full ${
-                        product.isActive
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-gray-50 text-gray-700"
-                      }`}
-                    >
-                      {product.isActive ? "Active" : "Inactive"}
-                    </span>
-                    {(product as any).costPrice && parseFloat((product as any).costPrice) > 0 && (
-                      <span className="text-[11px] font-bold px-2 py-1 bg-orange-50 text-orange-700 rounded-full flex items-center gap-1">
-                        <TrendingUp className="w-3 h-3" />
-                        {((parseFloat(product.price.toString()) - parseFloat((product as any).costPrice)) / parseFloat(product.price.toString()) * 100).toFixed(0)}% Margin
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-2 pt-4 border-t border-border/30">
-                    <Button
-                      onClick={() => setLocation(`/products/${product.id}/edit`)}
-                      variant="outline"
-                      className="flex-1 gap-2 border-border/50 hover:bg-primary/5 transition-colors"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                      Edit
-                    </Button>
-                    <Button
-                      onClick={() => handleDelete(product.id as number)}
-                      variant="outline"
-                      className="flex-1 gap-2 border-red-200/50 text-red-600 hover:bg-red-50 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <Card className="p-12 border-border/50 text-center">
-            <div className="flex flex-col items-center gap-4">
-              <div className="p-4 rounded-full bg-accent/10">
-                <Package className="w-8 h-8 text-foreground/40" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-foreground mb-2">
-                  No products yet
-                </h3>
-                <p className="text-foreground/60 mb-6">
-                  Start by adding your first product to your store
-                </p>
-                <Button
-                  onClick={() => setLocation("/products/new")}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Create Product
-                </Button>
-              </div>
+        {/* Products Table */}
+        <Card className="border-border/50 shadow-sm overflow-hidden bg-background/50 backdrop-blur-sm">
+          {filteredProducts.length > 0 ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-muted/50">
+                  <TableRow className="hover:bg-transparent border-border/50">
+                    <TableHead className="w-[80px] font-bold text-foreground py-5">Image</TableHead>
+                    <TableHead className="font-bold text-foreground py-5">Product Title</TableHead>
+                    <TableHead className="font-bold text-foreground py-5">Status</TableHead>
+                    <TableHead className="font-bold text-foreground py-5">Inventory</TableHead>
+                    <TableHead className="font-bold text-foreground py-5">Price</TableHead>
+                    <TableHead className="text-right font-bold text-foreground py-5 px-6">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredProducts.map((product) => {
+                    const mainImage = (product.images as any)?.[0]?.url;
+                    
+                    return (
+                      <TableRow key={product.id} className="group hover:bg-muted/30 transition-colors border-border/50">
+                        <TableCell className="py-4">
+                          <div className="w-14 h-14 rounded-xl border bg-muted overflow-hidden shadow-inner flex items-center justify-center">
+                            {mainImage ? (
+                              <img src={mainImage} className="w-full h-full object-cover" alt="" />
+                            ) : (
+                              <ImageIcon className="w-6 h-6 text-muted-foreground/40" />
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-4">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-foreground text-base group-hover:text-primary transition-colors">
+                              {product.name}
+                            </span>
+                            <span className="text-xs text-muted-foreground font-medium">SKU: {product.sku || "N/A"}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-4">
+                          <Badge 
+                            variant="secondary" 
+                            className={product.isActive 
+                              ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-emerald-200" 
+                              : "bg-muted text-muted-foreground border-transparent"
+                            }
+                          >
+                            {product.isActive ? "Active" : "Draft"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="py-4">
+                          <div className="flex items-center gap-2">
+                            <Package className={`w-4 h-4 ${product.quantity && product.quantity > 0 ? "text-primary" : "text-destructive"}`} />
+                            <span className={`font-bold ${product.quantity && product.quantity > 0 ? "text-foreground" : "text-destructive"}`}>
+                              {product.quantity ?? 0} in stock
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-4 font-black text-foreground">
+                          ${parseFloat(product.price.toString()).toFixed(2)}
+                        </TableCell>
+                        <TableCell className="py-4 text-right px-6">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-9 w-9 rounded-full hover:bg-primary/10 hover:text-primary transition-all"
+                              onClick={() => setLocation(`/products/${product.id}/edit`)}
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                            
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                                  <MoreVertical className="w-4 h-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-48 p-2">
+                                <DropdownMenuItem className="gap-2 font-medium cursor-pointer py-2">
+                                  <ExternalLink className="w-4 h-4" />
+                                  View on Store
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  className="gap-2 font-bold text-destructive hover:!text-destructive cursor-pointer py-2"
+                                  onClick={() => handleDelete(product.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  Delete Product
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
-          </Card>
-        )}
+          ) : (
+            <div className="p-20 flex flex-col items-center justify-center text-center space-y-6">
+              <div className="w-24 h-24 rounded-full bg-muted/50 flex items-center justify-center">
+                <ShoppingBag className="w-12 h-12 text-muted-foreground/30" />
+              </div>
+              <div className="space-y-2 max-w-xs">
+                <h3 className="text-2xl font-bold text-foreground">Add your first product</h3>
+                <p className="text-muted-foreground">Everything you need to sell your items online starts here.</p>
+              </div>
+              <Button
+                onClick={() => setLocation("/products/new")}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 h-12 px-8 font-bold rounded-xl"
+              >
+                <Plus className="w-5 h-5" />
+                Add Product
+              </Button>
+            </div>
+          )}
+        </Card>
       </div>
     </DashboardLayout>
   );
