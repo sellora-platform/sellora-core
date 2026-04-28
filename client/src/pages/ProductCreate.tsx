@@ -16,16 +16,16 @@ import { Save, X, Trash2, Tag, Box, DollarSign, LayoutList } from "lucide-react"
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { ImageUploader } from "@/components/ImageUploader";
+import { MediaManager } from "@/components/MediaManager";
 
 /**
  * Sellora Product Creation Page
  * 
  * Features:
+ * - Shopify-style Media Manager with reordering
  * - Multi-image upload via Cloudinary
  * - Status management (Draft/Active)
  * - Real-time profit calculation
- * - Fully validated via Zod + tRPC
  */
 
 export default function ProductCreate() {
@@ -43,7 +43,7 @@ export default function ProductCreate() {
     }
   });
 
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<{ url: string; publicId: string }[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -77,7 +77,7 @@ export default function ProductCreate() {
       costPrice: formData.costPrice || undefined,
       quantity: parseInt(formData.quantity) || 0,
       weight: formData.weight ? parseInt(formData.weight) : undefined,
-      images,
+      images: images.map(img => img.url),
       isActive: formData.status === "active",
     });
   };
@@ -156,28 +156,11 @@ export default function ProductCreate() {
                 <h2 className="text-xl font-bold">Media</h2>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {images.map((url, idx) => (
-                  <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border group">
-                    <img src={url} className="w-full h-full object-cover" />
-                    <button 
-                      onClick={() => setImages(images.filter((_, i) => i !== idx))}
-                      className="absolute top-2 right-2 p-1.5 bg-destructive text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-                {images.length < 5 && (
-                  <ImageUploader 
-                    onUpload={(url) => setImages([...images, url])}
-                    storeId={storeQuery.data?.id?.toString()}
-                    className="aspect-square"
-                    label="Add"
-                    description="Up to 5 images"
-                  />
-                )}
-              </div>
+              <MediaManager 
+                storeId={storeQuery.data?.id?.toString() || "shared"}
+                onChange={setImages}
+                initialImages={images}
+              />
             </Card>
 
             {/* Inventory */}
