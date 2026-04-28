@@ -37,9 +37,10 @@ export default function Dashboard() {
   const store = storesQuery.data?.[0];
   const pendingRequest = myRequestsQuery.data?.find(r => r.status === "pending");
 
-  const statsQuery = trpc.dashboard.getStats.useQuery(undefined, {
-    enabled: !!store,
-  });
+  const statsQuery = trpc.dashboard.getStats.useQuery(
+    { storeId: store?.id || 0 },
+    { enabled: !!store }
+  );
 
   if (loading || !isAuthenticated) {
     return null;

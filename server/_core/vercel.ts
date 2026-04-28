@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerAuthRoutes } from "./oauth";
+import { registerUploadRoutes } from "./upload";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 
@@ -12,6 +13,9 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Auth routes
 registerAuthRoutes(app);
+
+// Upload routes
+registerUploadRoutes(app);
 
 // Simple health check to verify Express is starting
 app.get("/api/health", (req, res) => {
