@@ -3,7 +3,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
   Lock,
-  ShoppingBag
+  ShoppingBag,
+  CreditCard,
+  Truck,
+  ShieldCheck
 } from "lucide-react";
 import { useCart } from "../CartContext";
 import { useLocation } from "wouter";
