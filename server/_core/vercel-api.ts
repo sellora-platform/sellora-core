@@ -2,19 +2,23 @@ import { ENV } from "./env";
 
 const VERCEL_TOKEN = ENV.vercelToken;
 const VERCEL_PROJECT_ID = ENV.vercelProjectId;
+const VERCEL_STOREFRONT_PROJECT_ID = ENV.vercelStorefrontProjectId;
 const VERCEL_TEAM_ID = ENV.vercelTeamId;
 
 export async function addDomainToVercel(domain: string) {
-  if (!VERCEL_TOKEN || !VERCEL_PROJECT_ID) {
-    console.warn("Vercel credentials missing in environment variables. VERCEL_TOKEN and VERCEL_PROJECT_ID are required for domain automation.");
+  if (!VERCEL_TOKEN || !VERCEL_STOREFRONT_PROJECT_ID) {
+    console.warn(
+      "Vercel credentials missing in environment variables. " +
+      "VERCEL_TOKEN and VERCEL_STOREFRONT_PROJECT_ID are required for domain automation."
+    );
     return;
   }
 
   try {
-    const url = `https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/domains${
+    const url = `https://api.vercel.com/v10/projects/${VERCEL_STOREFRONT_PROJECT_ID}/domains${
       VERCEL_TEAM_ID ? `?teamId=${VERCEL_TEAM_ID}` : ""
     }`;
-    
+
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -27,15 +31,15 @@ export async function addDomainToVercel(domain: string) {
     if (!response.ok) {
       const data = await response.json();
       if (response.status === 409) {
-        console.log(`Domain ${domain} already exists on Vercel project.`);
+        console.log(`Domain ${domain} already exists on Vercel storefront project.`);
         return;
       }
-      throw new Error(data.error?.message || "Failed to add domain to Vercel");
+      throw new Error(data.error?.message || "Failed to add domain to Vercel storefront project");
     }
 
-    console.log(`Successfully added domain ${domain} to Vercel.`);
+    console.log(`Successfully added domain ${domain} to Vercel storefront project.`);
   } catch (error: any) {
-    console.error("Error adding domain to Vercel:", error.message);
+    console.error("Error adding domain to Vercel storefront project:", error.message);
   }
 }
 

@@ -48,8 +48,11 @@ export const ENV = {
   /** Vercel API Token for domain automation */
   vercelToken: process.env.VERCEL_TOKEN ?? "",
 
-  /** Vercel Project ID */
+  /** Vercel Project ID (dashboard project) */
   vercelProjectId: process.env.VERCEL_PROJECT_ID ?? "",
+
+  /** Vercel Storefront Project ID — subdomains are added here */
+  vercelStorefrontProjectId: process.env.VERCEL_STOREFRONT_PROJECT_ID ?? "",
 
   /** Vercel Team ID (optional) */
   vercelTeamId: process.env.VERCEL_TEAM_ID ?? "",
