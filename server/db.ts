@@ -323,7 +323,7 @@ export async function getThemesByStoreId(storeId: number) {
   return db.select().from(storeThemes).where(eq(storeThemes.storeId, storeId));
 }
 
-export async function updateStoreTheme(themeId: number, data: Partial<InsertStoreTheme>) {
+export async function updateStoreTheme(themeId: string, data: Partial<InsertStoreTheme>) {
   const db = getDb();
   if (!db) throw new Error("Database not available");
   return db.update(storeThemes).set(data).where(eq(storeThemes.id, themeId));
