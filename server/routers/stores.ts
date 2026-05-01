@@ -95,11 +95,16 @@ export const storesRouter = router({
         accentColor: z.string().optional(),
         fontFamily: z.string().optional(),
         theme: z.enum(["light", "dark", "auto"]).optional(),
-        customDomain: z.string().optional(),
+        customDomain: z.string().nullable().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
       const { storeId, ...updateData } = input;
+      
+      // Transform empty string to null to avoid unique constraint violations
+      if (updateData.customDomain === "") {
+        updateData.customDomain = null;
+      }
       
       // 1. Verify ownership
       const currentStore = await db.getStoreByMerchantId(ctx.user.id);
@@ -108,11 +113,18 @@ export const storesRouter = router({
       }
 
       // 2. Feature Gating: Custom Domains
-      if (input.customDomain && input.customDomain !== currentStore.customDomain) {
+      if (updateData.customDomain !== undefined && updateData.customDomain !== currentStore.customDomain) {
         canAccess.feature(ctx.user.tier as SubscriptionTier, "customDomains");
         
         // AUTOMATION: If custom domain is being added/changed, register it on Vercel
-        await addDomainToVercel(input.customDomain).catch(err => console.error("Vercel custom domain automation failed:", err));
+        if (updateData.customDomain) {
+           await addDomainToVercel(updateData.customDomain).catch(err => console.error("Vercel custom domain automation failed:", err));
+        } else if (currentStore.customDomain && updateData.customDomain === null) {
+           // Wait, how do we remove it? The vercel-api has removeDomainFromVercel!
+           // Let's call it!
+           const { removeDomainFromVercel } = await import("../_core/vercel-api");
+           await removeDomainFromVercel(currentStore.customDomain).catch(err => console.error("Vercel domain removal failed:", err));
+        }
       }
 
       return db.updateStore(storeId, updateData);
