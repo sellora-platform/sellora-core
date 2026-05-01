@@ -35,6 +35,28 @@ import {
 
 const themes = [
   {
+    id: "dawn",
+    name: "Dawn (Sellora Default)",
+    description: "The default theme for Sellora. Fast, flexible, and packed with all the essential features you need to start selling immediately.",
+    previewImage: null,
+    category: "General",
+    price: "0",
+    isFree: true,
+    settings: {
+      colors: {
+        primary: "#000000",
+        background: "#ffffff",
+      },
+      typography: {
+        family: "Inter"
+      },
+      sections: [
+        { type: "hero", settings: { heading: "Welcome to our store", showButton: true, buttonText: "Shop Now" } },
+        { type: "featured_collection", settings: { title: "Featured Products", limit: 4 } }
+      ]
+    }
+  },
+  {
     id: "lumina",
     name: "Lumina Fashion",
     description: "A sleek, minimalist design perfect for luxury fashion and boutique stores. Clean lines and elegant typography.",
@@ -174,7 +196,7 @@ export default function ThemeMarketplace() {
 
   const activeThemeName = getMyThemeQuery.data?.name;
   
-  const filteredThemes = (marketplaceThemes || []).filter(theme => {
+  const filteredThemes = themes.filter(theme => {
     const matchesSearch = theme.name.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = selectedCategory === "All Themes" || theme.category === selectedCategory;
     return matchesSearch && matchesCategory;
