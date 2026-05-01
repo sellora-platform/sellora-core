@@ -142,6 +142,8 @@ export default function ThemeEditor() {
   useEffect(() => {
     if (theme) {
       const config = theme.draftConfig as any;
+      let finalTemplates = templates;
+
       if (config?.templates) {
         const loadedTemplates: Record<string, Section[]> = {
           header: config.header ? [config.header] : [{ id: 'header', type: 'header', settings: {} }],
@@ -155,6 +157,7 @@ export default function ThemeEditor() {
           loadedTemplates[key === 'index' ? 'home' : key] = sectionsArray;
         });
 
+        finalTemplates = loadedTemplates;
         setTemplates(loadedTemplates);
       }
       
@@ -167,7 +170,7 @@ export default function ThemeEditor() {
       
       setGlobalSettings(newGlobal);
       setHistory([{ 
-        templates: loadedTemplates || templates, 
+        templates: finalTemplates, 
         globalSettings: newGlobal 
       }]);
       setHistoryIndex(0);
