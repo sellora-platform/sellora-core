@@ -69,3 +69,36 @@ export async function removeDomainFromVercel(domain: string) {
   }
 }
 
+export async function verifyDomainOnVercel(domain: string) {
+  if (!VERCEL_TOKEN || !VERCEL_STOREFRONT_PROJECT_ID) {
+    throw new Error("Vercel credentials missing in environment variables.");
+  }
+
+  try {
+    const url = `https://api.vercel.com/v9/projects/${VERCEL_STOREFRONT_PROJECT_ID}/domains/${domain}/verify${
+      VERCEL_TEAM_ID ? `?teamId=${VERCEL_TEAM_ID}` : ""
+    }`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${VERCEL_TOKEN}`,
+      },
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error?.message || "Failed to verify domain on Vercel");
+    }
+
+    const data = await response.json();
+    return {
+      verified: data.verified,
+      verification: data.verification, // contains reason if not verified
+    };
+  } catch (error: any) {
+    console.error("Error verifying domain on Vercel:", error.message);
+    throw error;
+  }
+}
+

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, auditedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
-import { addDomainToVercel } from "../_core/vercel-api";
+import { addDomainToVercel, verifyDomainOnVercel } from "../_core/vercel-api";
 import { ENV } from "../_core/env";
 import { canAccess } from "../utils/capabilities";
 import { SubscriptionTier } from "../utils/featureRegistry";
@@ -116,5 +116,21 @@ export const storesRouter = router({
       }
 
       return db.updateStore(storeId, updateData);
+    }),
+
+  // Verify custom domain status with Vercel
+  verifyDomain: auditedProcedure
+    .input(z.object({ storeId: z.number(), domain: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      // 1. Verify ownership
+      const currentStore = await db.getStoreByMerchantId(ctx.user.id);
+      if (!currentStore || currentStore.id !== input.storeId || currentStore.customDomain !== input.domain) {
+        throw new Error("Unauthorized or domain mismatch");
+      }
+
+      // 2. Call Vercel API
+      const result = await verifyDomainOnVercel(input.domain);
+      
+      return result;
     }),
 });
