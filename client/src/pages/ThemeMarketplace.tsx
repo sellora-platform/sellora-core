@@ -359,9 +359,9 @@ export default function ThemeMarketplace() {
                           ...theme,
                           id: theme.id.toString(),
                           settings: { 
-                            sections: theme.sections, 
-                            colors: theme.colors as any, 
-                            typography: theme.typography as any 
+                            sections: theme.settings.sections, 
+                            colors: theme.settings.colors as any, 
+                            typography: theme.settings.typography as any 
                           }
                         } as any)}
                         disabled={isInstalling}
@@ -478,9 +478,9 @@ export default function ThemeMarketplace() {
                         ...selectedTheme,
                         id: selectedTheme.id.toString(),
                         settings: { 
-                          sections: selectedTheme.sections, 
-                          colors: selectedTheme.colors, 
-                          typography: selectedTheme.typography 
+                          sections: selectedTheme.settings.sections, 
+                          colors: selectedTheme.settings.colors, 
+                          typography: selectedTheme.settings.typography 
                         }
                       } as any);
                       setSelectedTheme(null);
