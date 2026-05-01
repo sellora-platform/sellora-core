@@ -319,8 +319,6 @@ export default function ThemeEditor() {
 
   if (themeQuery.isLoading || activeThemeQuery.isLoading) return <div className="h-screen flex items-center justify-center bg-[#f6f6f7]">Loading Shopify-style Editor...</div>;
 
-  const currentSection = localSections.find(s => s.id === selectedSectionId);
-
   return (
     <div className="flex flex-col h-screen bg-[#f6f6f7] text-[#303030] font-sans overflow-hidden">
       {/* 1. TOP HEADER (Shopify Style) */}
