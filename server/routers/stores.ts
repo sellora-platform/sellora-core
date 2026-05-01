@@ -42,6 +42,32 @@ export const storesRouter = router({
         // We MUST await this on Vercel or the function will terminate before the API call finishes
         await addDomainToVercel(fullSubdomain).catch(err => console.error("Vercel automation failed:", err));
 
+        // Create the Default Theme (Dawn equivalent) for this store
+        const defaultThemeId = crypto.randomUUID();
+        const defaultThemeJson = {
+          colors: { primary: "#000000", background: "#ffffff" },
+          typography: { family: "Inter" },
+          templates: {
+            home: {
+              order: ["hero-1", "products-1"],
+              sections: {
+                "hero-1": { type: "hero", settings: { heading: `Welcome to ${input.name}`, showButton: true, buttonText: "Shop Now" } },
+                "products-1": { type: "featured_collection", settings: { limit: 4, title: "Featured Products" } }
+              }
+            }
+          }
+        };
+
+        await db.createStoreTheme({
+          id: defaultThemeId,
+          storeId: store.id,
+          name: "Dawn (Default)",
+          draftConfig: defaultThemeJson,
+          publishedConfig: defaultThemeJson,
+          isActive: true,
+          schemaVersion: 1,
+        }).catch(err => console.error("Failed to create default theme:", err));
+
         // 3. Usage Tracking
         await UsageEngine.increment(ctx.user.id, "stores_count");
 
@@ -70,7 +96,12 @@ export const storesRouter = router({
     .input(z.object({ slug: z.string() }))
     .query(async ({ input }) => {
       const store = await db.getStoreBySlug(input.slug);
-      return store;
+      if (store) {
+        const themes = await db.getThemesByStoreId(store.id);
+        const activeTheme = themes.find(t => t.isActive) || themes[0] || null;
+        return { ...store, activeTheme };
+      }
+      return null;
     }),
 
   // Get a store by custom domain (public)
@@ -78,7 +109,12 @@ export const storesRouter = router({
     .input(z.object({ domain: z.string() }))
     .query(async ({ input }) => {
       const store = await db.getStoreByDomain(input.domain);
-      return store;
+      if (store) {
+        const themes = await db.getThemesByStoreId(store.id);
+        const activeTheme = themes.find(t => t.isActive) || themes[0] || null;
+        return { ...store, activeTheme };
+      }
+      return null;
     }),
 
   // Update store settings

@@ -49,9 +49,11 @@ export const themesRouter = router({
       typography: z.any(),
     }))
     .mutation(async ({ input, ctx }) => {
-      const storeId = 1; // In a multi-store system, this would be passed in or fetched
-
-      // 1. Backend Enforcement: Check theme count limits
+      // Get the actual store for this merchant
+      const { getStoreByMerchantId } = await import("../db");
+      const store = await getStoreByMerchantId(ctx.user.id);
+      if (!store) throw new Error("Store not found");
+      const storeId = store.id;
       await canAccess.createTheme(storeId, ctx.user.tier as SubscriptionTier);
 
       // 2. Create the theme
