@@ -698,7 +698,7 @@ export default function ThemeEditor() {
           >
             <iframe 
               ref={previewRef}
-              src={`/store/${storeQuery.data?.slug}${selectedPage !== "Home Page" ? "/" + selectedPage.toLowerCase() : ""}?preview=true&themeId=${themeId}`} 
+              src={`https://${storeQuery.data?.slug}.raaenai.com${selectedPage !== "Home Page" ? "/" + selectedPage.toLowerCase().replace(" ", "-") : ""}?preview=true&themeId=${themeId}`} 
               className="w-full h-full border-none"
               title="Theme Preview"
             />
