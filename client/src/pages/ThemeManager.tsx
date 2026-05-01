@@ -170,6 +170,17 @@ export default function ThemeManager() {
                           <Sparkles className="w-4 h-4 mr-2" />
                           {activeTheme.isPublic ? "Remove from Marketplace" : "Publish to Marketplace"}
                         </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => {
+                            if (window.confirm("Are you sure you want to remove the current theme? This will leave your store without a design until you publish another one.")) {
+                              deleteMutation.mutate({ themeId: activeTheme.id });
+                            }
+                          }}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Remove
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
