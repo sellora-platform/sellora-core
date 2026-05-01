@@ -101,7 +101,9 @@ export default function ThemeEditor() {
 
   // Helper to get current template key
   const getPageKey = (page: string) => {
-    if (page === "Home Page") return "index";
+    if (page === "Home Page") return "home";
+    if (page === "Product Page") return "product";
+    if (page === "Cart Page") return "cart";
     return page.toLowerCase();
   };
   const pageKey = getPageKey(selectedPage);
@@ -293,7 +295,7 @@ export default function ThemeEditor() {
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[200px]">
-              {["Home Page", "Products", "Cart", "Checkout"].map(page => (
+              {["Home Page", "Product Page", "Cart Page"].map(page => (
                 <DropdownMenuItem key={page} onClick={() => setSelectedPage(page)}>
                   {page}
                 </DropdownMenuItem>
@@ -698,7 +700,11 @@ export default function ThemeEditor() {
           >
             <iframe 
               ref={previewRef}
-              src={`https://${storeQuery.data?.slug}.raaenai.com${selectedPage !== "Home Page" ? "/" + selectedPage.toLowerCase().replace(" ", "-") : ""}?preview=true&themeId=${themeId}`} 
+              src={`https://${storeQuery.data?.slug}.raaenai.com${
+                selectedPage === "Home Page" ? "" : 
+                selectedPage === "Product Page" ? "/product/sample-1" : 
+                "/cart"
+              }?preview=true&themeId=${themeId}`} 
               className="w-full h-full border-none"
               title="Theme Preview"
             />
