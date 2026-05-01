@@ -329,9 +329,16 @@ export const themesRouter = router({
 
       if (!theme) throw new Error("Theme not found");
 
+      // 1. Set all themes for this store to inactive
+      await db.update(storeThemes)
+        .set({ isActive: false })
+        .where(eq(storeThemes.storeId, theme.storeId));
+
+      // 2. Publish and activate the selected theme
       const [published] = await db.update(storeThemes)
         .set({
           publishedConfig: theme.draftConfig,
+          isActive: true,
           updatedAt: new Date(),
         })
         .where(eq(storeThemes.id, input.themeId))
