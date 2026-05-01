@@ -21,6 +21,30 @@ export const SECTION_COMPONENTS: Record<string, any> = {
 };
 
 export const SECTION_SCHEMAS: Record<string, any> = {
+  header: {
+    name: "Header",
+    settings: [
+      { id: "logo", type: "image", label: "Logo Image" },
+      { id: "sticky", type: "checkbox", label: "Sticky Header", default: true },
+      { id: "menu_alignment", type: "select", label: "Menu Alignment", options: [
+        { label: "Left", value: "left" },
+        { label: "Center", value: "center" },
+        { label: "Right", value: "right" }
+      ], default: "right" }
+    ]
+  },
+  footer: {
+    name: "Footer",
+    settings: [
+      { id: "copyright_text", type: "text", label: "Copyright Text", default: "All rights reserved." },
+      { id: "show_payment_icons", type: "checkbox", label: "Show Payment Icons", default: true },
+      { id: "background_color", type: "select", label: "Background Scheme", options: [
+        { label: "Light", value: "light" },
+        { label: "Dark", value: "dark" },
+        { label: "Accent", value: "accent" }
+      ], default: "light" }
+    ]
+  },
   hero: HeroSchema,
   featured_collection: FeaturedCollectionSchema,
   image_banner: ImageBannerSchema,

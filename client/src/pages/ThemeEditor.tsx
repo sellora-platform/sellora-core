@@ -88,6 +88,8 @@ export default function ThemeEditor() {
     product: [],
     cart: [],
     checkout: [],
+    header: [{ id: 'header', type: 'header', settings: {} }],
+    footer: [{ id: 'footer', type: 'footer', settings: {} }],
   });
   const [globalSettings, setGlobalSettings] = useState({
     primaryColor: "#008060",
@@ -108,6 +110,14 @@ export default function ThemeEditor() {
   };
   const pageKey = getPageKey(selectedPage);
   const localSections = templates[pageKey] || [];
+  
+  // Special handling for persistent sections
+  const headerSection = templates.header?.[0];
+  const footerSection = templates.footer?.[0];
+  
+  const currentSection = selectedSectionId === 'header' ? headerSection : 
+                       selectedSectionId === 'footer' ? footerSection :
+                       localSections.find(s => s.id === selectedSectionId);
 
   // Queries
   const storeQuery = trpc.stores.getMyStore.useQuery();
@@ -131,23 +141,33 @@ export default function ThemeEditor() {
   // Initial Load
   useEffect(() => {
     if (theme) {
-      if (theme.draftConfig?.templates) {
-        // Map templates back to sections array for editor
-        const sections = theme.draftConfig.templates.home?.sections || {};
-        const sectionsArray = Object.values(sections);
-        setTemplates({ index: sectionsArray as any });
+      const config = theme.draftConfig as any;
+      if (config?.templates) {
+        const loadedTemplates: Record<string, Section[]> = {
+          header: config.header ? [config.header] : [{ id: 'header', type: 'header', settings: {} }],
+          footer: config.footer ? [config.footer] : [{ id: 'footer', type: 'footer', settings: {} }],
+        };
+
+        // Map templates (index, product, cart, etc.)
+        Object.keys(config.templates).forEach(key => {
+          const template = config.templates[key];
+          const sectionsArray = template.order.map((id: string) => template.sections[id]);
+          loadedTemplates[key === 'index' ? 'home' : key] = sectionsArray;
+        });
+
+        setTemplates(loadedTemplates);
       }
       
       const newGlobal = {
-        primaryColor: (theme.draftConfig as any)?.colors?.primary || "#008060",
-        backgroundColor: (theme.draftConfig as any)?.colors?.background || "#ffffff",
-        textColor: (theme.draftConfig as any)?.colors?.text || "#1a1a1a",
-        fontFamily: (theme.draftConfig as any)?.typography?.family || "Inter"
+        primaryColor: config?.colors?.primary || "#008060",
+        backgroundColor: config?.colors?.background || "#ffffff",
+        textColor: config?.colors?.text || "#1a1a1a",
+        fontFamily: config?.typography?.family || "Inter"
       };
       
       setGlobalSettings(newGlobal);
       setHistory([{ 
-        templates: templates, 
+        templates: loadedTemplates || templates, 
         globalSettings: newGlobal 
       }]);
       setHistoryIndex(0);
@@ -227,25 +247,55 @@ export default function ThemeEditor() {
 
   const handleSave = () => {
     if (!theme) return;
+    
+    // Build the full theme configuration
+    const themeJson: any = {
+      schemaVersion: 1,
+      colors: {
+        primary: globalSettings.primaryColor,
+        background: globalSettings.backgroundColor,
+        text: globalSettings.textColor
+      },
+      typography: {
+        family: globalSettings.fontFamily
+      },
+      templates: {}
+    };
+
+    // Add all pages/templates
+    Object.keys(templates).forEach(key => {
+      if (key === 'header' || key === 'footer') {
+        themeJson[key] = templates[key][0];
+        return;
+      }
+      
+      const sections = templates[key];
+      themeJson.templates[key === 'home' ? 'index' : key] = {
+        sections: sections.reduce((acc: any, s: any, i: number) => {
+          const id = s.id || `sec-${i}`;
+          acc[id] = { ...s, id };
+          return acc;
+        }, {}),
+        order: sections.map((s: any) => s.id)
+      };
+    });
+
     saveMutation.mutate({
       storeId: theme.storeId,
-      themeJson: {
-        schemaVersion: 1,
-        templates: {
-          home: {
-            sections: localSections.reduce((acc, s, i) => {
-              const id = s.id || `sec-${i}`;
-              acc[id] = { ...s, id };
-              return acc;
-            }, {} as any),
-            order: localSections.map(s => s.id)
-          }
-        }
-      } as any
+      themeJson
     });
   };
 
   const handleUpdateSection = (id: string, settings: any) => {
+    if (id === 'header' || id === 'footer') {
+      const newTemplates = { 
+        ...templates, 
+        [id]: [{ ...templates[id][0], settings }] 
+      };
+      setTemplates(newTemplates);
+      pushToHistory(newTemplates, globalSettings);
+      return;
+    }
     const newSections = localSections.map(s => s.id === id ? { ...s, settings } : s);
     const newTemplates = { ...templates, [pageKey]: newSections };
     setTemplates(newTemplates);
@@ -295,11 +345,26 @@ export default function ThemeEditor() {
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[200px]">
-              {["Home Page", "Product Page", "Cart Page"].map(page => (
+              {["Home Page", "Product Page", "Cart Page", ...Object.keys(templates).filter(k => !['home', 'product', 'cart', 'header', 'footer', 'index'].includes(k)).map(k => k.charAt(0).toUpperCase() + k.slice(1) + " Page")].map(page => (
                 <DropdownMenuItem key={page} onClick={() => setSelectedPage(page)}>
                   {page}
                 </DropdownMenuItem>
               ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                className="text-[#008060] font-bold"
+                onClick={() => {
+                  const name = prompt("Enter page name (e.g. About):");
+                  if (name) {
+                    const key = name.toLowerCase().replace(" ", "-");
+                    setTemplates({ ...templates, [key]: [] });
+                    setSelectedPage(name + " Page");
+                  }
+                }}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add New Page
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -416,12 +481,15 @@ export default function ThemeEditor() {
             ) : !selectedSectionId ? (
               <div className="space-y-1">
                 {/* Header & Footer always pinned */}
-                <div className="p-3 rounded-md hover:bg-[#f1f1f1] flex items-center justify-between cursor-pointer group border border-transparent hover:border-[#d1d1d1]">
+                <div 
+                  onClick={() => setSelectedSectionId('header')}
+                  className={`p-3 rounded-md hover:bg-[#f1f1f1] flex items-center justify-between cursor-pointer group border transition-all ${selectedSectionId === 'header' ? "bg-[#008060]/5 border-[#008060]" : "border-transparent"}`}
+                >
                   <div className="flex items-center gap-3">
-                    <ChevronRight className="w-4 h-4 text-[#616161]" />
-                    <span className="text-sm font-medium">Header</span>
+                    <ChevronRight className={`w-4 h-4 transition-transform ${selectedSectionId === 'header' ? "rotate-90" : ""}`} />
+                    <span className="text-sm font-medium text-[#1a1a1a]">Header</span>
                   </div>
-                  <Eye className="w-4 h-4 text-[#616161] opacity-0 group-hover:opacity-100" />
+                  <Settings className="w-4 h-4 text-[#616161] opacity-0 group-hover:opacity-100" />
                 </div>
 
                 <div className="py-4 px-2">
@@ -552,11 +620,15 @@ export default function ThemeEditor() {
                   </div>
                 </div>
 
-                <div className="p-3 rounded-md hover:bg-[#f1f1f1] flex items-center justify-between cursor-pointer group border border-transparent hover:border-[#d1d1d1] mt-4">
+                <div 
+                  onClick={() => setSelectedSectionId('footer')}
+                  className={`p-3 rounded-md hover:bg-[#f1f1f1] flex items-center justify-between cursor-pointer group border transition-all mt-4 ${selectedSectionId === 'footer' ? "bg-[#008060]/5 border-[#008060]" : "border-transparent"}`}
+                >
                   <div className="flex items-center gap-3">
-                    <ChevronRight className="w-4 h-4 text-[#616161]" />
-                    <span className="text-sm font-medium">Footer</span>
+                    <ChevronRight className={`w-4 h-4 transition-transform ${selectedSectionId === 'footer' ? "rotate-90" : ""}`} />
+                    <span className="text-sm font-medium text-[#1a1a1a]">Footer</span>
                   </div>
+                  <Settings className="w-4 h-4 text-[#616161] opacity-0 group-hover:opacity-100" />
                 </div>
               </div>
             ) : (
