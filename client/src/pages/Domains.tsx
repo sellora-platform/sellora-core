@@ -214,22 +214,6 @@ export default function DomainsPage() {
                           </Button>
                         </td>
                       </tr>
-                      {/* TXT Record */}
-                      <tr>
-                        <td className="px-6 py-5">
-                          <span className="px-2 py-1 rounded bg-primary/10 text-primary text-[11px] font-bold">TXT</span>
-                        </td>
-                        <td className="px-6 py-5 text-sm font-mono text-foreground">sellora-verify</td>
-                        <td className="px-6 py-5 text-sm font-mono font-bold text-foreground truncate max-w-[200px]">{verificationToken}</td>
-                        <td className="px-6 py-5 text-right">
-                          <Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => {
-                            navigator.clipboard.writeText(verificationToken);
-                            toast.success("Token copied");
-                          }}>
-                            <Copy className="w-3.5 h-3.5" />
-                          </Button>
-                        </td>
-                      </tr>
                     </tbody>
                   </table>
                 </div>
@@ -245,14 +229,14 @@ export default function DomainsPage() {
                   </Button>
                   <Button variant="outline" className="flex-1 h-12 gap-2" onClick={() => setShowGuide(true)}>
                     <ExternalLink className="w-4 h-4" />
-                    Detailed Setup Guide
+                    How to do this? (Easy Guide)
                   </Button>
                 </div>
 
                 <div className="flex items-start gap-3 p-5 rounded-2xl bg-amber-500/5 border border-amber-500/10">
                   <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                   <p className="text-xs text-amber-600/70 leading-relaxed font-medium">
-                    Propagation can take up to 24 hours. If verification fails, please check your records and try again in a few minutes.
+                    Domain changes can take up to 24 hours to work globally. If verification fails, please double-check your records and try again in a few hours.
                   </p>
                 </div>
               </div>
@@ -315,7 +299,7 @@ export default function DomainsPage() {
             </div>
             <div>
               <h4 className="font-bold text-lg text-foreground">Need help with your domain provider?</h4>
-              <p className="text-sm text-foreground/60 leading-relaxed">We have detailed, illustrated guides for all major domain registrars.</p>
+              <p className="text-sm text-foreground/60 leading-relaxed">We have detailed, illustrated guides for all major domain registrars like Namecheap, GoDaddy, and Hostinger.</p>
             </div>
           </div>
           <Button variant="outline" className="gap-2 bg-white h-11 px-6 shadow-sm group-hover:border-primary group-hover:text-primary transition-all relative">
@@ -325,50 +309,67 @@ export default function DomainsPage() {
         </Card>
       </div>
 
-      {/* Setup Guide Modal (Simplified) */}
+      {/* Setup Guide Modal */}
       {showGuide && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-          <Card className="w-full max-w-2xl overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-border/50 flex justify-between items-center bg-accent/5">
-              <h3 className="font-bold text-lg">Namecheap Setup Guide</h3>
-              <Button variant="ghost" size="sm" onClick={() => setShowGuide(false)}>Close</Button>
+          <Card className="w-full max-w-xl overflow-hidden shadow-2xl border-primary/20">
+            <div className="p-6 border-b border-border/50 flex justify-between items-center bg-primary/5">
+              <h3 className="font-bold text-lg text-primary flex items-center gap-2">
+                <Globe className="w-5 h-5" />
+                How to connect your domain
+              </h3>
+              <Button variant="ghost" size="sm" onClick={() => setShowGuide(false)} className="hover:bg-primary/10">Close</Button>
             </div>
-            <div className="p-8 space-y-6 overflow-y-auto max-h-[70vh]">
-              <div className="space-y-4">
-                <div className="flex gap-4">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">1</div>
-                  <p className="text-sm leading-relaxed">Log in to your <b>Namecheap</b> account and go to the <b>Domain List</b>.</p>
+            <div className="p-8 space-y-8 overflow-y-auto max-h-[70vh]">
+              
+              <div className="space-y-6">
+                <div className="flex gap-5">
+                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0 shadow-md">1</div>
+                  <div>
+                    <h4 className="font-bold text-foreground mb-1">Log in to your Domain Provider</h4>
+                    <p className="text-sm text-foreground/70 leading-relaxed">Go to the website where you bought your domain (e.g., GoDaddy, Namecheap, or Hostinger) and find your <b>DNS Settings</b> or <b>Zone Editor</b>.</p>
+                  </div>
                 </div>
-                <div className="flex gap-4">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">2</div>
-                  <p className="text-sm leading-relaxed">Click <b>Manage</b> next to your domain, then go to the <b>Advanced DNS</b> tab.</p>
+
+                <div className="flex gap-5">
+                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0 shadow-md">2</div>
+                  <div>
+                    <h4 className="font-bold text-foreground mb-1">Delete old records</h4>
+                    <p className="text-sm text-foreground/70 leading-relaxed">If you see any existing <b>A records</b> with the host <b>@</b> or <b>CNAME records</b> with the host <b>www</b>, delete them first to avoid conflicts.</p>
+                  </div>
                 </div>
-                <div className="flex gap-4">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">3</div>
-                  <p className="text-sm leading-relaxed">Find <b>Host Records</b> and remove any existing A or CNAME records for <b>@</b> and <b>www</b>.</p>
-                </div>
-                <div className="flex gap-4">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">4</div>
-                  <p className="text-sm leading-relaxed">Add a new <b>A Record</b> with Host: <b>@</b> and Value: <b>76.76.21.21</b>.</p>
-                </div>
-                <div className="flex gap-4">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">5</div>
-                  <p className="text-sm leading-relaxed">Add a new <b>CNAME Record</b> with Host: <b>www</b> and Value: <b>cname.vercel-dns.com</b>.</p>
-                </div>
-                <div className="flex gap-4">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">6</div>
-                  <p className="text-sm leading-relaxed">Add a new <b>TXT Record</b> with Host: <b>sellora-verify</b> and Value: <b>{verificationToken}</b>.</p>
+
+                <div className="flex gap-5">
+                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0 shadow-md">3</div>
+                  <div>
+                    <h4 className="font-bold text-foreground mb-1">Add the Sellora records</h4>
+                    <p className="text-sm text-foreground/70 leading-relaxed mb-3">Create these two new records exactly as shown below:</p>
+                    <div className="bg-background border border-border/50 rounded-lg p-4 space-y-3 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-foreground/50 uppercase w-16">Type: A</span>
+                        <span className="text-sm font-mono bg-accent/10 px-2 py-0.5 rounded">Host: @</span>
+                        <span className="text-sm font-mono font-bold">Value: 76.76.21.21</span>
+                      </div>
+                      <div className="h-px bg-border/50 w-full"></div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-foreground/50 uppercase w-16">CNAME</span>
+                        <span className="text-sm font-mono bg-accent/10 px-2 py-0.5 rounded">Host: www</span>
+                        <span className="text-sm font-mono font-bold">Value: cname.vercel-dns.com</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 flex gap-3">
-                <ShieldCheck className="w-5 h-5 text-primary shrink-0" />
-                <p className="text-xs text-primary/80 leading-relaxed font-medium">
-                  After saving, return here and click <b>Verify Connection</b>. Once ownership is verified, your store will be live on your custom domain instantly!
+
+              <div className="p-5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex gap-3">
+                <RefreshCw className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-sm text-amber-800 leading-relaxed">
+                  <b>Almost done!</b> After saving the records in your provider, wait about 10-15 minutes, then close this guide and click the <b>Verify Connection</b> button.
                 </p>
               </div>
             </div>
             <div className="p-4 border-t border-border/50 bg-accent/5 flex justify-end">
-              <Button onClick={() => setShowGuide(false)}>I've added the records</Button>
+              <Button onClick={() => setShowGuide(false)} className="px-8">Got it!</Button>
             </div>
           </Card>
         </div>
