@@ -30,6 +30,20 @@ export default function DomainsPage() {
     },
   });
 
+  const verifyDomainMutation = trpc.stores.verifyDomain.useMutation({
+    onSuccess: (data) => {
+      if (data.verified) {
+        toast.success("Domain ownership verified successfully! SSL certificate is now being issued.");
+        storeQuery.refetch();
+      } else {
+        toast.error(data.verification?.reason || "Domain verification failed. Please check your DNS records.");
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to verify domain.");
+    }
+  });
+
   const [domainInput, setDomainInput] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
@@ -59,19 +73,7 @@ export default function DomainsPage() {
     });
   };
 
-  const verifyDomainMutation = trpc.stores.verifyDomain.useMutation({
-    onSuccess: (data) => {
-      if (data.verified) {
-        toast.success("Domain ownership verified successfully! SSL certificate is now being issued.");
-        storeQuery.refetch();
-      } else {
-        toast.error(data.verification?.reason || "Domain verification failed. Please check your DNS records.");
-      }
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to verify domain.");
-    }
-  });
+
 
   const handleVerify = async () => {
     if (!store?.customDomain) return;
