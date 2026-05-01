@@ -28,6 +28,9 @@ export default function DomainsPage() {
       storeQuery.refetch();
       toast.success("Domain settings updated");
     },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update domain.");
+    }
   });
 
   const verifyDomainMutation = trpc.stores.verifyDomain.useMutation({

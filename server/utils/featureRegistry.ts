@@ -34,7 +34,7 @@ export const FEATURE_REGISTRY: Record<SubscriptionTier, PlanDefinition> = {
     features: {
       aiAssistant: true,
       advancedAnalytics: false,
-      customDomains: false,
+      customDomains: true,
       themeMarketplace: false,
       profitIntelligence: "basic",
     },
