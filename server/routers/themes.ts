@@ -59,17 +59,70 @@ export const themesRouter = router({
       await canAccess.createTheme(storeId, ctx.user.tier as SubscriptionTier);
 
       // 2. Create the theme
+      const defaultProductSections = {
+        'pdp-gallery': {
+          id: 'pdp-gallery',
+          type: 'product-details',
+          settings: {
+            showImages: true,
+            showPrice: true,
+            showDescription: true,
+            showAddToCart: true,
+            layout: 'two-column'
+          }
+        }
+      };
+
+      const defaultCartSections = {
+        'cart-main': {
+          id: 'cart-main',
+          type: 'cart-view',
+          settings: {
+            showSummary: true,
+            showCoupon: false
+          }
+        }
+      };
+
       const themeConfig = {
         schemaVersion: 1,
+        colors: {
+          primary: input.colors?.primary || '#18181b',
+          accent: input.colors?.accent || '#10b981',
+          background: input.colors?.background || '#ffffff',
+          foreground: input.colors?.foreground || '#18181b',
+          text: input.colors?.text || '#18181b',
+        },
+        typography: {
+          family: input.typography?.family || 'Inter',
+          headingFamily: input.typography?.headingFamily || 'Inter',
+          baseSize: input.typography?.baseSize || '16px',
+        },
         templates: {
           index: {
-            sections: input.sections.reduce((acc, s, i) => {
+            sections: input.sections.reduce((acc: any, s: any, i: number) => {
               const id = `sec-${i}`;
               acc[id] = { ...s, id };
               return acc;
             }, {}),
-            order: input.sections.map((_, i) => `sec-${i}`),
-          }
+            order: input.sections.map((_: any, i: number) => `sec-${i}`),
+          },
+          product: {
+            sections: defaultProductSections,
+            order: ['pdp-gallery'],
+          },
+          cart: {
+            sections: defaultCartSections,
+            order: ['cart-main'],
+          },
+          about: {
+            sections: {},
+            order: [],
+          },
+          contact: {
+            sections: {},
+            order: [],
+          },
         }
       };
 
