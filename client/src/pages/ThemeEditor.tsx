@@ -311,14 +311,18 @@ export default function ThemeEditor() {
       templates: {}
     };
 
+    // FIX 1: Ensure current page changes are included before building JSON
+    const currentTemplates = { ...templates, [pageKey]: localSections };
+    setTemplates(currentTemplates);
+
     // Add all pages/templates
-    Object.keys(templates).forEach(key => {
+    Object.keys(currentTemplates).forEach(key => {
       if (key === 'header' || key === 'footer') {
-        themeJson[key] = templates[key][0];
+        themeJson[key] = currentTemplates[key][0];
         return;
       }
       
-      const sections = templates[key];
+      const sections = currentTemplates[key];
       themeJson.templates[key] = {
         sections: sections.reduce((acc: any, s: any, i: number) => {
           const id = s.id || `sec-${i}`;
@@ -358,8 +362,12 @@ export default function ThemeEditor() {
   };
 
   const addSection = (type: string) => {
-    const newId = Math.random().toString(36).substr(2, 9);
-    const schema = SECTION_SCHEMAS[type];
+    // FIX 3: Update addSection to try prefixed key first
+    const newId = `${type}-${Math.random().toString(36).substr(2, 5)}`;
+    const prefix = theme?.name?.toLowerCase().includes('bold') ? 'bold' : 'minimal';
+    const schemaKey = SECTION_SCHEMAS[`${prefix}:${type}`] ? `${prefix}:${type}` : type;
+    const schema = SECTION_SCHEMAS[schemaKey];
+
     const defaultSettings: any = {};
     schema?.settings?.forEach((s: any) => {
       defaultSettings[s.id] = s.default;
@@ -406,7 +414,19 @@ export default function ThemeEditor() {
                 "Contact Page",
                 ...Object.keys(templates).filter(k => !['index', 'product', 'cart', 'about', 'contact', 'header', 'footer'].includes(k)).map(k => k.charAt(0).toUpperCase() + k.slice(1).replace("-", " ") + " Page")
               ].map(page => (
-                <DropdownMenuItem key={page} onClick={() => setSelectedPage(page)}>
+                <DropdownMenuItem 
+                  key={page} 
+                  onClick={() => {
+                    // FIX 2: Save current page sections to templates before switching
+                    const currentUpdated = {
+                      ...templates,
+                      [pageKey]: localSections
+                    };
+                    setTemplates(currentUpdated);
+                    setSelectedPage(page);
+                    setSelectedSectionId(null);
+                  }}
+                >
                   {page}
                 </DropdownMenuItem>
               ))}
