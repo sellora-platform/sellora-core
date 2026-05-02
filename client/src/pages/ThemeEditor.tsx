@@ -103,10 +103,10 @@ export default function ThemeEditor() {
 
   // Helper to get current template key
   const getPageKey = (page: string) => {
-    if (page === "Home Page") return "home";
+    if (page === "Home Page") return "index";
     if (page === "Product Page") return "product";
     if (page === "Cart Page") return "cart";
-    return page.toLowerCase();
+    return page.replace(" Page", "").toLowerCase();
   };
   const pageKey = getPageKey(selectedPage);
   const localSections = templates[pageKey] || [];
@@ -148,13 +148,20 @@ export default function ThemeEditor() {
         const loadedTemplates: Record<string, Section[]> = {
           header: config.header ? [config.header] : [{ id: 'header', type: 'header', settings: {} }],
           footer: config.footer ? [config.footer] : [{ id: 'footer', type: 'footer', settings: {} }],
+          index: [],
+          product: [],
+          cart: [],
+          about: [],
+          contact: []
         };
 
         // Map templates (index, product, cart, etc.)
         Object.keys(config.templates).forEach(key => {
           const template = config.templates[key];
-          const sectionsArray = template.order.map((id: string) => template.sections[id]);
-          loadedTemplates[key === 'index' ? 'home' : key] = sectionsArray;
+          if (template && template.order && template.sections) {
+            const sectionsArray = template.order.map((id: string) => template.sections[id]);
+            loadedTemplates[key] = sectionsArray;
+          }
         });
 
         finalTemplates = loadedTemplates;
@@ -273,7 +280,7 @@ export default function ThemeEditor() {
       }
       
       const sections = templates[key];
-      themeJson.templates[key === 'home' ? 'index' : key] = {
+      themeJson.templates[key] = {
         sections: sections.reduce((acc: any, s: any, i: number) => {
           const id = s.id || `sec-${i}`;
           acc[id] = { ...s, id };
@@ -346,7 +353,14 @@ export default function ThemeEditor() {
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[200px]">
-              {["Home Page", "Product Page", "Cart Page", ...Object.keys(templates).filter(k => !['home', 'product', 'cart', 'header', 'footer', 'index'].includes(k)).map(k => k.charAt(0).toUpperCase() + k.slice(1) + " Page")].map(page => (
+              {[
+                "Home Page", 
+                "Product Page", 
+                "Cart Page", 
+                "About Page", 
+                "Contact Page",
+                ...Object.keys(templates).filter(k => !['index', 'product', 'cart', 'about', 'contact', 'header', 'footer'].includes(k)).map(k => k.charAt(0).toUpperCase() + k.slice(1).replace("-", " ") + " Page")
+              ].map(page => (
                 <DropdownMenuItem key={page} onClick={() => setSelectedPage(page)}>
                   {page}
                 </DropdownMenuItem>
@@ -355,7 +369,7 @@ export default function ThemeEditor() {
               <DropdownMenuItem 
                 className="text-[#008060] font-bold"
                 onClick={() => {
-                  const name = prompt("Enter page name (e.g. About):");
+                  const name = prompt("Enter page name (e.g. FAQ):");
                   if (name) {
                     const key = name.toLowerCase().replace(" ", "-");
                     setTemplates({ ...templates, [key]: [] });
@@ -475,6 +489,7 @@ export default function ThemeEditor() {
                       <SelectItem value="Playfair Display">Playfair (Elegant)</SelectItem>
                       <SelectItem value="Montserrat">Montserrat (Bold)</SelectItem>
                       <SelectItem value="Roboto">Roboto (Clean)</SelectItem>
+                      <SelectItem value="Outfit">Outfit (Premium)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -616,6 +631,7 @@ export default function ThemeEditor() {
                         <SelectItem value="Playfair Display">Playfair</SelectItem>
                         <SelectItem value="Montserrat">Montserrat</SelectItem>
                         <SelectItem value="Roboto">Roboto</SelectItem>
+                        <SelectItem value="Outfit">Outfit</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -776,7 +792,8 @@ export default function ThemeEditor() {
               src={`https://${storeQuery.data?.slug}.raaenai.com${
                 selectedPage === "Home Page" ? "" : 
                 selectedPage === "Product Page" ? "/product/sample-1" : 
-                "/cart"
+                selectedPage === "Cart Page" ? "/cart" :
+                `/${getPageKey(selectedPage)}`
               }?preview=true&themeId=${themeId}`} 
               className="w-full h-full border-none"
               title="Theme Preview"

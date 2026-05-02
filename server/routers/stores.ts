@@ -45,14 +45,55 @@ export const storesRouter = router({
         // Create the Default Theme (Dawn equivalent) for this store
         const defaultThemeId = crypto.randomUUID();
         const defaultThemeJson = {
-          colors: { primary: "#000000", background: "#ffffff" },
-          typography: { family: "Inter" },
+          colors: { 
+            primary: "#0f172a", 
+            background: "#ffffff", 
+            accent: "#3b82f6",
+            foreground: "#0f172a"
+          },
+          typography: { family: "Outfit" },
+          header: {
+            settings: {
+              menu_alignment: "left",
+              sticky: true
+            }
+          },
+          footer: {
+            settings: {
+              background_color: "light",
+              copyright_text: `© ${new Date().getFullYear()} ${input.name}`
+            }
+          },
           templates: {
-            home: {
+            index: {
               order: ["hero-1", "products-1"],
               sections: {
-                "hero-1": { type: "hero", settings: { heading: `Welcome to ${input.name}`, showButton: true, buttonText: "Shop Now" } },
-                "products-1": { type: "featured_collection", settings: { limit: 4, title: "Featured Products" } }
+                "hero-1": { type: "hero", settings: { heading: `Elevate Your Store`, subheading: `Welcome to ${input.name}. Discover our curated collection of premium goods.`, showButton: true, buttonText: "Shop All" } },
+                "products-1": { type: "featured_collection", settings: { limit: 4, title: "Featured Collection", columns: 4 } }
+              }
+            },
+            product: {
+              order: ["product-main"],
+              sections: {
+                "product-main": { type: "product-details", settings: { showSocialSharing: true } }
+              }
+            },
+            cart: {
+              order: ["cart-main"],
+              sections: {
+                "cart-main": { type: "cart-view", settings: { title: "Your Shopping Bag" } }
+              }
+            },
+            about: {
+              order: ["about-hero"],
+              sections: {
+                "about-hero": { type: "hero", settings: { heading: "Our Story", subheading: "Learn more about our mission and values.", showButton: false } }
+              }
+            },
+            contact: {
+              order: ["contact-hero"],
+              sections: {
+                "contact-hero": { type: "hero", settings: { heading: "Get in Touch", subheading: "We'd love to hear from you. Send us a message below.", showButton: false } }
               }
             }
           }
