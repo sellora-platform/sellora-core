@@ -14,19 +14,21 @@ import {
   Search, 
   Loader2, 
   X,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 interface ImagePickerProps {
-  onSelect: (url: string) => void;
-  currentValue?: string;
+  value: string;
+  onChange: (url: string) => void;
 }
 
-export default function ImagePicker({ onSelect, currentValue }: ImagePickerProps) {
+export default function ImagePicker({ value, onChange }: ImagePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const uploadMutation = trpc.upload.image.useMutation();
@@ -42,34 +44,37 @@ export default function ImagePicker({ onSelect, currentValue }: ImagePickerProps
     }
 
     setIsUploading(true);
+    setUploadError(null);
+    
     try {
-      // In this demo, we send metadata and the mock router returns a realistic URL
+      // Convert file to base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsDataURL(file);
+      });
+
       const result = await uploadMutation.mutateAsync({
         name: file.name,
         size: file.size,
-        type: file.type
+        type: file.type,
+        data: base64,
       });
 
-      if (result.success) {
-        onSelect(result.url);
+      if (result.success && result.url) {
+        onChange(result.url);
         setIsOpen(false);
         toast.success("Image uploaded successfully!");
       }
-    } catch (err) {
-      toast.error("Upload failed. Please try again.");
+    } catch (e: any) {
+      const msg = e.message || 'Upload failed. Please try again.';
+      setUploadError(msg);
+      toast.error(msg);
     } finally {
       setIsUploading(false);
     }
   };
-
-  const libraryImages = [
-    "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=400&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=400&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=400&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=400&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=400&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?q=80&w=400&auto=format&fit=crop"
-  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -77,9 +82,9 @@ export default function ImagePicker({ onSelect, currentValue }: ImagePickerProps
         <div 
           className="aspect-video rounded-xl border-2 border-dashed border-[#d1d1d1] flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-[#008060] hover:bg-[#008060]/5 transition-all group overflow-hidden relative"
         >
-          {currentValue ? (
+          {value ? (
             <>
-              <img src={currentValue} className="w-full h-full object-cover" />
+              <img src={value} className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <Button variant="secondary" size="sm" className="font-bold">Change Image</Button>
               </div>
@@ -134,41 +139,32 @@ export default function ImagePicker({ onSelect, currentValue }: ImagePickerProps
             />
           </div>
 
-          {/* Library Grid */}
+          {uploadError && (
+            <div className="flex items-center gap-2 text-red-500 bg-red-50 p-4 rounded-xl text-sm font-bold">
+              <AlertCircle className="w-4 h-4" />
+              {uploadError}
+            </div>
+          )}
+
+          {/* Library Grid (Mocked out) */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between border-b pb-4">
               <h4 className="font-bold text-sm uppercase tracking-widest text-[#616161]">Your Library</h4>
-              <div className="relative w-48">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                <Input placeholder="Search library..." className="pl-9 h-8 text-xs rounded-full bg-muted/50 border-none" />
-              </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-4">
-              {libraryImages.map((img, i) => (
-                <div 
-                  key={i} 
-                  onClick={() => {
-                    onSelect(img);
-                    setIsOpen(false);
-                  }}
-                  className="aspect-video rounded-2xl overflow-hidden cursor-pointer border-2 border-transparent hover:border-[#008060] transition-all relative group shadow-sm"
-                >
-                  <img src={img} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#008060] shadow-xl translate-y-2 group-hover:translate-y-0 transition-transform">
-                      <CheckCircle2 className="w-5 h-5" />
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="text-center py-12 bg-muted/20 rounded-3xl border-2 border-dotted border-muted">
+              <div className="p-4 bg-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <ImageIcon className="w-8 h-8 text-muted" />
+              </div>
+              <p className="font-bold text-[#616161]">No images in library yet</p>
+              <p className="text-xs text-muted-foreground mt-1">Upload an image using the uploader above.</p>
             </div>
           </div>
         </div>
         
         <div className="p-6 bg-[#f9f9f9] border-t flex justify-end gap-3">
           <Button variant="ghost" onClick={() => setIsOpen(false)} className="rounded-xl font-bold">Cancel</Button>
-          <Button className="rounded-xl bg-[#008060] hover:bg-[#006e52] font-bold px-8">Confirm Selection</Button>
+          <Button className="rounded-xl bg-[#008060] hover:bg-[#006e52] font-bold px-8" onClick={() => setIsOpen(false)}>Confirm Selection</Button>
         </div>
       </DialogContent>
     </Dialog>

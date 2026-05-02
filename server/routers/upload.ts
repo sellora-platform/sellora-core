@@ -1,30 +1,61 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
+import { v2 as cloudinary } from "cloudinary";
 
-// In a real production app, we would use Multer + S3/Cloudinary.
-// For this demo, we'll simulate a secure upload or use a public storage API.
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 export const uploadRouter = router({
-  // Get a signed URL for direct upload or handle server-side
-  // For now, we'll implement a simple "mock" that returns a real image URL 
-  // from Unsplash based on keywords, simulating a successful upload.
   image: protectedProcedure
     .input(z.object({
       name: z.string(),
       size: z.number(),
       type: z.string(),
+      data: z.string(), // base64 string
     }))
-    .mutation(async ({ input }) => {
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+    .mutation(async ({ input, ctx }) => {
+      // Validate file size (max 5MB)
+      if (input.size > 5 * 1024 * 1024) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'File size must be under 5MB'
+        });
+      }
 
-      // Map common keywords to Unsplash for realistic placeholder uploads
-      const keywords = ["fashion", "tech", "food", "grocery", "minimal", "banner"];
-      const keyword = keywords.find(k => input.name.toLowerCase().includes(k)) || "product";
-      
-      return {
-        url: `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000)}?q=80&w=1000&auto=format&fit=crop&keyword=${keyword}`,
-        success: true
-      };
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowedTypes.includes(input.type)) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Only JPEG, PNG, WebP and GIF allowed'
+        });
+      }
+
+      try {
+        const result = await cloudinary.uploader.upload(input.data, {
+          folder: `sellora/${ctx.user.id}`,
+          resource_type: 'image',
+          transformation: [
+            { quality: 'auto', fetch_format: 'auto' }
+          ]
+        });
+
+        return {
+          url: result.secure_url,
+          publicId: result.public_id,
+          width: result.width,
+          height: result.height,
+          success: true
+        };
+      } catch (e: any) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: e.message || 'Upload failed'
+        });
+      }
     }),
 });
