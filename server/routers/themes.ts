@@ -12,12 +12,14 @@ import { MerchantExperienceEngine } from "../utils/merchantExperience";
 // Validation schema for theme config
 const ThemeConfigSchema = z.object({
   schemaVersion: z.number().default(1),
-  templates: z.object({
-    home: z.object({
-      sections: z.record(z.string(), z.any()),
-      order: z.array(z.string()),
-    }),
-  }),
+  colors: z.any().optional(),
+  typography: z.any().optional(),
+  header: z.any().optional(),
+  footer: z.any().optional(),
+  templates: z.record(z.string(), z.object({
+    sections: z.record(z.string(), z.any()),
+    order: z.array(z.string()),
+  })),
 });
 
 export const themesRouter = router({
@@ -60,7 +62,7 @@ export const themesRouter = router({
       const themeConfig = {
         schemaVersion: 1,
         templates: {
-          home: {
+          index: {
             sections: input.sections.reduce((acc, s, i) => {
               const id = `sec-${i}`;
               acc[id] = { ...s, id };
