@@ -13,49 +13,16 @@ export const ImageBannerSchema = {
   name: "Image Banner",
   type: "image_banner",
   settings: [
-    {
-      id: "imageUrl",
-      type: "image",
-      label: "Image URL",
-      default: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070"
-    },
-    {
-      id: "title",
-      type: "text",
-      label: "Title",
-      default: "Summer Collection"
-    },
-    {
-      id: "description",
-      type: "textarea",
-      label: "Description",
-      default: "Experience the best of summer with our new arrivals."
-    },
-    {
-      id: "overlayOpacity",
-      type: "range",
-      label: "Overlay Opacity (%)",
-      min: 0,
-      max: 90,
-      default: 40
-    },
-    {
-      id: "contentPosition",
-      type: "select",
-      label: "Content Position",
-      options: [
-        { label: "Left", value: "left" },
-        { label: "Center", value: "center" },
-        { label: "Right", value: "right" }
-      ],
-      default: "center"
-    },
-    {
-      id: "buttonText",
-      type: "text",
-      label: "Button Text",
-      default: "Shop Collection"
-    }
+    { id: "image", type: "image", label: "Banner Image" },
+    { id: "heading", type: "text", label: "Heading", default: "Season Sale" },
+    { id: "subheading", type: "textarea", label: "Subheading", default: "Up to 50% off on all premium items." },
+    { id: "buttonText", type: "text", label: "Button Text", default: "Shop Sale" },
+    { id: "buttonLink", type: "url", label: "Button Link", default: "/collections/all" },
+    { id: "height", type: "select", label: "Banner Height", options: [
+      { label: "Small", value: "300px" },
+      { label: "Medium", value: "500px" },
+      { label: "Large", value: "700px" }
+    ], default: "500px" }
   ]
 };
 

@@ -48,12 +48,37 @@ export const SECTION_SCHEMAS: Record<string, any> = {
   hero: HeroSchema,
   featured_collection: FeaturedCollectionSchema,
   image_banner: ImageBannerSchema,
+  testimonials: {
+    name: "Testimonials",
+    settings: [
+      { id: "title", type: "text", label: "Heading", default: "What Our Customers Say" },
+      { id: "testimonial1", type: "textarea", label: "Review 1", default: "Absolutely love the quality of these products. The attention to detail is remarkable." },
+      { id: "author1", type: "text", label: "Author 1", default: "Sarah J." },
+      { id: "testimonial2", type: "textarea", label: "Review 2", default: "Fast shipping and excellent customer service. Highly recommend this store!" },
+      { id: "author2", type: "text", label: "Author 2", default: "Michael R." }
+    ]
+  },
+  faq: {
+    name: "FAQ",
+    settings: [
+      { id: "title", type: "text", label: "Heading", default: "Frequently Asked Questions" },
+      { id: "q1", type: "text", label: "Question 1", default: "How long does shipping take?" },
+      { id: "a1", type: "textarea", label: "Answer 1", default: "Standard shipping takes 3-5 business days." },
+      { id: "q2", type: "text", label: "Question 2", default: "What is your return policy?" },
+      { id: "a2", type: "textarea", label: "Answer 2", default: "We offer a 30-day money-back guarantee." }
+    ]
+  },
+  newsletter: {
+    name: "Newsletter",
+    settings: [
+      { id: "title", type: "text", label: "Heading", default: "Join the Club" },
+      { id: "subtitle", type: "text", label: "Subheading", default: "Subscribe to get special offers and once-in-a-lifetime deals." },
+      { id: "buttonText", type: "text", label: "Button Text", default: "Subscribe" }
+    ]
+  },
   "product-details": ProductDetailsSchema,
   "cart-view": CartViewSchema,
   "checkout-form": CheckoutFormSchema,
-  "testimonials": TestimonialsSchema,
-  "faq": FAQSchema,
-  "newsletter": NewsletterSchema,
 };
 
 export default function SectionRenderer({ 
