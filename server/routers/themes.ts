@@ -115,6 +115,21 @@ export const themesRouter = router({
             sections: defaultCartSections,
             order: ['cart-main'],
           },
+          products: {
+            sections: {
+              'products-grid': {
+                id: 'products-grid',
+                type: 'featured-collection',
+                settings: {
+                  title: 'All Products',
+                  subtitle: 'Browse our complete collection.',
+                  columns: 4,
+                  limit: 12
+                }
+              }
+            },
+            order: ['products-grid'],
+          },
           about: {
             sections: {},
             order: [],
