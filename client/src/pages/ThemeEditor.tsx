@@ -228,11 +228,13 @@ export default function ThemeEditor() {
       previewRef.current.contentWindow.postMessage({ 
         type: "THEME_UPDATE", 
         sections: localSections,
+        header: headerSection,
+        footer: footerSection,
         selectedSectionId: selectedSectionId,
         globalSettings: globalSettings
       }, "*");
     }
-  }, [localSections, selectedSectionId, globalSettings]);
+  }, [localSections, headerSection, footerSection, selectedSectionId, globalSettings]);
 
   // Listen for Selection from Preview
   useEffect(() => {
