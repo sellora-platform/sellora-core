@@ -282,6 +282,15 @@ export default function ThemeEditor() {
     onError: () => toast.error("Failed to generate content")
   });
 
+  const publishMutation = trpc.themes.publish.useMutation({
+    onSuccess: () => {
+      toast.success("Theme published successfully! Your changes are now live.");
+      if (themeId) utils.themes.getById.invalidate({ themeId });
+      utils.themes.getTheme.invalidate({ storeId: storeQuery.data?.id || 0 });
+    },
+    onError: () => toast.error("Failed to publish theme")
+  });
+
   const handleSave = () => {
     if (!theme) return;
     
@@ -321,6 +330,12 @@ export default function ThemeEditor() {
       storeId: theme.storeId,
       themeJson
     });
+  };
+
+  const handlePublish = () => {
+    if (!theme) return;
+    handleSave(); // Save first
+    publishMutation.mutate({ themeId: theme.id });
   };
 
   const handleUpdateSection = (id: string, settings: any) => {
@@ -441,10 +456,19 @@ export default function ThemeEditor() {
           <Button 
             onClick={handleSave} 
             disabled={saveMutation.isPending}
-            className="bg-[#008060] hover:bg-[#006e52] text-white font-bold h-9 px-6 rounded-md shadow-sm flex items-center gap-2"
+            variant="outline"
+            className="hover:bg-[#f1f1f1] text-[#303030] font-bold h-9 px-4 rounded-md flex items-center gap-2"
           >
             {saveMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-            Save
+            Save Draft
+          </Button>
+          <Button 
+            onClick={handlePublish} 
+            disabled={publishMutation.isPending}
+            className="bg-[#008060] hover:bg-[#006e52] text-white font-bold h-9 px-6 rounded-md shadow-sm flex items-center gap-2"
+          >
+            {publishMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+            Publish
           </Button>
         </div>
       </header>
