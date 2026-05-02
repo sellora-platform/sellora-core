@@ -146,29 +146,7 @@ export const Schema = {
   name: "Cart View",
   type: "cart-view",
   settings: [
-    {
-      id: "title",
-      type: "text",
-      label: "Title",
-      default: "Your Shopping Bag"
-    },
-    {
-      id: "checkoutButtonText",
-      type: "text",
-      label: "Checkout Button Text",
-      default: "Proceed to Checkout"
-    },
-    {
-      id: "emptyCartText",
-      type: "text",
-      label: "Empty Cart Message",
-      default: "Your bag is currently empty."
-    },
-    {
-      id: "showTrustBadges",
-      type: "checkbox",
-      label: "Show Trust Badges",
-      default: true
-    }
+    { id: "title", type: "text", label: "Heading", default: "Your Shopping Bag" },
+    { id: "showTrustBadges", type: "checkbox", label: "Show Payment Icons", default: true }
   ]
 };

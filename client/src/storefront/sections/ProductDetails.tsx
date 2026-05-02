@@ -151,39 +151,7 @@ export const Schema = {
   name: "Product Details",
   type: "product-details",
   settings: [
-    {
-      id: "imagePosition",
-      type: "select",
-      label: "Image Position",
-      options: [
-        { label: "Left", value: "left" },
-        { label: "Right", value: "right" }
-      ],
-      default: "left"
-    },
-    {
-      id: "buttonText",
-      type: "text",
-      label: "Button Text",
-      default: "Add to Cart"
-    },
-    {
-      id: "buttonColor",
-      type: "color",
-      label: "Button Color",
-      default: "#000000"
-    },
-    {
-      id: "showSocialSharing",
-      type: "checkbox",
-      label: "Show Social Sharing",
-      default: true
-    },
-    {
-      id: "showTrustBadges",
-      type: "checkbox",
-      label: "Show Trust Badges",
-      default: true
-    }
+    { id: "showSocialSharing", type: "checkbox", label: "Show Social Sharing", default: true },
+    { id: "showTrustBadges", type: "checkbox", label: "Show Trust Badges", default: true }
   ]
 };

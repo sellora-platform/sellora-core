@@ -11,44 +11,19 @@ export type HeroSettings = {
 };
 
 export const HeroSchema = {
-  name: "Hero Banner",
+  name: "Hero",
   type: "hero",
   settings: [
-    {
-      id: "heading",
-      type: "text",
-      label: "Heading",
-      default: "Elevate Your Style"
-    },
-    {
-      id: "subheading",
-      type: "textarea",
-      label: "Subheading",
-      default: "Discover our premium curated collection of high-quality products."
-    },
-    {
-      id: "buttonText",
-      type: "text",
-      label: "Button Text",
-      default: "Shop Now"
-    },
-    {
-      id: "alignment",
-      type: "select",
-      label: "Alignment",
-      options: [
-        { label: "Left", value: "left" },
-        { label: "Center", value: "center" },
-        { label: "Right", value: "right" }
-      ],
-      default: "center"
-    },
-    {
-      id: "showTrustBadges",
-      type: "checkbox",
-      label: "Show Trust Badges",
-      default: true
-    }
+    { id: "heading", type: "text", label: "Heading", default: "Elevate Your Style" },
+    { id: "subheading", type: "textarea", label: "Subheading", default: "Experience the perfect blend of premium quality and modern design in every piece." },
+    { id: "buttonText", type: "text", label: "Button Text", default: "Shop Collection" },
+    { id: "buttonLink", type: "url", label: "Button Link", default: "/products" },
+    { id: "alignment", type: "select", label: "Alignment", options: [
+      { label: "Left", value: "left" },
+      { label: "Center", value: "center" },
+      { label: "Right", value: "right" }
+    ], default: "center" },
+    { id: "showButton", type: "checkbox", label: "Show Shop Button", default: true }
   ]
 };
 

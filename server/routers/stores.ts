@@ -48,52 +48,104 @@ export const storesRouter = router({
           colors: { 
             primary: "#0f172a", 
             background: "#ffffff", 
-            accent: "#3b82f6",
+            accent: "#008060", // Shopify-like Green
             foreground: "#0f172a"
           },
           typography: { family: "Outfit" },
           header: {
+            id: "header",
+            type: "header",
             settings: {
-              menu_alignment: "left",
-              sticky: true
+              menu_alignment: "right",
+              sticky: true,
+              logo: ""
             }
           },
           footer: {
+            id: "footer",
+            type: "footer",
             settings: {
               background_color: "light",
-              copyright_text: `© ${new Date().getFullYear()} ${input.name}`
+              copyright_text: `© ${new Date().getFullYear()} ${input.name}`,
+              show_payment_icons: true
             }
           },
           templates: {
             index: {
               order: ["hero-1", "products-1"],
               sections: {
-                "hero-1": { type: "hero", settings: { heading: `Elevate Your Store`, subheading: `Welcome to ${input.name}. Discover our curated collection of premium goods.`, showButton: true, buttonText: "Shop All" } },
-                "products-1": { type: "featured_collection", settings: { limit: 4, title: "Featured Collection", columns: 4 } }
+                "hero-1": { 
+                  type: "hero", 
+                  settings: { 
+                    heading: `Elevate Your Store`, 
+                    subheading: `Welcome to ${input.name}. Discover our curated collection of premium goods.`, 
+                    showButton: true, 
+                    buttonText: "Shop Collection",
+                    buttonLink: "/products",
+                    alignment: "center"
+                  } 
+                },
+                "products-1": { 
+                  type: "featured_collection", 
+                  settings: { 
+                    limit: 4, 
+                    title: "Featured Favorites", 
+                    subtitle: "Handpicked for you",
+                    columns: 4 
+                  } 
+                }
               }
             },
             product: {
               order: ["product-main"],
               sections: {
-                "product-main": { type: "product-details", settings: { showSocialSharing: true } }
+                "product-main": { 
+                  type: "product-details", 
+                  settings: { 
+                    showSocialSharing: true,
+                    showTrustBadges: true
+                  } 
+                }
               }
             },
             cart: {
               order: ["cart-main"],
               sections: {
-                "cart-main": { type: "cart-view", settings: { title: "Your Shopping Bag" } }
+                "cart-main": { 
+                  type: "cart-view", 
+                  settings: { 
+                    title: "Your Shopping Bag",
+                    showTrustBadges: true
+                  } 
+                }
               }
             },
             about: {
               order: ["about-hero"],
               sections: {
-                "about-hero": { type: "hero", settings: { heading: "Our Story", subheading: "Learn more about our mission and values.", showButton: false } }
+                "about-hero": { 
+                  type: "hero", 
+                  settings: { 
+                    heading: "Our Story", 
+                    subheading: "Learn more about our mission and values.", 
+                    showButton: false,
+                    alignment: "center"
+                  } 
+                }
               }
             },
             contact: {
               order: ["contact-hero"],
               sections: {
-                "contact-hero": { type: "hero", settings: { heading: "Get in Touch", subheading: "We'd love to hear from you. Send us a message below.", showButton: false } }
+                "contact-hero": { 
+                  type: "hero", 
+                  settings: { 
+                    heading: "Get in Touch", 
+                    subheading: "We'd love to hear from you. Send us a message below.", 
+                    showButton: false,
+                    alignment: "center"
+                  } 
+                }
               }
             }
           }

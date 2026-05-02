@@ -13,34 +13,10 @@ export const FeaturedCollectionSchema = {
   name: "Featured Collection",
   type: "featured_collection",
   settings: [
-    {
-      id: "title",
-      type: "text",
-      label: "Heading",
-      default: "Featured Products"
-    },
-    {
-      id: "subtitle",
-      type: "text",
-      label: "Subheading",
-      default: "Selected specifically for you"
-    },
-    {
-      id: "columns",
-      type: "range",
-      label: "Columns on desktop",
-      min: 2,
-      max: 4,
-      default: 4
-    },
-    {
-      id: "productLimit",
-      type: "range",
-      label: "Product limit",
-      min: 4,
-      max: 12,
-      default: 8
-    }
+    { id: "title", type: "text", label: "Title", default: "Curated Favorites" },
+    { id: "subtitle", type: "textarea", label: "Subtitle", default: "Explore our handpicked selection of premium essentials designed for modern living." },
+    { id: "columns", type: "range", label: "Columns", min: 2, max: 4, default: 4 },
+    { id: "limit", type: "range", label: "Product Limit", min: 2, max: 12, default: 4 }
   ]
 };
 
