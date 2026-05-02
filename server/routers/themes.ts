@@ -131,12 +131,24 @@ export const themesRouter = router({
             order: ['products-grid'],
           },
           about: {
-            sections: {},
-            order: [],
+            sections: {
+              'about-main': {
+                id: 'about-main',
+                type: 'about',
+                settings: {}
+              }
+            },
+            order: ['about-main'],
           },
           contact: {
-            sections: {},
-            order: [],
+            sections: {
+              'contact-main': {
+                id: 'contact-main',
+                type: 'contact',
+                settings: {}
+              }
+            },
+            order: ['contact-main'],
           },
         }
       };
