@@ -231,10 +231,12 @@ export default function ThemeEditor() {
         header: headerSection,
         footer: footerSection,
         selectedSectionId: selectedSectionId,
-        globalSettings: globalSettings
+        globalSettings: globalSettings,
+        themeId: theme?.id,
+        themeName: theme?.name
       }, "*");
     }
-  }, [localSections, headerSection, footerSection, selectedSectionId, globalSettings]);
+  }, [localSections, headerSection, footerSection, selectedSectionId, globalSettings, theme]);
 
   // Listen for Selection from Preview
   useEffect(() => {
