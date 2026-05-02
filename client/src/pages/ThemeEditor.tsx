@@ -71,6 +71,79 @@ type Section = {
   blocks?: Array<{ id: string; type: string; settings: Record<string, any> }>;
 };
 
+const PAGE_SECTIONS: Record<string, string[]> = {
+  index: [
+    'announcement_bar',
+    'hero',
+    'icon_features',
+    'featured_collection',
+    'image_banner',
+    'brand_logos',
+    'video_section',
+    'rich_text',
+    'testimonials',
+    'newsletter',
+    'faq',
+  ],
+  products: [
+    'announcement_bar',
+    'hero',
+    'featured_collection',
+    'rich_text',
+  ],
+  product: [
+    'product-details',
+    'rich_text',
+    'testimonials',
+    'newsletter',
+  ],
+  cart: [
+    'cart-view',
+  ],
+  about: [
+    'announcement_bar',
+    'hero',
+    'image_banner',
+    'rich_text',
+    'brand_logos',
+    'testimonials',
+    'newsletter',
+    'icon_features',
+  ],
+  contact: [
+    'announcement_bar',
+    'contact',
+    'rich_text',
+    'faq',
+  ],
+};
+
+const DEFAULT_SECTIONS = [
+  'announcement_bar',
+  'hero',
+  'featured_collection',
+  'rich_text',
+  'newsletter',
+];
+
+const SECTION_META: Record<string, { name: string, description: string, icon: string }> = {
+  announcement_bar: { name: "Announcement Bar", description: "Drive urgency with a top banner", icon: "📢" },
+  hero: { name: "Hero Banner", description: "Bold full-width opening section", icon: "🖼️" },
+  icon_features: { name: "Trust Builder", description: "Shipping, returns, support icons", icon: "✨" },
+  featured_collection: { name: "Product Grid", description: "Showcase your best products", icon: "🛍️" },
+  image_banner: { name: "Image Banner", description: "Full-width promotional image", icon: "📸" },
+  brand_logos: { name: "Press & Partners", description: "Build instant credibility", icon: "🏆" },
+  video_section: { name: "Video Section", description: "Embed YouTube or Vimeo", icon: "🎬" },
+  rich_text: { name: "Rich Text", description: "Editorial content and storytelling", icon: "📝" },
+  testimonials: { name: "Testimonials", description: "Customer reviews and social proof", icon: "⭐" },
+  newsletter: { name: "Newsletter", description: "Grow your email list", icon: "📧" },
+  faq: { name: "FAQ", description: "Answer common questions", icon: "❓" },
+  'product-details': { name: "Product Details", description: "Images, price, add to cart", icon: "📦" },
+  'cart-view': { name: "Cart", description: "Shopping cart and checkout", icon: "🛒" },
+  about: { name: "About", description: "Brand story and mission", icon: "💡" },
+  contact: { name: "Contact Form", description: "Let customers reach you", icon: "✉️" },
+};
+
 export default function ThemeEditor() {
   const { user } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
@@ -655,19 +728,34 @@ export default function ThemeEditor() {
                         Add Section
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-[280px]">
-                      {Object.entries(SECTION_SCHEMAS).map(([type, schema]: [string, any]) => (
-                        <DropdownMenuItem 
-                          key={type}
-                          onClick={() => addSection(type)}
-                          className="py-3 cursor-pointer"
-                        >
-                          <div className="flex flex-col">
-                            <span className="font-bold text-sm">{schema.name}</span>
-                            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Type: {type}</span>
-                          </div>
-                        </DropdownMenuItem>
-                      ))}
+                    <DropdownMenuContent align="start" className="w-[300px] max-h-[480px] overflow-y-auto">
+                      <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground border-b">
+                        Add Section — {selectedPage}
+                      </div>
+                      {(PAGE_SECTIONS[pageKey] || DEFAULT_SECTIONS).map((type) => {
+                        const meta = SECTION_META[type];
+                        const schema = SECTION_SCHEMAS[type];
+                        if (!meta && !schema) return null;
+                        return (
+                          <DropdownMenuItem
+                            key={type}
+                            onClick={() => addSection(type)}
+                            className="py-3 cursor-pointer hover:bg-[#f1f1f1]"
+                          >
+                            <div className="flex items-start gap-3 w-full">
+                              <span className="text-xl mt-0.5">{meta?.icon || '📄'}</span>
+                              <div className="flex flex-col min-w-0">
+                                <span className="font-bold text-sm text-[#1a1a1a]">
+                                  {meta?.name || schema?.name || type}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                                  {meta?.description || ''}
+                                </span>
+                              </div>
+                            </div>
+                          </DropdownMenuItem>
+                        );
+                      })}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
