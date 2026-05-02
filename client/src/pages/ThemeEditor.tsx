@@ -159,8 +159,18 @@ export default function ThemeEditor() {
         Object.keys(config.templates).forEach(key => {
           const template = config.templates[key];
           if (template && template.order && template.sections) {
-            const sectionsArray = template.order.map((id: string) => template.sections[id]);
-            loadedTemplates[key] = sectionsArray;
+            // Ensure each section object has its ID injected from the key
+            const sectionsArray = template.order
+              .map((id: string) => {
+                const section = template.sections[id];
+                if (!section) return null;
+                return { ...section, id };
+              })
+              .filter(Boolean) as Section[];
+
+            // Normalize 'home' to 'index' for consistent routing
+            const normalizedKey = key === 'home' ? 'index' : key;
+            loadedTemplates[normalizedKey] = sectionsArray;
           }
         });
 
@@ -231,11 +241,26 @@ export default function ThemeEditor() {
         setSelectedSectionId(event.data.sectionId);
         setActiveActivity("sections");
         toast.info("Section selected", { duration: 1000 });
+      } else if (event.data?.type === "PAGE_NAVIGATE") {
+        const path = event.data.pathname;
+        let newPage = "Home Page";
+        if (path === "/") newPage = "Home Page";
+        else if (path.startsWith("/product/")) newPage = "Product Page";
+        else if (path === "/cart") newPage = "Cart Page";
+        else {
+          const name = path.replace("/", "").replace("-", " ");
+          newPage = name.charAt(0).toUpperCase() + name.slice(1) + " Page";
+        }
+        
+        if (newPage !== selectedPage) {
+          setSelectedPage(newPage);
+          setSelectedSectionId(null);
+        }
       }
     };
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, []);
+  }, [selectedPage]); // Added selectedPage to dependency to ensure we compare with latest
 
   const saveMutation = trpc.themes.saveTheme.useMutation({
     onSuccess: () => {
