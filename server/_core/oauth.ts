@@ -545,7 +545,7 @@ export function registerAuthRoutes(app: Express) {
       // Create new session token with updated plan
       const token = await createSessionToken({
         id: updatedUser.id,
-        email: updatedUser.email,
+        email: updatedUser.email!,
         name: updatedUser.name,
         role: updatedUser.role as "user" | "admin",
         isVerified: updatedUser.isVerified ?? false,

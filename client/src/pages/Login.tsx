@@ -41,14 +41,14 @@ export default function Login() {
   // Initialize Google Login
   useEffect(() => {
     const initGoogle = () => {
-      if (window.google) {
-        window.google.accounts.id.initialize({
+      if ((window as any).google) {
+        (window as any).google.accounts.id.initialize({
           client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID", 
           callback: handleGoogleCallback,
         });
         const btn = document.getElementById("google-login-btn");
         if (btn) {
-          window.google.accounts.id.renderButton(btn, { 
+          (window as any).google.accounts.id.renderButton(btn, { 
             theme: "outline", 
             size: "large", 
             width: 400 
@@ -137,7 +137,7 @@ export default function Login() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <Link href="/forgot-password" size="sm" className="text-xs text-primary hover:underline">
+                   <Link href="/forgot-password" className="text-xs text-primary hover:underline">
                     Forgot password?
                   </Link>
                 </div>

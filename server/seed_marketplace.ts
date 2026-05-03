@@ -41,17 +41,17 @@ async function seedMarketplace() {
 
   for (const theme of themesToSeed) {
     await db.insert(storeThemes).values({
+      id: Math.random().toString(36).substring(2, 11), // Quick ID for seeding
       storeId: firstStore.id,
       name: theme.name,
       description: theme.description,
-      previewImage: theme.previewImage,
-      category: theme.category,
-      price: theme.price,
-      isPublic: theme.isPublic,
-      sections: theme.sections,
+      draftConfig: {
+        sections: theme.sections,
+        colors: {},
+        typography: {}
+      },
       isActive: false,
-      colors: {},
-      typography: {}
+      isPublic: theme.isPublic,
     });
     console.log(`Seeded theme: ${theme.name}`);
   }

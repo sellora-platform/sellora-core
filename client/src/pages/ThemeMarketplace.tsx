@@ -116,7 +116,7 @@ export default function ThemeMarketplace() {
     }
   });
 
-  const getMyThemeQuery = trpc.themes.getByStoreId.useQuery(
+  const getMyThemeQuery = trpc.themes.listByStore.useQuery(
     { storeId: store?.id ?? 0 },
     { enabled: !!store?.id }
   );
@@ -145,7 +145,7 @@ export default function ThemeMarketplace() {
     }
   };
 
-  const activeThemeName = getMyThemeQuery.data?.name;
+   const activeThemeName = getMyThemeQuery.data?.find((t: any) => t.isActive)?.name;
   
   const filteredThemes = themes.filter(theme => {
     const matchesSearch = theme.name.toLowerCase().includes(search.toLowerCase());

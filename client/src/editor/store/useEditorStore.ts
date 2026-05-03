@@ -238,7 +238,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     publishTheme: async (storeId) => {
       try {
         set({ isSaving: true });
-        await trpcClient.themes.publishTheme.mutate({ storeId });
+        await trpcClient.themes.publish.mutate({ themeId: "default-theme" });
       } catch (error) {
         console.error("Failed to publish theme:", error);
       } finally {

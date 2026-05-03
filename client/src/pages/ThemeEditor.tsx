@@ -1037,12 +1037,12 @@ export default function ThemeEditor() {
                             />
                           ) : field.type === "image" ? (
                             <ImagePicker
-                              currentValue={currentSection?.settings[field.id] || ""}
-                              onSelect={(url) => handleUpdateSection(currentSection!.id, {
-                                ...currentSection!.settings,
-                                [field.id]: url
-                              })}
-                            />
+                               value={currentSection?.settings[field.id] || ""}
+                               onChange={(url) => handleUpdateSection(currentSection!.id, {
+                                 ...currentSection!.settings,
+                                 [field.id]: url
+                               })}
+                             />
                           ) : field.type === "textarea" ? (
                             <Textarea 
                               className="min-h-[100px] border-[#d1d1d1] focus-visible:ring-[#008060] resize-none"

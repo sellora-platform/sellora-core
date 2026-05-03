@@ -43,14 +43,14 @@ export default function Register() {
   // Initialize Google Signup
   useEffect(() => {
     const initGoogle = () => {
-      if (window.google) {
-        window.google.accounts.id.initialize({
+      if ((window as any).google) {
+        (window as any).google.accounts.id.initialize({
           client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID", 
           callback: handleGoogleCallback,
         });
         const btn = document.getElementById("google-signup-btn");
         if (btn) {
-          window.google.accounts.id.renderButton(btn, { 
+          (window as any).google.accounts.id.renderButton(btn, { 
             theme: "outline", 
             size: "large", 
             width: 400 
