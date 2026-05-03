@@ -13,6 +13,7 @@ import { subscriptionsRouter } from "./routers/subscriptions";
 import { themesRouter } from "./routers/themes";
 import { uploadRouter } from "./routers/upload";
 import { staffRouter } from "./routers/staff";
+import { reviewsRouter } from "./routers/reviews";
 
 export const appRouter = router({
   system: systemRouter,
@@ -38,6 +39,7 @@ export const appRouter = router({
   ai: aiRouter,
   dashboard: dashboardRouter,
   upload: uploadRouter,
+  reviews: reviewsRouter,
 });
 
 export type AppRouter = typeof appRouter;

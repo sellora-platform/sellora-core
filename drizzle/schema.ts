@@ -170,6 +170,36 @@ export type Product = typeof products.$inferSelect;
 export type InsertProduct = typeof products.$inferInsert;
 
 // ============================================================================
+// Reviews
+// ============================================================================
+
+export const reviews = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull(),
+  productId: integer("product_id").notNull(),
+  authorName: varchar("author_name", { length: 255 }).notNull(),
+  authorEmail: varchar("author_email", { length: 255 }),
+  rating: integer("rating").notNull(), // 1-5
+  title: varchar("title", { length: 255 }),
+  body: text("body"),
+  images: jsonb("images").$type<Array<{ url: string }>>().default([]),
+  verified: boolean("verified").default(false),
+  published: boolean("published").default(false),
+  source: varchar("source", { length: 20 }).default("customer"), // "customer" | "merchant"
+  helpfulCount: integer("helpful_count").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  storeIdIdx: index("reviews_store_id_idx").on(table.storeId),
+  productIdIdx: index("reviews_product_id_idx").on(table.productId),
+  ratingIdx: index("reviews_rating_idx").on(table.rating),
+}));
+
+// Rating summary view helper type
+export type Review = typeof reviews.$inferSelect;
+export type NewReview = typeof reviews.$inferInsert;
+
+// ============================================================================
 // Product Variants
 // ============================================================================
 
