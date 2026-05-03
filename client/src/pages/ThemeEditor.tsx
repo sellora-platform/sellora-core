@@ -34,7 +34,8 @@ import {
   ChevronRight,
   Eye,
   Settings,
-  Layers
+  Layers,
+  Star
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
@@ -169,7 +170,13 @@ export default function ThemeEditor() {
     primaryColor: "#008060",
     backgroundColor: "#ffffff",
     textColor: "#1a1a1a",
-    fontFamily: "Inter"
+    accentColor: "#10b981",
+    secondaryTextColor: "#71717a",
+    borderColor: "#e4e4e7",
+    fontFamily: "Inter",
+    headingFont: "Inter",
+    baseFontSize: "16px",
+    borderRadius: "0.5rem",
   });
   const [history, setHistory] = useState<Array<{ templates: Record<string, Section[]>, globalSettings: any }>>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -256,7 +263,13 @@ export default function ThemeEditor() {
         primaryColor: config?.colors?.primary || "#008060",
         backgroundColor: config?.colors?.background || "#ffffff",
         textColor: config?.colors?.text || "#1a1a1a",
-        fontFamily: config?.typography?.family || "Inter"
+        accentColor: config?.colors?.accent || "#10b981",
+        secondaryTextColor: config?.colors?.secondary || "#71717a",
+        borderColor: config?.colors?.border || "#e4e4e7",
+        fontFamily: config?.typography?.family || "Inter",
+        headingFont: config?.typography?.headingFamily || "Inter",
+        baseFontSize: config?.typography?.baseSize || "16px",
+        borderRadius: config?.typography?.borderRadius || "0.5rem",
       };
       
       setGlobalSettings(newGlobal);
@@ -305,7 +318,24 @@ export default function ThemeEditor() {
         header: headerSection,
         footer: footerSection,
         selectedSectionId: selectedSectionId,
-        globalSettings: globalSettings,
+        globalSettings: {
+          ...globalSettings,
+          colors: {
+            primary: globalSettings.primaryColor,
+            accent: globalSettings.accentColor,
+            background: globalSettings.backgroundColor,
+            foreground: globalSettings.textColor,
+            text: globalSettings.textColor,
+            secondary: globalSettings.secondaryTextColor,
+            border: globalSettings.borderColor,
+          },
+          typography: {
+            family: globalSettings.fontFamily,
+            headingFamily: globalSettings.headingFont,
+            baseSize: globalSettings.baseFontSize,
+            borderRadius: globalSettings.borderRadius,
+          }
+        },
         themeId: theme?.id,
         themeName: theme?.name
       }, "*");
@@ -586,60 +616,210 @@ export default function ThemeEditor() {
           <div className="flex-1 overflow-y-auto bg-white p-2">
             {activeActivity === "settings" ? (
               <div className="p-4 space-y-6">
-                <div className="space-y-4">
-                  <Label className="text-[10px] font-bold text-[#616161] uppercase tracking-widest">Brand Colors</Label>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-4 rounded-2xl border border-[#f1f1f1] bg-[#f9f9f9]">
-                      <span className="text-sm font-bold">Accent Color</span>
-                      <Input 
-                        type="color" 
-                        value={globalSettings.primaryColor} 
-                        onChange={(e) => {
-                          const newSettings = {...globalSettings, primaryColor: e.target.value};
-                          setGlobalSettings(newSettings);
-                          pushToHistory(templates, newSettings);
-                        }}
-                        className="w-10 h-10 p-1 rounded-lg border-none bg-transparent cursor-pointer"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between p-4 rounded-2xl border border-[#f1f1f1] bg-[#f9f9f9]">
-                      <span className="text-sm font-bold">Background</span>
-                      <Input 
-                        type="color" 
-                        value={globalSettings.backgroundColor} 
-                        onChange={(e) => {
-                          const newSettings = {...globalSettings, backgroundColor: e.target.value};
-                          setGlobalSettings(newSettings);
-                          pushToHistory(templates, newSettings);
-                        }}
-                        className="w-10 h-10 p-1 rounded-lg border-none bg-transparent cursor-pointer"
-                      />
-                    </div>
+                
+                {/* Colors Section */}
+                <div>
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a1a1a] mb-4 flex items-center gap-2">
+                    <Palette className="w-3.5 h-3.5 text-[#008060]" />
+                    Brand Colors
+                  </h3>
+                  
+                  {/* Color Preview Bar */}
+                  <div className="flex h-8 rounded-lg overflow-hidden mb-4 border border-[#f1f1f1]">
+                    <div className="flex-1" style={{ background: globalSettings.backgroundColor }} />
+                    <div className="flex-1" style={{ background: globalSettings.primaryColor }} />
+                    <div className="flex-1" style={{ background: globalSettings.accentColor }} />
+                    <div className="flex-1" style={{ background: globalSettings.textColor }} />
+                    <div className="flex-1" style={{ background: globalSettings.secondaryTextColor }} />
+                  </div>
+
+                  <div className="space-y-2">
+                    {[
+                      { key: 'primaryColor', label: 'Primary', hint: 'Buttons, headings' },
+                      { key: 'accentColor', label: 'Accent', hint: 'Highlights, links' },
+                      { key: 'backgroundColor', label: 'Background', hint: 'Page background' },
+                      { key: 'textColor', label: 'Main Text', hint: 'Body text color' },
+                      { key: 'secondaryTextColor', label: 'Secondary Text', hint: 'Subtitles, captions' },
+                      { key: 'borderColor', label: 'Border', hint: 'Dividers, outlines' },
+                    ].map(({ key, label, hint }) => (
+                      <div key={key} className="flex items-center justify-between p-2.5 bg-white border border-[#f1f1f1] rounded-lg hover:border-[#d1d1d1] transition-colors">
+                        <div>
+                          <p className="text-xs font-semibold text-[#1a1a1a]">{label}</p>
+                          <p className="text-[10px] text-muted-foreground">{hint}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono text-muted-foreground">
+                            {globalSettings[key as keyof typeof globalSettings]}
+                          </span>
+                          <div className="relative">
+                            <div 
+                              className="w-8 h-8 rounded-lg border border-[#e1e1e1] cursor-pointer shadow-sm"
+                              style={{ background: globalSettings[key as keyof typeof globalSettings] as string }}
+                              onClick={() => document.getElementById(`color-${key}`)?.click()}
+                            />
+                            <input
+                              id={`color-${key}`}
+                              type="color"
+                              value={globalSettings[key as keyof typeof globalSettings] as string}
+                              onChange={(e) => setGlobalSettings({ ...globalSettings, [key]: e.target.value })}
+                              className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                <div className="space-y-4 pt-6 border-t">
-                  <Label className="text-[10px] font-bold text-[#616161] uppercase tracking-widest">Typography</Label>
-                  <Select 
-                    value={globalSettings.fontFamily} 
-                    onValueChange={(val) => {
-                      const newSettings = {...globalSettings, fontFamily: val};
-                      setGlobalSettings(newSettings);
-                      pushToHistory(templates, newSettings);
-                    }}
-                  >
-                    <SelectTrigger className="h-12 rounded-xl border-[#d1d1d1]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Inter">Inter (Modern)</SelectItem>
-                      <SelectItem value="Playfair Display">Playfair (Elegant)</SelectItem>
-                      <SelectItem value="Montserrat">Montserrat (Bold)</SelectItem>
-                      <SelectItem value="Roboto">Roboto (Clean)</SelectItem>
-                      <SelectItem value="Outfit">Outfit (Premium)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/* Divider */}
+                <div className="border-t border-[#f1f1f1]" />
+
+                {/* Typography Section */}
+                <div>
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a1a1a] mb-4 flex items-center gap-2">
+                    <Box className="w-3.5 h-3.5 text-[#008060]" />
+                    Typography
+                  </h3>
+                  <div className="space-y-3">
+                    
+                    {/* Body Font */}
+                    <div className="p-2.5 bg-white border border-[#f1f1f1] rounded-lg">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Body Font</p>
+                      <Select
+                        value={globalSettings.fontFamily}
+                        onValueChange={(val) => setGlobalSettings({ ...globalSettings, fontFamily: val })}
+                      >
+                        <SelectTrigger className="w-full h-9 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[
+                            { value: "Inter", label: "Inter", hint: "Clean & Modern" },
+                            { value: "Outfit", label: "Outfit", hint: "Bold & Contemporary" },
+                            { value: "Playfair Display", label: "Playfair Display", hint: "Elegant Serif" },
+                            { value: "Roboto Mono", label: "Roboto Mono", hint: "Technical" },
+                            { value: "DM Sans", label: "DM Sans", hint: "Friendly & Readable" },
+                            { value: "Cormorant Garamond", label: "Cormorant Garamond", hint: "Luxury Serif" },
+                            { value: "Space Grotesk", label: "Space Grotesk", hint: "Modern Geometric" },
+                            { value: "Lato", label: "Lato", hint: "Professional & Neutral" },
+                          ].map(f => (
+                            <SelectItem key={f.value} value={f.value}>
+                              <span>{f.label}</span>
+                              <span className="text-[10px] text-muted-foreground ml-2">— {f.hint}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {/* Font Preview */}
+                      <p className="mt-2 text-sm text-[#1a1a1a] border-t border-[#f1f1f1] pt-2" style={{ fontFamily: globalSettings.fontFamily }}>
+                        The quick brown fox jumps.
+                      </p>
+                    </div>
+
+                    {/* Heading Font */}
+                    <div className="p-2.5 bg-white border border-[#f1f1f1] rounded-lg">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Heading Font</p>
+                      <Select
+                        value={globalSettings.headingFont}
+                        onValueChange={(val) => setGlobalSettings({ ...globalSettings, headingFont: val })}
+                      >
+                        <SelectTrigger className="w-full h-9 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[
+                            { value: "Inter", label: "Inter", hint: "Clean & Modern" },
+                            { value: "Outfit", label: "Outfit", hint: "Bold & Contemporary" },
+                            { value: "Playfair Display", label: "Playfair Display", hint: "Elegant Serif" },
+                            { value: "Roboto Mono", label: "Roboto Mono", hint: "Technical" },
+                            { value: "DM Sans", label: "DM Sans", hint: "Friendly & Readable" },
+                            { value: "Cormorant Garamond", label: "Cormorant Garamond", hint: "Luxury Serif" },
+                            { value: "Space Grotesk", label: "Space Grotesk", hint: "Modern Geometric" },
+                            { value: "Lato", label: "Lato", hint: "Professional & Neutral" },
+                          ].map(f => (
+                            <SelectItem key={f.value} value={f.value}>
+                              <span>{f.label}</span>
+                              <span className="text-[10px] text-muted-foreground ml-2">— {f.hint}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="mt-2 text-lg font-bold text-[#1a1a1a] border-t border-[#f1f1f1] pt-2" style={{ fontFamily: globalSettings.headingFont }}>
+                        Heading Preview
+                      </p>
+                    </div>
+
+                    {/* Border Radius */}
+                    <div className="p-2.5 bg-white border border-[#f1f1f1] rounded-lg">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Button Style</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { value: "0rem", label: "Sharp" },
+                          { value: "0.5rem", label: "Rounded" },
+                          { value: "9999px", label: "Pill" },
+                        ].map(opt => (
+                          <button
+                            key={opt.value}
+                            onClick={() => setGlobalSettings({ ...globalSettings, borderRadius: opt.value })}
+                            className={`py-2 text-xs font-bold border transition-all ${
+                              globalSettings.borderRadius === opt.value 
+                                ? 'border-[#008060] bg-[#008060]/5 text-[#008060]' 
+                                : 'border-[#e1e1e1] text-[#616161] hover:border-[#008060]'
+                            }`}
+                            style={{ borderRadius: opt.value === '9999px' ? '9999px' : '4px' }}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                  </div>
                 </div>
+
+                {/* Divider */}
+                <div className="border-t border-[#f1f1f1]" />
+
+                {/* Quick Presets */}
+                <div>
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a1a1a] mb-4 flex items-center gap-2">
+                    <Star className="w-3.5 h-3.5 text-[#008060]" />
+                    Quick Presets
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { name: "Minimal", primary: "#18181b", accent: "#10b981", bg: "#ffffff", text: "#18181b", font: "Inter" },
+                      { name: "Bold Dark", primary: "#ffffff", accent: "#3b82f6", bg: "#0a0a0a", text: "#ffffff", font: "Outfit" },
+                      { name: "Luxury", primary: "#1a0a00", accent: "#b8860b", bg: "#faf8f5", text: "#1a0a00", font: "Cormorant Garamond" },
+                      { name: "Fresh", primary: "#064e3b", accent: "#34d399", bg: "#f0fdf4", text: "#064e3b", font: "DM Sans" },
+                      { name: "Electric", primary: "#1e1b4b", accent: "#8b5cf6", bg: "#0f0f23", text: "#e2e8f0", font: "Space Grotesk" },
+                      { name: "Classic", primary: "#1c1917", accent: "#dc2626", bg: "#ffffff", text: "#1c1917", font: "Playfair Display" },
+                    ].map(preset => (
+                      <button
+                        key={preset.name}
+                        onClick={() => setGlobalSettings({
+                          ...globalSettings,
+                          primaryColor: preset.primary,
+                          accentColor: preset.accent,
+                          backgroundColor: preset.bg,
+                          textColor: preset.text,
+                          fontFamily: preset.font,
+                          headingFont: preset.font,
+                        })}
+                        className="p-2.5 border border-[#f1f1f1] rounded-lg hover:border-[#008060] transition-colors text-left"
+                      >
+                        <div className="flex gap-1 mb-1.5">
+                          <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.bg === '#ffffff' ? '#f1f1f1' : preset.bg }} />
+                          <div className="w-4 h-4 rounded-full" style={{ background: preset.primary }} />
+                          <div className="w-4 h-4 rounded-full" style={{ background: preset.accent }} />
+                        </div>
+                        <p className="text-[10px] font-bold text-[#1a1a1a]">{preset.name}</p>
+                        <p className="text-[9px] text-muted-foreground" style={{ fontFamily: preset.font }}>{preset.font}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
               </div>
             ) : !selectedSectionId ? (
               <div className="space-y-1">
