@@ -70,6 +70,16 @@ export const themesRouter = router({
             showAddToCart: true,
             layout: 'two-column'
           }
+        },
+        'pdp-reviews': {
+          id: 'pdp-reviews',
+          type: 'reviews',
+          settings: {
+            title: 'Customer Reviews',
+            showRatingSummary: true,
+            showReviewForm: true,
+            reviewsPerPage: 6
+          }
         }
       };
 
@@ -109,7 +119,7 @@ export const themesRouter = router({
           },
           product: {
             sections: defaultProductSections,
-            order: ['pdp-gallery'],
+            order: ['pdp-gallery', 'pdp-reviews'],
           },
           cart: {
             sections: defaultCartSections,
