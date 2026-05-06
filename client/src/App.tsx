@@ -33,6 +33,7 @@ import AdminSubscriptions from "./pages/AdminSubscriptions";
 import ThemeEditor from "./pages/ThemeEditor";
 import ThemeMarketplace from "./pages/ThemeMarketplace";
 import ThemeManager from "./pages/ThemeManager";
+import Reviews from "./pages/Reviews";
 
 
 
@@ -147,6 +148,7 @@ function Router() {
       <Route path={"/orders"} component={Orders} />
       <Route path={"/customers"} component={Customers} />
       <Route path={"/discounts"} component={Discounts} />
+      <Route path={"/reviews"} component={Reviews} />
       <Route path={"/settings"} component={Settings} />
       <Route path={"/domains"} component={Domains} />
       <Route path={"/store/:slug"} component={Storefront} />
