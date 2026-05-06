@@ -1,96 +1,172 @@
 import { z } from "zod";
-import { protectedProcedure, publicProcedure, router, protectedStoreProcedure } from "../_core/trpc";
-import * as db from "../db";
+import { router, protectedProcedure, publicProcedure } from "../_core/trpc";
+import { TRPCError } from "@trpc/server";
+import { db } from "../db";
+import { orders, orderItems } from "../drizzle/schema";
+import { eq, and, desc } from "drizzle-orm";
+import { nanoid } from "nanoid";
 
 export const ordersRouter = router({
-  // Create an order (customer-facing)
+
+  // PUBLIC — Customer places order
   create: publicProcedure
-    .input(
-      z.object({
-        storeId: z.number(),
-        customerEmail: z.string().email(),
-        items: z.array(
-          z.object({
-            productId: z.number().optional(),
-            variantId: z.number().optional(),
-            title: z.string(),
-            sku: z.string().optional(),
-            price: z.string(),
-            quantity: z.number(),
-          })
-        ),
-        subtotal: z.string(),
-        tax: z.string().default("0"),
-        shipping: z.string().default("0"),
-        discount: z.string().default("0"),
-        total: z.string(),
-        shippingAddress: z.record(z.string(), z.any()).optional(),
-        billingAddress: z.record(z.string(), z.any()).optional(),
-      })
-    )
+    .input(z.object({
+      storeId: z.number(),
+      customerName: z.string().min(1),
+      customerEmail: z.string().email(),
+      customerPhone: z.string().min(1),
+      shippingAddress: z.object({
+        line1: z.string().min(1),
+        line2: z.string().optional(),
+        city: z.string().min(1),
+        state: z.string().optional(),
+        postalCode: z.string().optional(),
+        country: z.string().default("Pakistan"),
+      }),
+      paymentMethod: z.enum(["cod", "bank_transfer", "jazzcash", "easypaisa"]),
+      paymentScreenshot: z.string().optional(),
+      items: z.array(z.object({
+        productId: z.number().optional(),
+        variantId: z.number().optional(),
+        title: z.string(),
+        sku: z.string().optional(),
+        price: z.number(),
+        quantity: z.number().min(1),
+        variant: z.string().optional(),
+      })),
+      notes: z.string().optional(),
+    }))
     .mutation(async ({ input }) => {
-      // Generate unique order number
-      const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-      const order = await db.createOrder({
-        storeId: input.storeId,
-        orderNumber,
-        customerEmail: input.customerEmail,
-        subtotal: parseFloat(input.subtotal) as any,
-        tax: parseFloat(input.tax) as any,
-        shipping: parseFloat(input.shipping) as any,
-        discount: parseFloat(input.discount) as any,
-        total: parseFloat(input.total) as any,
-        shippingAddress: input.shippingAddress || {},
-        billingAddress: input.billingAddress || {},
-        status: "pending",
-      });
-
-      // Create order items
-      for (const item of input.items) {
-        await db.createOrderItem({
-          orderId: (order as any).insertId,
-          productId: item.productId,
-          variantId: item.variantId,
-          title: item.title,
-          sku: item.sku,
-          price: parseFloat(item.price) as any,
-          quantity: item.quantity,
-          total: (parseFloat(item.price) * item.quantity) as any,
+      // Validate screenshot required for non-COD
+      if (
+        input.paymentMethod !== "cod" && 
+        !input.paymentScreenshot
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Payment screenshot is required for this payment method."
         });
       }
 
-      return order;
+      // Calculate totals
+      const subtotal = input.items.reduce(
+        (acc, item) => acc + item.price * item.quantity, 0
+      );
+      const total = subtotal; // shipping calculated later
+
+      // Generate order number
+      const orderNumber = `ORD-${Date.now().toString().slice(-6)}-${nanoid(4).toUpperCase()}`;
+
+      // Create order
+      const [order] = await db.insert(orders).values({
+        storeId: input.storeId,
+        orderNumber,
+        customerName: input.customerName,
+        customerEmail: input.customerEmail,
+        customerPhone: input.customerPhone,
+        shippingAddress: input.shippingAddress,
+        paymentMethod: input.paymentMethod,
+        paymentStatus: input.paymentScreenshot ? "screenshot_uploaded" : "pending",
+        paymentScreenshot: input.paymentScreenshot || null,
+        subtotal: subtotal.toFixed(2),
+        total: total.toFixed(2),
+        notes: input.notes || null,
+        status: "pending",
+      }).returning();
+
+      // Create order items
+      await db.insert(orderItems).values(
+        input.items.map(item => ({
+          orderId: order.id,
+          productId: item.productId || null,
+          variantId: item.variantId || null,
+          title: item.variant 
+            ? `${item.title} — ${item.variant}` 
+            : item.title,
+          sku: item.sku || null,
+          price: item.price.toFixed(2),
+          quantity: item.quantity,
+          total: (item.price * item.quantity).toFixed(2),
+        }))
+      );
+
+      return { 
+        success: true, 
+        orderId: order.id,
+        orderNumber: order.orderNumber 
+      };
     }),
 
-  // Get orders by store (merchant-facing)
-  listByStore: protectedStoreProcedure
-    .input(z.object({ storeId: z.number() }))
-    .query(async ({ ctx }) => {
-      return db.getOrdersByStoreId(ctx.storeId);
-    }),
-
-  // Get a single order
-  getById: publicProcedure
-    .input(z.object({ orderId: z.number() }))
+  // PROTECTED — Merchant lists orders
+  list: protectedProcedure
+    .input(z.object({
+      storeId: z.number(),
+      status: z.string().optional(),
+      limit: z.number().default(50),
+      offset: z.number().default(0),
+    }))
     .query(async ({ input }) => {
-      const order = await db.getOrderById(input.orderId);
-      if (!order) throw new Error("Order not found");
-
-      const items = await db.getOrderItemsByOrderId(input.orderId);
-      return { ...order, items };
+      const conditions = [eq(orders.storeId, input.storeId)];
+      if (input.status) {
+        conditions.push(eq(orders.status, input.status as any));
+      }
+      return await db
+        .select()
+        .from(orders)
+        .where(and(...conditions))
+        .orderBy(desc(orders.createdAt))
+        .limit(input.limit)
+        .offset(input.offset);
     }),
 
-  // Update order status (merchant-facing)
-  updateStatus: protectedStoreProcedure
-    .input(
-      z.object({
-        orderId: z.number(),
-        storeId: z.number(),
-        status: z.enum(["pending", "processing", "shipped", "delivered", "cancelled", "refunded"]),
-      })
-    )
+  // PROTECTED — Get single order with items
+  getById: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ input }) => {
+      const order = await db
+        .select()
+        .from(orders)
+        .where(eq(orders.id, input.id))
+        .limit(1);
+
+      if (!order[0]) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const items = await db
+        .select()
+        .from(orderItems)
+        .where(eq(orderItems.orderId, input.id));
+
+      return { ...order[0], items };
+    }),
+
+  // PROTECTED — Update order status
+  updateStatus: protectedProcedure
+    .input(z.object({
+      id: z.number(),
+      status: z.enum(["pending","processing","shipped","delivered","cancelled","refunded"]),
+    }))
     .mutation(async ({ input }) => {
-      return db.updateOrder(input.orderId, { status: input.status });
+      const [updated] = await db
+        .update(orders)
+        .set({ status: input.status, updatedAt: new Date() })
+        .where(eq(orders.id, input.id))
+        .returning();
+      return updated;
+    }),
+
+  // PROTECTED — Confirm payment
+  confirmPayment: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const [updated] = await db
+        .update(orders)
+        .set({ 
+          paymentStatus: "confirmed",
+          status: "processing",
+          updatedAt: new Date() 
+        })
+        .where(eq(orders.id, input.id))
+        .returning();
+      return updated;
     }),
 });

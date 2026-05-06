@@ -133,6 +133,26 @@ export const themesRouter = router({
             sections: defaultCartSections,
             order: ['cart-main'],
           },
+          checkout: {
+            sections: {
+              'checkout-main': {
+                id: 'checkout-main',
+                type: 'checkout',
+                settings: {
+                  codEnabled: true,
+                  bankTransferEnabled: false,
+                  jazzcashEnabled: false,
+                  easypaisaEnabled: false,
+                  bankName: '',
+                  accountTitle: '',
+                  accountNumber: '',
+                  shippingFee: '0',
+                  thankYouMessage: 'Your order has been placed! We will contact you shortly.'
+                }
+              }
+            },
+            order: ['checkout-main']
+          },
           products: {
             sections: {
               'products-grid': {

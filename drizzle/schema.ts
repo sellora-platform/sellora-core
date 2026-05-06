@@ -273,6 +273,15 @@ export const orders = pgTable("orders", {
   shippingAddress: jsonb("shipping_address").$type<Record<string, unknown>>().default({}),
   billingAddress: jsonb("billing_address").$type<Record<string, unknown>>().default({}),
   notes: text("notes"),
+  // Payment fields
+  paymentMethod: varchar("payment_method", { length: 50 }).default("cod"),
+  // cod | bank_transfer | jazzcash | easypaisa
+  paymentStatus: varchar("payment_status", { length: 30 }).default("pending"),
+  // pending | screenshot_uploaded | confirmed | failed
+  paymentScreenshot: varchar("payment_screenshot", { length: 500 }),
+  // Cloudinary URL of payment screenshot
+  customerName: varchar("customer_name", { length: 255 }),
+  customerPhone: varchar("customer_phone", { length: 20 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
