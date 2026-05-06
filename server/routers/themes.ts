@@ -80,6 +80,14 @@ export const themesRouter = router({
             showReviewForm: true,
             reviewsPerPage: 6
           }
+        },
+        'pdp-related': {
+          id: 'pdp-related',
+          type: 'related_products',
+          settings: {
+            title: 'You May Also Like',
+            limit: 4
+          }
         }
       };
 
@@ -119,7 +127,7 @@ export const themesRouter = router({
           },
           product: {
             sections: defaultProductSections,
-            order: ['pdp-gallery', 'pdp-reviews'],
+            order: ['pdp-gallery', 'pdp-reviews', 'pdp-related'],
           },
           cart: {
             sections: defaultCartSections,
