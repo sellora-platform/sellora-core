@@ -1027,14 +1027,55 @@ export default function ThemeEditor() {
                           </Label>
 
                           {field.type === "text" || field.type === "url" ? (
-                            <Input 
-                              value={currentSection?.settings[field.id] || ""} 
-                              onChange={(e) => handleUpdateSection(currentSection!.id, {
-                                ...currentSection!.settings,
-                                [field.id]: e.target.value
-                              })}
-                              className="h-10 rounded-xl border-[#d1d1d1]"
-                            />
+                            (() => {
+                              const isColorField = field.id.toLowerCase().includes('color') || 
+                                                   field.id.toLowerCase().includes('bg') ||
+                                                   field.id.toLowerCase() === 'bgcolor';
+                              
+                              if (isColorField && field.type === "text") {
+                                return (
+                                  <div className="flex items-center gap-3">
+                                    <Input
+                                      value={currentSection?.settings[field.id] || ''}
+                                      onChange={(e) => handleUpdateSection(currentSection!.id, {
+                                        ...currentSection!.settings,
+                                        [field.id]: e.target.value
+                                      })}
+                                      placeholder="#ffffff or transparent"
+                                      className="flex-1 h-10 font-mono text-xs rounded-xl"
+                                    />
+                                    <div className="relative">
+                                      <div
+                                        className="w-10 h-10 rounded-xl border border-[#d1d1d1] cursor-pointer flex-shrink-0"
+                                        style={{ background: currentSection?.settings[field.id] || '#ffffff' }}
+                                        onClick={() => document.getElementById(`sc-${field.id}-${currentSection?.id}`)?.click()}
+                                      />
+                                      <input
+                                        id={`sc-${field.id}-${currentSection?.id}`}
+                                        type="color"
+                                        value={currentSection?.settings[field.id] || '#ffffff'}
+                                        onChange={(e) => handleUpdateSection(currentSection!.id, {
+                                          ...currentSection!.settings,
+                                          [field.id]: e.target.value
+                                        })}
+                                        className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                                      />
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              
+                              return (
+                                <Input 
+                                  value={currentSection?.settings[field.id] || ""} 
+                                  onChange={(e) => handleUpdateSection(currentSection!.id, {
+                                    ...currentSection!.settings,
+                                    [field.id]: e.target.value
+                                  })}
+                                  className="h-10 rounded-xl border-[#d1d1d1]"
+                                />
+                              );
+                            })()
                           ) : field.type === "image" ? (
                             <ImagePicker
                                value={currentSection?.settings[field.id] || ""}
