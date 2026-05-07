@@ -14,16 +14,73 @@ export const HeroSchema = {
   name: "Hero",
   type: "hero",
   settings: [
-    { id: "heading", type: "text", label: "Heading", default: "Elevate Your Style" },
-    { id: "subheading", type: "textarea", label: "Subheading", default: "Experience the perfect blend of premium quality and modern design in every piece." },
-    { id: "buttonText", type: "text", label: "Button Text", default: "Shop Collection" },
-    { id: "buttonLink", type: "url", label: "Button Link", default: "/products" },
-    { id: "alignment", type: "select", label: "Alignment", options: [
+    // Content
+    { id: "heading", type: "text", label: "Heading", default: "Refined Essentials." },
+    { id: "subheading", type: "textarea", label: "Subheading", default: "Experience the perfect blend of premium quality and minimalist design." },
+    { id: "badge", type: "text", label: "Badge Text (top label)", default: "Est. 2024 — Curated Series" },
+    { id: "showBadge", type: "checkbox", label: "Show Badge", default: true },
+
+    // Primary Button
+    { id: "buttonText", type: "text", label: "Primary Button Text", default: "Shop Now" },
+    { id: "buttonLink", type: "url", label: "Primary Button Link", default: "/products" },
+    { id: "buttonStyle", type: "select", label: "Primary Button Style", options: [
+      { label: "Filled", value: "filled" },
+      { label: "Outlined", value: "outlined" },
+      { label: "Ghost", value: "ghost" },
+    ], default: "filled" },
+
+    // Secondary Button
+    { id: "showSecondaryButton", type: "checkbox", label: "Show Secondary Button", default: true },
+    { id: "secondaryButtonText", type: "text", label: "Secondary Button Text", default: "Lookbook" },
+    { id: "secondaryButtonLink", type: "url", label: "Secondary Button Link", default: "/collections" },
+
+    // Image
+    { id: "image", type: "image", label: "Background Image" },
+    { id: "imageOverlay", type: "select", label: "Image Overlay", options: [
+      { label: "None", value: "none" },
+      { label: "Light", value: "light" },
+      { label: "Medium", value: "medium" },
+      { label: "Dark", value: "dark" },
+      { label: "Gradient Left", value: "gradient-left" },
+      { label: "Gradient Center", value: "gradient-center" },
+    ], default: "gradient-left" },
+    { id: "imageOpacity", type: "range", label: "Image Opacity", min: 10, max: 100, step: 5, default: 60 },
+
+    // Layout
+    { id: "alignment", type: "select", label: "Content Alignment", options: [
       { label: "Left", value: "left" },
       { label: "Center", value: "center" },
-      { label: "Right", value: "right" }
-    ], default: "center" },
-    { id: "showButton", type: "checkbox", label: "Show Shop Button", default: true }
+      { label: "Right", value: "right" },
+    ], default: "left" },
+    { id: "minHeight", type: "select", label: "Section Height", options: [
+      { label: "Small (60vh)", value: "60vh" },
+      { label: "Medium (75vh)", value: "75vh" },
+      { label: "Large (90vh)", value: "90vh" },
+      { label: "Full Screen (100vh)", value: "100vh" },
+    ], default: "90vh" },
+
+    // Typography
+    { id: "headingSize", type: "select", label: "Heading Size", options: [
+      { label: "Small", value: "small" },
+      { label: "Medium", value: "medium" },
+      { label: "Large", value: "large" },
+      { label: "Extra Large", value: "xl" },
+    ], default: "large" },
+    { id: "headingWeight", type: "select", label: "Heading Weight", options: [
+      { label: "Light", value: "font-light" },
+      { label: "Normal", value: "font-normal" },
+      { label: "Medium", value: "font-medium" },
+      { label: "Bold", value: "font-bold" },
+      { label: "Black", value: "font-black" },
+    ], default: "font-light" },
+    { id: "headingColor", type: "text", label: "Heading Color", default: "" },
+    { id: "subheadingColor", type: "text", label: "Subheading Color", default: "" },
+
+    // Layout controls
+    { id: "paddingTop", type: "range", label: "Padding Top", min: 0, max: 200, step: 4, default: 80 },
+    { id: "paddingBottom", type: "range", label: "Padding Bottom", min: 0, max: 200, step: 4, default: 80 },
+    { id: "bgColor", type: "text", label: "Background Color", default: "" },
+    { id: "fullWidth", type: "checkbox", label: "Full Width Layout", default: false },
   ]
 };
 
