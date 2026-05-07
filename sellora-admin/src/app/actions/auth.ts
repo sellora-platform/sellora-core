@@ -8,8 +8,8 @@ export async function login(formData: FormData) {
   const adminSecret = process.env.ADMIN_SECRET;
 
   if (password === adminSecret) {
-    // Set a long-lived cookie
-    cookies().set('admin_session', adminSecret as string, {
+    const cookieStore = await cookies();
+    cookieStore.set('admin_session', adminSecret as string, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -22,6 +22,7 @@ export async function login(formData: FormData) {
 }
 
 export async function logout() {
-  cookies().delete('admin_session');
+  const cookieStore = await cookies();
+  cookieStore.delete('admin_session');
   redirect('/login');
 }
