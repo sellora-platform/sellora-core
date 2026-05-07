@@ -3,16 +3,18 @@ import { users, stores } from '@/lib/schema';
 import { eq, sql, count, like, or, and } from 'drizzle-orm';
 import { PlanToggle } from '@/components/dashboard/plan-toggle';
 import { Search } from 'lucide-react';
+import { MerchantsFilter } from '@/components/dashboard/merchants-filter';
 
 export const dynamic = "force-dynamic";
 
 export default async function MerchantsPage({
   searchParams,
 }: {
-  searchParams: { q?: string; tier?: string };
+  searchParams: Promise<{ q?: string; tier?: string }>;
 }) {
-  const query = searchParams.q || '';
-  const tierFilter = searchParams.tier || '';
+  const params = await searchParams;
+  const query = params.q || '';
+  const tierFilter = params.tier || '';
 
   // Fetch real merchants with search and filter
   const merchantData = await db
@@ -42,37 +44,8 @@ export default async function MerchantsPage({
           <h1 className="text-3xl font-bold tracking-tight">Merchants</h1>
           <p className="text-slate-400">Manage all merchants and their subscription tiers.</p>
         </div>
-        
-        <div className="flex items-center gap-3">
-          <form className="relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
-            <input 
-              type="text" 
-              name="q"
-              defaultValue={query}
-              placeholder="Search merchants..." 
-              className="pl-10 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm focus:outline-none focus:border-blue-500/50 w-[240px] transition-all"
-            />
-          </form>
-          
-          <select 
-            name="tier"
-            defaultValue={tierFilter}
-            onChange={(e) => {
-              const url = new URL(window.location.href);
-              url.searchParams.set('tier', e.target.value);
-              window.location.href = url.toString();
-            }}
-            className="px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm focus:outline-none focus:border-blue-500/50 transition-all appearance-none cursor-pointer"
-          >
-            <option value="">All Tiers</option>
-            <option value="free">Free</option>
-            <option value="starter">Starter</option>
-            <option value="growth">Growth</option>
-            <option value="scale">Scale</option>
-            <option value="empire">Empire</option>
-          </select>
-        </div>
+        {/* Client component handles the interactive search/filter */}
+        <MerchantsFilter currentQuery={query} currentTier={tierFilter} />
       </div>
 
       <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden shadow-2xl shadow-blue-500/5">
@@ -100,8 +73,8 @@ export default async function MerchantsPage({
                 <td className="px-6 py-4">
                   <span className={cn(
                     "px-2 py-1 text-[10px] font-bold uppercase rounded-full tracking-wider border",
-                    merchant.subscriptionStatus === 'active' 
-                      ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" 
+                    merchant.subscriptionStatus === 'active'
+                      ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                       : "bg-orange-500/10 text-orange-500 border-orange-500/20"
                   )}>
                     {merchant.subscriptionStatus || 'N/A'}
