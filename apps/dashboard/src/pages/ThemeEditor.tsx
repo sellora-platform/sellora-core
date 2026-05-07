@@ -379,7 +379,7 @@ export default function ThemeEditor() {
   });
 
   const generateMutation = trpc.ai.generateSectionContent.useMutation({
-    onSuccess: (res) => {
+    onSuccess: (res: { success: boolean; data?: Record<string, unknown> }) => {
       if (res.success && currentSection) {
         handleUpdateSection(currentSection.id, { ...currentSection.settings, ...res.data });
         toast.success("AI Content Applied!", { icon: <Sparkles className="w-4 h-4" /> });
@@ -687,7 +687,7 @@ export default function ThemeEditor() {
                       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Body Font</p>
                       <Select
                         value={globalSettings.fontFamily}
-                        onValueChange={(val) => setGlobalSettings({ ...globalSettings, fontFamily: val })}
+                        onValueChange={(val: string) => setGlobalSettings({ ...globalSettings, fontFamily: val })}
                       >
                         <SelectTrigger className="w-full h-9 text-sm">
                           <SelectValue />
@@ -721,7 +721,7 @@ export default function ThemeEditor() {
                       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Heading Font</p>
                       <Select
                         value={globalSettings.headingFont}
-                        onValueChange={(val) => setGlobalSettings({ ...globalSettings, headingFont: val })}
+                        onValueChange={(val: string) => setGlobalSettings({ ...globalSettings, headingFont: val })}
                       >
                         <SelectTrigger className="w-full h-9 text-sm">
                           <SelectValue />
@@ -852,7 +852,7 @@ export default function ThemeEditor() {
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button 
                           variant="ghost" size="icon" className="h-7 w-7 text-[#616161] hover:text-[#008060]"
-                          onClick={(e) => {
+                          onClick={(e: React.MouseEvent) => {
                             e.stopPropagation();
                             if (idx > 0) {
                               const newSections = [...localSections];
@@ -867,7 +867,7 @@ export default function ThemeEditor() {
                         </Button>
                         <Button 
                           variant="ghost" size="icon" className="h-7 w-7 text-[#616161] hover:text-[#008060]"
-                          onClick={(e) => {
+                          onClick={(e: React.MouseEvent) => {
                             e.stopPropagation();
                             if (idx < localSections.length - 1) {
                               const newSections = [...localSections];
@@ -882,7 +882,7 @@ export default function ThemeEditor() {
                         </Button>
                         <Button 
                           variant="ghost" size="icon" className="h-7 w-7 text-[#616161] hover:text-[#008060]"
-                          onClick={(e) => {
+                          onClick={(e: React.MouseEvent) => {
                             e.stopPropagation();
                             const newSection = { ...section, id: Math.random().toString(36).substr(2, 9) };
                             const newSections = [...localSections];
@@ -949,7 +949,7 @@ export default function ThemeEditor() {
                       <Input 
                         type="color" 
                         value={globalSettings.primaryColor} 
-                        onChange={(e) => {
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                           const newSettings = {...globalSettings, primaryColor: e.target.value};
                           setGlobalSettings(newSettings);
                           pushToHistory(templates, newSettings);
@@ -959,7 +959,7 @@ export default function ThemeEditor() {
                     </div>
                     <Select 
                       value={globalSettings.fontFamily} 
-                      onValueChange={(val) => {
+                      onValueChange={(val: string) => {
                         const newSettings = {...globalSettings, fontFamily: val};
                         setGlobalSettings(newSettings);
                         pushToHistory(templates, newSettings);
@@ -1037,7 +1037,7 @@ export default function ThemeEditor() {
                                   <div className="flex items-center gap-3">
                                     <Input
                                       value={currentSection?.settings[field.id] || ''}
-                                      onChange={(e) => handleUpdateSection(currentSection!.id, {
+                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleUpdateSection(currentSection!.id, {
                                         ...currentSection!.settings,
                                         [field.id]: e.target.value
                                       })}
@@ -1054,7 +1054,7 @@ export default function ThemeEditor() {
                                         id={`sc-${field.id}-${currentSection?.id}`}
                                         type="color"
                                         value={currentSection?.settings[field.id] || '#ffffff'}
-                                        onChange={(e) => handleUpdateSection(currentSection!.id, {
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleUpdateSection(currentSection!.id, {
                                           ...currentSection!.settings,
                                           [field.id]: e.target.value
                                         })}
@@ -1068,7 +1068,7 @@ export default function ThemeEditor() {
                               return (
                                 <Input 
                                   value={currentSection?.settings[field.id] || ""} 
-                                  onChange={(e) => handleUpdateSection(currentSection!.id, {
+                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleUpdateSection(currentSection!.id, {
                                     ...currentSection!.settings,
                                     [field.id]: e.target.value
                                   })}
@@ -1079,7 +1079,7 @@ export default function ThemeEditor() {
                           ) : field.type === "image" ? (
                             <ImagePicker
                                value={currentSection?.settings[field.id] || ""}
-                               onChange={(url) => handleUpdateSection(currentSection!.id, {
+                               onChange={(url: string) => handleUpdateSection(currentSection!.id, {
                                  ...currentSection!.settings,
                                  [field.id]: url
                                })}
@@ -1088,12 +1088,12 @@ export default function ThemeEditor() {
                             <Textarea 
                               className="min-h-[100px] border-[#d1d1d1] focus-visible:ring-[#008060] resize-none"
                               value={currentSection?.settings[field.id] || ""} 
-                              onChange={(e) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: e.target.value })}
+                              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: e.target.value })}
                             />
                           ) : field.type === "select" ? (
                             <Select 
                               value={currentSection?.settings[field.id]} 
-                              onValueChange={(val) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
+                              onValueChange={(val: string) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
                             >
                               <SelectTrigger className="h-10 border-[#d1d1d1]">
                                 <SelectValue />
@@ -1113,7 +1113,7 @@ export default function ThemeEditor() {
                                 max={field.max} 
                                 step={1}
                                 value={[currentSection?.settings[field.id] || field.default]}
-                                onValueChange={([val]) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
+                                onValueChange={([val]: number[]) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
                                 className="[&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&_[role=slider]]:border-[#008060] [&_[role=track]]:h-1"
                               />
                               <div className="flex justify-between text-[10px] font-bold text-[#616161]">
@@ -1129,7 +1129,7 @@ export default function ThemeEditor() {
                               <span className="text-sm">{field.label}</span>
                               <Switch 
                                 checked={currentSection?.settings[field.id]}
-                                onCheckedChange={(val) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
+                                onCheckedChange={(val: boolean) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
                               />
                             </div>
                           )}
