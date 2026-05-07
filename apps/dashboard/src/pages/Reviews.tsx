@@ -557,7 +557,7 @@ function ReviewCard({ review, onApprove, onReject, onUnpublish, onDelete, onEdit
           )}
         </div>
       </div>
-    </section>
+    </Card>
   );
 }
 
