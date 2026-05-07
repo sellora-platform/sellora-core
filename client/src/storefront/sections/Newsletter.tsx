@@ -105,9 +105,38 @@ export const Schema = {
   name: "Newsletter Signup",
   type: "newsletter",
   settings: [
-    { id: "heading", type: "text", label: "Heading", default: "Stay Updated" },
-    { id: "subheading", type: "text", label: "Subheading", default: "Get the latest news and offers." },
-    { id: "backgroundColor", type: "color", label: "Background Color", default: "#1a1a1a" },
-    { id: "textColor", type: "color", label: "Text Color", default: "#ffffff" }
+    // Content
+    { id: "heading", type: "text", label: "Heading", default: "Join the Club" },
+    { id: "subheading", type: "textarea", label: "Subheading", default: "Subscribe to get exclusive offers, early access, and once-in-a-lifetime deals." },
+    { id: "showSubheading", type: "checkbox", label: "Show Subheading", default: true },
+    { id: "placeholder", type: "text", label: "Input Placeholder", default: "Your email address" },
+    { id: "buttonText", type: "text", label: "Button Text", default: "Subscribe" },
+    { id: "successMessage", type: "text", label: "Success Message", default: "You're in! Welcome to the club." },
+    { id: "showPrivacyNote", type: "checkbox", label: "Show Privacy Note", default: true },
+    { id: "privacyText", type: "text", label: "Privacy Note Text", default: "Private Newsletter • Cancel anytime" },
+    // Layout
+    { id: "layout", type: "select", label: "Layout", options: [
+      { label: "Centered", value: "centered" },
+      { label: "Left Aligned", value: "left" },
+      { label: "Side by Side", value: "side" },
+    ], default: "centered" },
+    { id: "inputStyle", type: "select", label: "Input Style", options: [
+      { label: "Sharp", value: "sharp" },
+      { label: "Rounded", value: "rounded" },
+      { label: "Pill", value: "pill" },
+    ], default: "sharp" },
+    { id: "buttonStyle", type: "select", label: "Button Style", options: [
+      { label: "Filled", value: "filled" },
+      { label: "Outlined", value: "outlined" },
+      { label: "Ghost", value: "ghost" },
+    ], default: "filled" },
+    // Design
+    { id: "bgColor", type: "text", label: "Background Color", default: "" },
+    { id: "textColor", type: "text", label: "Text Color", default: "" },
+    { id: "buttonColor", type: "text", label: "Button Color", default: "" },
+    // Spacing
+    { id: "paddingTop", type: "range", label: "Padding Top", min: 0, max: 120, step: 4, default: 80 },
+    { id: "paddingBottom", type: "range", label: "Padding Bottom", min: 0, max: 120, step: 4, default: 80 },
+    { id: "fullWidth", type: "checkbox", label: "Full Width Layout", default: false },
   ]
 };

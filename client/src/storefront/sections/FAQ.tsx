@@ -85,7 +85,36 @@ export const Schema = {
   name: "FAQ Accordion",
   type: "faq",
   settings: [
-    { id: "heading", type: "text", label: "Heading", default: "Common Questions" },
-    { id: "subheading", type: "text", label: "Subheading", default: "Everything you need to know." }
+    // Content
+    { id: "sectionTitle", type: "text", label: "Section Title", default: "Frequently Asked Questions" },
+    { id: "sectionSubtitle", type: "textarea", label: "Section Subtitle", default: "Everything you need to know." },
+    { id: "showSubtitle", type: "checkbox", label: "Show Subtitle", default: true },
+    { id: "q1", type: "text", label: "Question 1", default: "How long does shipping take?" },
+    { id: "a1", type: "textarea", label: "Answer 1", default: "Standard shipping takes 3-5 business days. Express options available at checkout." },
+    { id: "q2", type: "text", label: "Question 2", default: "What is your return policy?" },
+    { id: "a2", type: "textarea", label: "Answer 2", default: "We offer a 30-day money-back guarantee on all products." },
+    { id: "q3", type: "text", label: "Question 3", default: "Do you ship internationally?" },
+    { id: "a3", type: "textarea", label: "Answer 3", default: "Yes! We ship to over 50 countries." },
+    { id: "q4", type: "text", label: "Question 4", default: "How can I track my order?" },
+    { id: "a4", type: "textarea", label: "Answer 4", default: "You will receive a tracking link via email within 24 hours of dispatch." },
+    // Layout
+    { id: "iconStyle", type: "select", label: "Icon Style", options: [
+      { label: "Plus/Minus", value: "plus" },
+      { label: "Arrow", value: "arrow" },
+      { label: "Chevron", value: "chevron" },
+    ], default: "plus" },
+    { id: "maxWidth", type: "select", label: "Max Width", options: [
+      { label: "Narrow", value: "narrow" }, { label: "Medium", value: "medium" },
+      { label: "Wide", value: "wide" }, { label: "Full", value: "full" },
+    ], default: "medium" },
+    // Design
+    { id: "bgColor", type: "text", label: "Background Color", default: "" },
+    { id: "questionColor", type: "text", label: "Question Color", default: "" },
+    { id: "answerColor", type: "text", label: "Answer Color", default: "" },
+    { id: "accentColor", type: "text", label: "Accent Color (active state)", default: "" },
+    // Spacing
+    { id: "paddingTop", type: "range", label: "Padding Top", min: 0, max: 120, step: 4, default: 80 },
+    { id: "paddingBottom", type: "range", label: "Padding Bottom", min: 0, max: 120, step: 4, default: 80 },
+    { id: "fullWidth", type: "checkbox", label: "Full Width Layout", default: false },
   ]
 };

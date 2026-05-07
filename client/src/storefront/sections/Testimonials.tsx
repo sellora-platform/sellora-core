@@ -88,7 +88,46 @@ export const Schema = {
   name: "Testimonials",
   type: "testimonials",
   settings: [
-    { id: "heading", type: "text", label: "Heading", default: "Customer Stories" },
-    { id: "subheading", type: "text", label: "Subheading", default: "Hear from our community." }
+    // Content
+    { id: "sectionTitle", type: "text", label: "Section Title", default: "What Our Customers Say" },
+    { id: "sectionSubtitle", type: "textarea", label: "Section Subtitle", default: "Trusted by thousands of happy customers worldwide." },
+    { id: "showSubtitle", type: "checkbox", label: "Show Subtitle", default: true },
+    { id: "testimonial1", type: "textarea", label: "Review 1", default: "Absolutely love the quality of these products." },
+    { id: "author1", type: "text", label: "Author 1 Name", default: "Sarah J." },
+    { id: "role1", type: "text", label: "Author 1 Role", default: "Verified Buyer" },
+    { id: "rating1", type: "select", label: "Rating 1", options: [
+      { label: "5 Stars", value: "5" }, { label: "4 Stars", value: "4" }, { label: "3 Stars", value: "3" },
+    ], default: "5" },
+    { id: "testimonial2", type: "textarea", label: "Review 2", default: "Fast shipping and excellent customer service!" },
+    { id: "author2", type: "text", label: "Author 2 Name", default: "Michael R." },
+    { id: "role2", type: "text", label: "Author 2 Role", default: "Loyal Customer" },
+    { id: "rating2", type: "select", label: "Rating 2", options: [
+      { label: "5 Stars", value: "5" }, { label: "4 Stars", value: "4" }, { label: "3 Stars", value: "3" },
+    ], default: "5" },
+    { id: "testimonial3", type: "textarea", label: "Review 3", default: "Premium quality at a fair price." },
+    { id: "author3", type: "text", label: "Author 3 Name", default: "Elena M." },
+    { id: "role3", type: "text", label: "Author 3 Role", default: "Fashion Blogger" },
+    { id: "rating3", type: "select", label: "Rating 3", options: [
+      { label: "5 Stars", value: "5" }, { label: "4 Stars", value: "4" }, { label: "3 Stars", value: "3" },
+    ], default: "5" },
+    // Layout
+    { id: "columns", type: "select", label: "Columns", options: [
+      { label: "1 Column", value: "1" }, { label: "2 Columns", value: "2" }, { label: "3 Columns", value: "3" },
+    ], default: "3" },
+    { id: "showRating", type: "checkbox", label: "Show Star Ratings", default: true },
+    { id: "showRole", type: "checkbox", label: "Show Author Role", default: true },
+    { id: "cardStyle", type: "select", label: "Card Style", options: [
+      { label: "Minimal", value: "minimal" }, { label: "Bordered", value: "bordered" },
+      { label: "Shadow", value: "shadow" }, { label: "Quoted", value: "quoted" },
+    ], default: "minimal" },
+    // Design
+    { id: "bgColor", type: "text", label: "Background Color", default: "" },
+    { id: "cardBgColor", type: "text", label: "Card Background Color", default: "" },
+    { id: "textColor", type: "text", label: "Text Color", default: "" },
+    { id: "accentColor", type: "text", label: "Accent Color (stars/quote)", default: "" },
+    // Spacing
+    { id: "paddingTop", type: "range", label: "Padding Top", min: 0, max: 120, step: 4, default: 80 },
+    { id: "paddingBottom", type: "range", label: "Padding Bottom", min: 0, max: 120, step: 4, default: 80 },
+    { id: "fullWidth", type: "checkbox", label: "Full Width Layout", default: false },
   ]
 };

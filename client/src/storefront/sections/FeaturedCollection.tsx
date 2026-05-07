@@ -13,12 +13,57 @@ export const FeaturedCollectionSchema = {
   name: "Featured Collection",
   type: "featured_collection",
   settings: [
-    { id: "title", type: "text", label: "Title", default: "Curated Favorites" },
-    { id: "subtitle", type: "textarea", label: "Subtitle", default: "Explore our handpicked selection of premium essentials designed for modern living." },
-    { id: "columns", type: "range", label: "Columns", min: 2, max: 4, default: 4 },
-    { id: "limit", type: "range", label: "Product Limit", min: 2, max: 12, default: 4 }
+    // Content
+    { id: "sectionTitle", type: "text", label: "Section Title", default: "Shop the Collection" },
+    { id: "sectionSubtitle", type: "textarea", label: "Section Subtitle", default: "Handpicked essentials crafted for modern living." },
+    { id: "showSubtitle", type: "checkbox", label: "Show Subtitle", default: true },
+    { id: "viewAllText", type: "text", label: "View All Button Text", default: "View All" },
+    { id: "viewAllLink", type: "url", label: "View All Link", default: "/products" },
+    { id: "showViewAll", type: "checkbox", label: "Show View All Button", default: true },
+    // Layout
+    { id: "columns", type: "select", label: "Columns", options: [
+      { label: "2 Columns", value: "2" },
+      { label: "3 Columns", value: "3" },
+      { label: "4 Columns", value: "4" },
+    ], default: "4" },
+    { id: "rows", type: "select", label: "Max Rows", options: [
+      { label: "1 Row", value: "1" },
+      { label: "2 Rows", value: "2" },
+      { label: "3 Rows", value: "3" },
+    ], default: "1" },
+    { id: "cardStyle", type: "select", label: "Card Style", options: [
+      { label: "Minimal", value: "minimal" },
+      { label: "Bordered", value: "bordered" },
+      { label: "Shadow", value: "shadow" },
+      { label: "Elevated", value: "elevated" },
+    ], default: "minimal" },
+    { id: "imageAspectRatio", type: "select", label: "Image Aspect Ratio", options: [
+      { label: "Square (1:1)", value: "square" },
+      { label: "Portrait (4:5)", value: "portrait" },
+      { label: "Landscape (16:9)", value: "landscape" },
+      { label: "Auto", value: "auto" },
+    ], default: "portrait" },
+    { id: "showProductTitle", type: "checkbox", label: "Show Product Title", default: true },
+    { id: "showPrice", type: "checkbox", label: "Show Price", default: true },
+    { id: "showComparePrice", type: "checkbox", label: "Show Compare Price", default: true },
+    { id: "showAddToCart", type: "checkbox", label: "Show Add to Cart", default: true },
+    { id: "showBadges", type: "checkbox", label: "Show Sale/New Badges", default: true },
+    // Design
+    { id: "bgColor", type: "text", label: "Background Color", default: "" },
+    { id: "titleColor", type: "text", label: "Title Color", default: "" },
+    { id: "cardBgColor", type: "text", label: "Card Background Color", default: "" },
+    { id: "buttonStyle", type: "select", label: "Button Style", options: [
+      { label: "Filled", value: "filled" },
+      { label: "Outlined", value: "outlined" },
+      { label: "Ghost", value: "ghost" },
+    ], default: "filled" },
+    // Spacing
+    { id: "paddingTop", type: "range", label: "Padding Top", min: 0, max: 120, step: 4, default: 80 },
+    { id: "paddingBottom", type: "range", label: "Padding Bottom", min: 0, max: 120, step: 4, default: 80 },
+    { id: "fullWidth", type: "checkbox", label: "Full Width Layout", default: false },
   ]
 };
+
 
 export default function FeaturedCollection({ settings, products }: { settings: FeaturedCollectionSettings, products: any[] }) {
   const gridClass = {
