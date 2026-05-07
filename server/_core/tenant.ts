@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { db } from "../db";
-import { stores, users } from "../../drizzle/schema";
+import { stores, users } from "../../db/schema";
 import { eq, and } from "drizzle-orm";
 
 /**

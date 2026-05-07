@@ -2,7 +2,7 @@ import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { db } from "../db";
-import { reviews } from "../../drizzle/schema";
+import { reviews } from "../../db/schema";
 import { eq, and, desc, avg, count, sql } from "drizzle-orm";
 
 export const reviewsRouter = router({

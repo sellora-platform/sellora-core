@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
-import { plans } from "../drizzle/schema";
+import { plans } from "../db/schema";
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is required");
@@ -11,7 +11,7 @@ const sql = neon(process.env.DATABASE_URL);
 const db = drizzle(sql);
 
 async function seed() {
-  console.log("üå± Seeding plans...");
+  console.log("=ÉÓ¶ Seeding plans...");
 
   const planData = [
     {
@@ -62,13 +62,13 @@ async function seed() {
         target: plans.tier,
         set: plan,
       });
-      console.log(`‚úÖ Seeded plan: ${plan.name}`);
+      console.log(`G£‡ Seeded plan: ${plan.name}`);
     } catch (error) {
-      console.error(`‚ùå Error seeding plan ${plan.name}:`, error);
+      console.error(`G•Ó Error seeding plan ${plan.name}:`, error);
     }
   }
 
-  console.log("‚ú® Seeding complete!");
+  console.log("G£ø Seeding complete!");
 }
 
 seed().catch(console.error);

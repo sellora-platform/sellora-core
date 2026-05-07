@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { auditLogs } from "../../drizzle/schema";
+import { auditLogs } from "../../db/schema";
 import { JobQueue } from "./queue";
 import { nanoid } from "nanoid";
 

@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { db } from "../db";
-import { stores, users, storeThemes } from "../../drizzle/schema";
+import { stores, users, storeThemes } from "../../db/schema";
 import { eq, count } from "drizzle-orm";
 import { FEATURE_REGISTRY, SubscriptionTier } from "./featureRegistry";
 import { AuditEngine } from "./audit";

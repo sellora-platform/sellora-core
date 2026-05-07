@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, auditedProcedure, router } from "../_core/trpc";
 import { db } from "../db";
-import { users } from "../../drizzle/schema";
+import { users } from "../../db/schema";
 import { eq } from "drizzle-orm";
 import { canAccess } from "../utils/capabilities";
 import { SubscriptionTier } from "../utils/featureRegistry";

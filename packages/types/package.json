@@ -1,0 +1,10 @@
+{
+  "name": "@sellora/types",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./const.ts",
+  "exports": {
+    ".": "./const.ts",
+    "./types": "./types.ts"
+  }
+}

@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { users } from "../../drizzle/schema";
+import { users } from "../../db/schema";
 import { eq, isNull } from "drizzle-orm";
 import { ReconciliationEngine } from "../utils/reconciliationEngine";
 

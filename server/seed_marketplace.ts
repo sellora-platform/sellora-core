@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { storeThemes, stores } from "../drizzle/schema";
+import { storeThemes, stores } from "../db/schema";
 import { eq } from "drizzle-orm";
 
 async function seedMarketplace() {

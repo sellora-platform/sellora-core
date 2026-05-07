@@ -20,7 +20,7 @@ import {
   aiInteractions, type InsertAIInteraction,
   storeThemes, type InsertStoreTheme,
   plans,
-} from "../drizzle/schema";
+} from "../db/schema";
 
 // ============================================================================
 // Database Connection

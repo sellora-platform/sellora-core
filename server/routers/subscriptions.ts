@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, auditedProcedure, router } from "../_core/trpc";
 import { db } from "../db";
-import { subscriptionRequests, users } from "../../drizzle/schema";
+import { subscriptionRequests, users } from "../../db/schema";
 import { eq } from "drizzle-orm";
 import { BillingSyncEngine } from "../utils/billing";
 import { AuditEngine } from "../utils/audit";

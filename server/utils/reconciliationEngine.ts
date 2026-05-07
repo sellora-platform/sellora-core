@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { users, stores, storeThemes, tenantUsage, auditLogs } from "../../drizzle/schema";
+import { users, stores, storeThemes, tenantUsage, auditLogs } from "../../db/schema";
 import { eq, count, and } from "drizzle-orm";
 import { BillingSyncEngine } from "./billing";
 import { UsageEngine } from "./usage";

@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { tenantUsage } from "../../drizzle/schema";
+import { tenantUsage } from "../../db/schema";
 import { eq, and, sql } from "drizzle-orm";
 
 /**

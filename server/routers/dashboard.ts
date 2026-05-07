@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { protectedStoreProcedure, router } from "../_core/trpc";
 import * as dbOperations from "../db";
-import { orders, customers, products, orderItems } from "../../drizzle/schema";
+import { orders, customers, products, orderItems } from "../../db/schema";
 import { eq, sql } from "drizzle-orm";
 
 export const dashboardRouter = router({

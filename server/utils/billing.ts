@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { users, subscriptionRequests } from "../../drizzle/schema";
+import { users, subscriptionRequests } from "../../db/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { SubscriptionTier } from "./featureRegistry";
 

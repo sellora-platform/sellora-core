@@ -7,7 +7,7 @@
 import type { Express } from "express";
 import { eq } from "drizzle-orm";
 import { db } from "../db";
-import { users } from "../../drizzle/schema";
+import { users } from "../../db/schema";
 import {
   hashPassword,
   verifyPassword,

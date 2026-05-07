@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { users } from "../../drizzle/schema";
+import { users } from "../../db/schema";
 import { eq, sql } from "drizzle-orm";
 import { AuditEngine } from "./audit";
 
