@@ -4,6 +4,8 @@ import { eq, sql, count, like, or, and } from 'drizzle-orm';
 import { PlanToggle } from '@/components/dashboard/plan-toggle';
 import { Search } from 'lucide-react';
 
+export const dynamic = "force-dynamic";
+
 export default async function MerchantsPage({
   searchParams,
 }: {

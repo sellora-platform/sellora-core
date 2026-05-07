@@ -3,6 +3,8 @@ import { users, plans } from '@/lib/schema';
 import { eq, sql, count } from 'drizzle-orm';
 import { BarChart3, TrendingUp, DollarSign, PieChart } from 'lucide-react';
 
+export const dynamic = "force-dynamic";
+
 export default async function AnalyticsPage() {
   // 1. Calculate Revenue by Tier
   const revenueData = await db

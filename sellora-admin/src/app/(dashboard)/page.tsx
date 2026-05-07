@@ -1,7 +1,9 @@
-import { Users, CreditCard, ShoppingBag, TrendingUp } from "lucide-react";
+import { Users, CreditCard, ShoppingBag, TrendingUp, BarChart3, DollarSign, PieChart } from "lucide-react";
 import { db } from '@/lib/db';
 import { users, stores, plans } from '@/lib/schema';
-import { count, eq, sum } from 'drizzle-orm';
+import { count, eq, sql } from 'drizzle-orm';
+
+export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   // Real data fetching

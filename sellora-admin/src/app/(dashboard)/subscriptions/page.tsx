@@ -4,6 +4,8 @@ import { eq, desc } from 'drizzle-orm';
 import { CheckCircle2, XCircle, Clock, Eye, ExternalLink } from 'lucide-react';
 import { processSubscriptionRequest } from '@/app/actions/subscriptions';
 
+export const dynamic = "force-dynamic";
+
 export default async function SubscriptionsPage() {
   const requests = await db
     .select({
