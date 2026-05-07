@@ -30,7 +30,7 @@ export default async function DashboardPage() {
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-slate-400">Welcome back, Admin. Real-time platform metrics for Sellora.</p>
         </div>
-        <div className="text-sm bg-slate-900 border border-slate-800 px-4 py-2 rounded-lg">
+        <div className="text-sm bg-slate-900 border border-slate-800 px-4 py-2 rounded-lg" suppressHydrationWarning>
           {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </div>
       </div>

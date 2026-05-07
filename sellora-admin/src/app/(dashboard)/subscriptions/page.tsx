@@ -36,7 +36,7 @@ export default async function SubscriptionsPage() {
               <div className="space-y-4 flex-1">
                 <div className="flex items-center gap-3">
                   <StatusBadge status={req.status as any} />
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-slate-500" suppressHydrationWarning>
                     ID: #{req.id} • {new Date(req.createdAt).toLocaleDateString()}
                   </span>
                 </div>
