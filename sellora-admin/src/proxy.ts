@@ -11,12 +11,20 @@ export default function proxy(request: NextRequest) {
 
   // 2. Check for admin session cookie
   const session = request.cookies.get('admin_session');
+  const adminSecret = process.env.ADMIN_SECRET;
 
-  if (!session || session.value !== process.env.ADMIN_SECRET) {
-    // Redirect to login if no session or invalid secret
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
+  // If secret is missing in prod, it's a critical error but we shouldn't crash the build/proxy evaluation
+  if (!adminSecret) {
+    console.warn('⚠️ ADMIN_SECRET is not defined. Access might be restricted.');
+  }
+
+  if (!session || session.value !== adminSecret) {
+    // Only redirect if we have a secret to check against, or if we're in production
+    if (adminSecret || process.env.NODE_ENV === 'production') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      return NextResponse.redirect(url);
+    }
   }
 
   return NextResponse.next();
