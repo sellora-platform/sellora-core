@@ -40,13 +40,32 @@ import {
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 import { SECTION_SCHEMAS } from "@/storefront/SectionRenderer";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
+
+// Resilient schema resolver — tries all key variants so sections from any
+// theme (bold/minimal, dash or underscore naming) always find their schema.
+const resolveSchema = (type: string): any => {
+  if (!type) return null;
+  const attempts = [
+    type,
+    type.replace(/-/g, '_'),
+    type.replace(/_/g, '-'),
+    `minimal:${type}`,
+    `bold:${type}`,
+    type.replace(/-/g, '_').replace(/^(minimal|bold):/, ''),
+  ];
+  for (const key of attempts) {
+    if (SECTION_SCHEMAS[key]) return SECTION_SCHEMAS[key];
+  }
+  return null;
+};
+
 import {
   Dialog,
   DialogContent,
@@ -465,15 +484,12 @@ export default function ThemeEditor() {
   };
 
   const addSection = (type: string) => {
-    // FIX 3: Update addSection to try prefixed key first
     const newId = `${type}-${Math.random().toString(36).substr(2, 5)}`;
-    const prefix = theme?.name?.toLowerCase().includes('bold') ? 'bold' : 'minimal';
-    const schemaKey = SECTION_SCHEMAS[`${prefix}:${type}`] ? `${prefix}:${type}` : type;
-    const schema = SECTION_SCHEMAS[schemaKey];
+    const schema = resolveSchema(type);
 
     const defaultSettings: any = {};
     schema?.settings?.forEach((s: any) => {
-      defaultSettings[s.id] = s.default;
+      if (s.default !== undefined) defaultSettings[s.id] = s.default;
     });
 
     const newSections = [...localSections, { id: newId, type, settings: defaultSettings }];
@@ -994,8 +1010,8 @@ export default function ThemeEditor() {
               /* Section Settings View */
               <div className="p-4 space-y-6 animate-in slide-in-from-right-4 duration-200">
                 {(() => {
-                  const schema = SECTION_SCHEMAS[currentSection?.type || ""];
-                  if (!schema) return <div className="text-sm text-foreground/50 italic">No settings available for this section.</div>;
+                  const schema = resolveSchema(currentSection?.type || '');
+                  if (!schema) return <div className="text-sm text-foreground/50 italic p-2">No settings found for "{currentSection?.type}" — this section may need to be re-added.</div>;
 
                   return (
                     <div className="space-y-6">

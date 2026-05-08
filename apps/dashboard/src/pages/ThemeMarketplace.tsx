@@ -56,10 +56,10 @@ const themes = [
         baseSize: "16px",
       },
       sections: [
-        { type: "hero", settings: { heading: "Curated Excellence", showButton: true, buttonText: "Explore Now" } },
-        { type: "featured-collection", settings: { title: "Featured Products", limit: 4 } },
-        { type: "image-banner", settings: { heading: "Timeless Quality", subheading: "Crafted for the modern minimalist.", height: "medium" } },
-        { type: "newsletter", settings: { title: "Join the Inner Circle", description: "Be the first to hear about new collections." } }
+        { type: "hero", settings: { heading: "Curated Excellence", subheading: "Minimalist design for the discerning shopper.", showButton: true, buttonText: "Explore Collection", buttonLink: "/products", alignment: "center", height: "large", showTrustBadges: false } },
+        { type: "featured_collection", settings: { title: "Featured Products", subtitle: "Handpicked for you", columns: 4, limit: 4, showButton: true, buttonText: "View All" } },
+        { type: "image_banner", settings: { heading: "Timeless Quality", subheading: "Crafted for the modern minimalist.", height: "medium", showButton: true, buttonText: "Shop Now", buttonLink: "/products", overlay: 0.4 } },
+        { type: "newsletter", settings: { title: "Join the Inner Circle", description: "Be the first to hear about new collections.", buttonText: "Subscribe", placeholder: "Your email address" } }
       ]
     }
   },
@@ -85,9 +85,9 @@ const themes = [
         baseSize: "16px",
       },
       sections: [
-        { type: "hero", settings: { heading: "UNLEASH POWER", showButton: true, buttonText: "GET ACCESS" } },
-        { type: "featured-collection", settings: { title: "THE LINEUP", limit: 4 } },
-        { type: "newsletter", settings: { title: "STAY PLUGGED IN", description: "EXCLUSIVE DROPS ONLY." } }
+        { type: "hero", settings: { heading: "UNLEASH POWER", subheading: "ENGINEERED FOR THE BOLD.", showButton: true, buttonText: "GET ACCESS", buttonLink: "/products", alignment: "left", height: "large", showTrustBadges: false } },
+        { type: "featured_collection", settings: { title: "THE LINEUP", subtitle: "Drop-exclusive items.", columns: 4, limit: 4, showButton: true, buttonText: "SHOP ALL" } },
+        { type: "newsletter", settings: { title: "STAY PLUGGED IN", description: "EXCLUSIVE DROPS. NO SPAM.", buttonText: "SUBSCRIBE", placeholder: "Enter your email" } }
       ]
     }
   }

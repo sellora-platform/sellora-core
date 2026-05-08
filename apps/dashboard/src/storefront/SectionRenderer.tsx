@@ -70,6 +70,26 @@ export const SECTION_SCHEMAS: Record<string, any> = {
   brand_logos: BrandLogosSchema,
   video_section: VideoSectionSchema,
   rich_text: RichTextBlockSchema,
+
+  // Aliases — dash ↔ underscore variants for cross-compatibility
+  "featured-collection": FeaturedCollectionSchema,
+  "image-banner": ImageBannerSchema,
+  "icon-features": IconFeaturesSchema,
+  "brand-logos": BrandLogosSchema,
+  "video-section": VideoSectionSchema,
+  "rich-text": RichTextBlockSchema,
+  "cart-view": CartViewSchema,
+  "checkout-form": CheckoutFormSchema,
+  checkout: CheckoutFormSchema,
+  reviews: TestimonialsSchema,
+  "related-products": { name: "Related Products", settings: [
+    { id: "title", type: "text", label: "Heading", default: "You May Also Like" },
+    { id: "limit", type: "range", label: "Products to Show", min: 2, max: 8, step: 1, default: 4 },
+  ]},
+  related_products: { name: "Related Products", settings: [
+    { id: "title", type: "text", label: "Heading", default: "You May Also Like" },
+    { id: "limit", type: "range", label: "Products to Show", min: 2, max: 8, step: 1, default: 4 },
+  ]},
 };
 
 export default function SectionRenderer({ 
