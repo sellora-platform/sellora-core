@@ -78,8 +78,6 @@ export const SECTION_SCHEMAS: Record<string, any> = {
   "brand-logos": BrandLogosSchema,
   "video-section": VideoSectionSchema,
   "rich-text": RichTextBlockSchema,
-  "cart-view": CartViewSchema,
-  "checkout-form": CheckoutFormSchema,
   checkout: CheckoutFormSchema,
   reviews: TestimonialsSchema,
   "related-products": { name: "Related Products", settings: [

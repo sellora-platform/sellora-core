@@ -110,7 +110,7 @@ export default function ThemeMarketplace() {
       utils.themes.listByStore.invalidate();
       setInstallingId(null);
     },
-    onError: (err) => {
+    onError: (err: Error) => {
       toast.error(err.message || "Failed to add theme");
       setInstallingId(null);
     }
@@ -211,7 +211,7 @@ export default function ThemeMarketplace() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
               placeholder="Search themes..." 
               className="pl-10 h-11 bg-card border-border/50 rounded-xl focus:ring-primary"
             />
@@ -304,7 +304,7 @@ export default function ThemeMarketplace() {
       </div>
 
       {/* Theme Details Dialog */}
-      <Dialog open={!!selectedTheme} onOpenChange={(open) => !open && setSelectedTheme(null)}>
+      <Dialog open={!!selectedTheme} onOpenChange={(open: boolean) => !open && setSelectedTheme(null)}>
         <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl">
           {selectedTheme && (
             <div className="grid md:grid-cols-2 h-full max-h-[90vh]">
