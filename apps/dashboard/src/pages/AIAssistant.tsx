@@ -11,8 +11,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 export default function AIAssistant() {
-  const { isAuthenticated, loading } = useAuth({ redirectOnUnauthenticated: true });
-  const [, setLocation] = useLocation();
+  const { isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
   const [prompt, setPrompt] = useState("");
   const [type, setType] = useState<
     "design" | "product_description" | "banner" | "content" | "layout" | "general"
@@ -29,7 +28,6 @@ export default function AIAssistant() {
   );
 
   if (!isAuthenticated) {
-    setLocation("/");
     return null;
   }
 
