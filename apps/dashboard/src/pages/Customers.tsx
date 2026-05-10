@@ -9,8 +9,7 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 
 export default function Customers() {
-  const { isAuthenticated, loading } = useAuth({ redirectOnUnauthenticated: true });
-  const [, setLocation] = useLocation();
+  const { isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
   const [search, setSearch] = useState("");
 
   const storeQuery = trpc.stores.getMyStore.useQuery();
@@ -40,7 +39,6 @@ export default function Customers() {
     : [];
 
   if (!isAuthenticated) {
-    setLocation("/");
     return null;
   }
 
