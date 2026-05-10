@@ -34,12 +34,14 @@ export default function ProductEdit() {
   const { id } = useParams();
   const productId = parseInt(id || "0");
 
+  const utils = trpc.useUtils();
   const storeQuery = trpc.stores.getMyStore.useQuery();
   const productQuery = trpc.products.getById.useQuery({ productId }, { enabled: !!productId });
   
   const updateMutation = trpc.products.update.useMutation({
     onSuccess: () => {
       toast.success("Product updated successfully");
+      utils.products.listByStore.invalidate();
       setLocation("/products");
     },
     onError: (err) => {

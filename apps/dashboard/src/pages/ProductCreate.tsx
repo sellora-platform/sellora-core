@@ -32,10 +32,12 @@ export default function ProductCreate() {
   const { isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
 
+  const utils = trpc.useUtils();
   const storeQuery = trpc.stores.getMyStore.useQuery();
   const createMutation = trpc.products.create.useMutation({
     onSuccess: () => {
       toast.success("Product created successfully");
+      utils.products.listByStore.invalidate();
       setLocation("/products");
     },
     onError: (error) => {
