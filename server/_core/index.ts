@@ -37,6 +37,30 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
+  // Dynamic CORS Middleware
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin) {
+      // Allow raaenai.com subdomains and local dev
+      if (origin.endsWith('.raaenai.com') || origin === 'https://raaenai.com' || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+      } else {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+      }
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+    }
+    
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+    next();
+  });
+
   // Debug logger
   app.use((req, res, next) => {
     console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.path}`);
