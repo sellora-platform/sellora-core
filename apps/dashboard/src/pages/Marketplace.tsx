@@ -46,12 +46,10 @@ const integrations = [
 ];
 
 export default function Marketplace() {
-  const { isAuthenticated, loading } = useAuth({ redirectOnUnauthenticated: true });
-  const [, setLocation] = useLocation();
+  const { isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
   const [installed, setInstalled] = useState<string[]>([]);
 
   if (!isAuthenticated) {
-    setLocation("/");
     return null;
   }
 

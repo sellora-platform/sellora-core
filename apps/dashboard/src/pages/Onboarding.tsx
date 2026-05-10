@@ -11,7 +11,6 @@ import { toast } from "sonner";
 
 export default function Onboarding() {
   const { isAuthenticated, user, loading, logout } = useAuth({ redirectOnUnauthenticated: true });
-  const [, setLocation] = useLocation();
   const [step, setStep] = useState(1);
 
   const [formData, setFormData] = useState({
@@ -29,8 +28,7 @@ export default function Onboarding() {
     }
   });
 
-  if (!loading && !isAuthenticated) {
-    setLocation("/");
+  if (!isAuthenticated && !loading) {
     return null;
   }
 
