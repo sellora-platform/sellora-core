@@ -14,6 +14,8 @@ import { VideoSectionSchema } from "./sections/VideoSection";
 import { RichTextBlockSchema } from "./sections/RichTextBlock";
 import { AboutSchema } from "./sections/AboutSection";
 import { ContactSchema } from "./sections/ContactSection";
+import Reviews, { ReviewsSchema } from "./sections/Reviews";
+import RelatedProducts, { RelatedProductsSchema } from "./sections/RelatedProducts";
 
 export const SECTION_COMPONENTS: Record<string, any> = {
   hero: Hero,
@@ -25,6 +27,9 @@ export const SECTION_COMPONENTS: Record<string, any> = {
   "testimonials": Testimonials,
   "faq": FAQ,
   "newsletter": Newsletter,
+  "reviews": Reviews,
+  "related_products": RelatedProducts,
+  "related-products": RelatedProducts,
 };
 
 export const SECTION_SCHEMAS: Record<string, any> = {
@@ -79,15 +84,9 @@ export const SECTION_SCHEMAS: Record<string, any> = {
   "video-section": VideoSectionSchema,
   "rich-text": RichTextBlockSchema,
   checkout: CheckoutFormSchema,
-  reviews: TestimonialsSchema,
-  "related-products": { name: "Related Products", settings: [
-    { id: "title", type: "text", label: "Heading", default: "You May Also Like" },
-    { id: "limit", type: "range", label: "Products to Show", min: 2, max: 8, step: 1, default: 4 },
-  ]},
-  related_products: { name: "Related Products", settings: [
-    { id: "title", type: "text", label: "Heading", default: "You May Also Like" },
-    { id: "limit", type: "range", label: "Products to Show", min: 2, max: 8, step: 1, default: 4 },
-  ]},
+  reviews: ReviewsSchema,
+  related_products: RelatedProductsSchema,
+  "related-products": RelatedProductsSchema,
 };
 
 export default function SectionRenderer({ 
