@@ -72,35 +72,43 @@ const storeGuard = t.middleware(async (opts) => {
     throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
   }
 
-  // 1. ROBUST EXTRACTION: Try all possible tRPC input locations
+  // 1. AGGRESSIVE EXTRACTION: Try all possible tRPC and HTTP locations
   let storeId: any = undefined;
 
   // Function to recursively find storeId in an object/array
   const findStoreId = (obj: any): any => {
     if (!obj || typeof obj !== 'object') return undefined;
+    
+    // Check direct property
     if ('storeId' in obj) return obj.storeId;
     
-    // If it's an array or batch object, check children
+    // Check if it's a superjson formatted object
+    if ('json' in obj && obj.json && typeof obj.json === 'object' && 'storeId' in obj.json) {
+      return obj.json.storeId;
+    }
+
+    // Recursively check children
     const keys = Object.keys(obj);
     for (const key of keys) {
+      // Avoid infinite recursion on large objects
+      if (key === 'ctx' || key === 'req' || key === 'res') continue;
+      
       const found = findStoreId(obj[key]);
       if (found !== undefined) return found;
     }
     return undefined;
   };
 
-  // Try standard input first
-  if (input && typeof input === 'object' && 'storeId' in input) {
-    storeId = (input as any).storeId;
-  } 
-  
-  // Try rawInput or deep search if still missing
-  if (storeId === undefined) {
-    storeId = findStoreId(rawInput) || findStoreId(input);
+  // Try standard tRPC locations
+  storeId = findStoreId(input) || findStoreId(rawInput);
+
+  // Fallback: Check raw HTTP body (extremely robust)
+  if (storeId === undefined && ctx.req?.body) {
+    storeId = findStoreId(ctx.req.body);
   }
 
-  // Final fallback to Query parameter
-  if (storeId === undefined && ctx.req.query.storeId) {
+  // Fallback: Query parameter
+  if (storeId === undefined && ctx.req.query?.storeId) {
     storeId = ctx.req.query.storeId;
   }
 
