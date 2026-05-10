@@ -56,8 +56,14 @@ export default function ProductEdit() {
     costPrice: "",
     quantity: "0",
     weight: "",
+    categoryId: "0",
     status: "draft" as "draft" | "active",
   });
+
+  const categoriesQuery = trpc.categories.listByStore.useQuery(
+    { storeId: storeQuery.data?.id || 0 },
+    { enabled: !!storeQuery.data?.id }
+  );
 
   useEffect(() => {
     if (productQuery.data) {
@@ -70,6 +76,7 @@ export default function ProductEdit() {
         costPrice: (p as any).costPrice?.toString() || "0.00",
         quantity: (p.quantity || 0).toString(),
         weight: p.weight?.toString() || "",
+        categoryId: p.categoryId?.toString() || "0",
         status: p.isActive ? "active" : "draft",
       });
 
@@ -101,6 +108,7 @@ export default function ProductEdit() {
       costPrice: formData.costPrice || undefined,
       quantity: parseInt(formData.quantity) || 0,
       weight: formData.weight ? parseInt(formData.weight) : undefined,
+      categoryId: parseInt(formData.categoryId) || undefined,
       images: images.map(img => img.url),
       isActive: formData.status === "active",
     });
@@ -217,6 +225,25 @@ export default function ProductEdit() {
                     onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
                     className="h-12 border-border/50"
                   />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-foreground/80">Collection (Category)</label>
+                  <Select 
+                    value={formData.categoryId} 
+                    onValueChange={(val: any) => setFormData({ ...formData, categoryId: val })}
+                  >
+                    <SelectTrigger className="h-12 border-border/50">
+                      <SelectValue placeholder="Select collection" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0" className="text-muted-foreground">No Collection</SelectItem>
+                      {categoriesQuery.data?.map(cat => (
+                        <SelectItem key={cat.id} value={cat.id.toString()}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </Card>

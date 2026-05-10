@@ -14,6 +14,7 @@ import { themesRouter } from "./routers/themes";
 import { uploadRouter } from "./routers/upload";
 import { staffRouter } from "./routers/staff";
 import { reviewsRouter } from "./routers/reviews";
+import { categoriesRouter } from "./routers/categories";
 
 export const appRouter = router({
   system: systemRouter,
@@ -40,6 +41,7 @@ export const appRouter = router({
   dashboard: dashboardRouter,
   upload: uploadRouter,
   reviews: reviewsRouter,
+  categories: categoriesRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -156,6 +156,27 @@ export async function deleteProduct(productId: number) {
   return db.delete(products).where(eq(products.id, productId));
 }
 
+export async function batchUpdateProducts(productIds: number[], data: Partial<InsertProduct>) {
+  const db = getDb();
+  if (!db) throw new Error("Database not available");
+  // Drizzle ORM doesn't natively have a clean 'inArray' for bulk updates without looping or query builder if not imported.
+  // Wait, I can import `inArray` from "drizzle-orm". Let's do it below or just loop for now, loop is safer since IDs are usually < 100.
+  return Promise.all(productIds.map(id => updateProduct(id, data)));
+}
+
+export async function batchDeleteProducts(productIds: number[]) {
+  const db = getDb();
+  if (!db) throw new Error("Database not available");
+  return Promise.all(productIds.map(id => deleteProduct(id)));
+}
+
+export async function batchCreateProducts(dataArray: InsertProduct[]) {
+  const db = getDb();
+  if (!db) throw new Error("Database not available");
+  // Assuming Neon/Postgres supports bulk insert
+  return db.insert(products).values(dataArray).returning();
+}
+
 // ============================================================================
 // Category Queries
 // ============================================================================
@@ -170,6 +191,25 @@ export async function getCategoriesByStoreId(storeId: number) {
   const db = getDb();
   if (!db) return [];
   return db.select().from(categories).where(eq(categories.storeId, storeId)).orderBy(asc(categories.displayOrder));
+}
+
+export async function getCategoryById(categoryId: number) {
+  const db = getDb();
+  if (!db) return null;
+  const result = await db.select().from(categories).where(eq(categories.id, categoryId)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function updateCategory(categoryId: number, data: Partial<InsertCategory>) {
+  const db = getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(categories).set(data).where(eq(categories.id, categoryId));
+}
+
+export async function deleteCategory(categoryId: number) {
+  const db = getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(categories).where(eq(categories.id, categoryId));
 }
 
 // ============================================================================

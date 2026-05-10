@@ -98,6 +98,7 @@ export const productsRouter = router({
         weight: z.number().optional(),
         images: z.array(z.string()).optional(),
         isActive: z.boolean().optional(),
+        categoryId: z.number().nullable().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -117,6 +118,7 @@ export const productsRouter = router({
         costPrice: costPrice ? (parseFloat(costPrice) as any) : undefined,
         weight: input.weight ? (input.weight.toString() as any) : undefined,
         images: dbImages as any,
+        categoryId: input.categoryId === 0 ? null : input.categoryId,
       });
     }),
 
@@ -126,5 +128,80 @@ export const productsRouter = router({
     .mutation(async ({ input, ctx }) => {
       // Verification handled by middleware
       return db.deleteProduct(input.productId);
+    }),
+
+  // Batch update products (Bulk Edit)
+  batchUpdate: auditedStoreProcedure
+    .input(z.object({
+      storeId: z.number(),
+      productIds: z.array(z.number()),
+      isActive: z.boolean().optional(),
+      categoryId: z.number().nullable().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const updateData: any = {};
+      if (input.isActive !== undefined) updateData.isActive = input.isActive;
+      if (input.categoryId !== undefined) updateData.categoryId = input.categoryId;
+      
+      if (Object.keys(updateData).length === 0) return { success: true };
+      
+      await db.batchUpdateProducts(input.productIds, updateData);
+      return { success: true };
+    }),
+
+  // Batch delete products
+  batchDelete: auditedStoreProcedure
+    .input(z.object({ storeId: z.number(), productIds: z.array(z.number()) }))
+    .mutation(async ({ input }) => {
+      await db.batchDeleteProducts(input.productIds);
+      return { success: true };
+    }),
+
+  // Batch create products (for CSV Import)
+  batchCreate: auditedStoreProcedure
+    .input(z.object({
+      storeId: z.number(),
+      products: z.array(z.object({
+        name: z.string().min(1),
+        slug: z.string().min(1),
+        description: z.string().optional(),
+        price: z.string(),
+        compareAtPrice: z.string().optional(),
+        costPrice: z.string().optional(),
+        sku: z.string().optional(),
+        quantity: z.number().optional(),
+        isActive: z.boolean().optional(),
+        images: z.array(z.string()).optional(),
+        categoryId: z.number().optional(),
+      }))
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const productsToInsert = input.products.map(p => {
+         const dbImages = p.images ? p.images.map((url, index) => ({
+          url,
+          alt: p.name,
+          displayOrder: index,
+        })) : [];
+
+        return {
+          storeId: ctx.storeId,
+          categoryId: p.categoryId,
+          name: p.name,
+          slug: p.slug,
+          description: p.description || "",
+          price: parseFloat(p.price) as any,
+          compareAtPrice: p.compareAtPrice ? (parseFloat(p.compareAtPrice) as any) : undefined,
+          costPrice: p.costPrice ? (parseFloat(p.costPrice) as any) : "0.00",
+          sku: p.sku,
+          quantity: p.quantity || 0,
+          isActive: p.isActive !== false,
+          images: dbImages as any,
+        }
+      });
+      
+      await db.batchCreateProducts(productsToInsert as any[]);
+      await MerchantExperienceEngine.trackActivation(ctx.user.id, "hasAddedProduct");
+      
+      return { success: true, count: productsToInsert.length };
     }),
 });
