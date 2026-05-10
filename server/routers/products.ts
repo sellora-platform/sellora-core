@@ -71,7 +71,9 @@ export const productsRouter = router({
   publicList: publicProcedure
     .input(z.object({ storeId: z.number() }))
     .query(async ({ input }) => {
-      return db.getProductsByStoreId(input.storeId);
+      const allProducts = await db.getProductsByStoreId(input.storeId);
+      // Only show active products to the public
+      return allProducts.filter(p => p.isActive);
     }),
 
   // Get a single product
