@@ -72,29 +72,36 @@ const storeGuard = t.middleware(async (opts) => {
     throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
   }
 
-  // 1. CLEAN EXTRACTION: From Input or RawInput
-  let storeId: any;
+  // 1. ROBUST EXTRACTION: Try all possible tRPC input locations
+  let storeId: any = undefined;
 
+  // Case A: Standard input object
   if (input && typeof input === 'object' && 'storeId' in input) {
     storeId = (input as any).storeId;
-  } else if (rawInput && typeof rawInput === 'object' && 'storeId' in rawInput) {
-    storeId = (rawInput as any).storeId;
-  } else if (rawInput && typeof rawInput === 'object') {
-    // Handle tRPC batching index
-    const firstKey = Object.keys(rawInput)[0];
-    if (firstKey && /^\d+$/.test(firstKey)) {
-      storeId = (rawInput as any)[firstKey]?.storeId;
+  } 
+  
+  // Case B: Raw input (rawInput) fallback
+  if (storeId === undefined && rawInput && typeof rawInput === 'object') {
+    if ('storeId' in rawInput) {
+      storeId = (rawInput as any).storeId;
+    } else {
+      // Handle tRPC batching (input might be an array or indexed object)
+      const firstKey = Object.keys(rawInput)[0];
+      if (firstKey && /^\d+$/.test(firstKey)) {
+        storeId = (rawInput as any)[firstKey]?.storeId;
+      }
     }
   }
 
+  // Case C: Query parameter fallback (for some GET requests)
   if (storeId === undefined && ctx.req.query.storeId) {
     storeId = ctx.req.query.storeId;
   }
 
-  // 2. Convert to number and validate
-  const numericStoreId = typeof storeId === "string" ? parseInt(storeId, 10) : Number(storeId);
+  // 2. Convert and validate (Allow 0 if it's a valid ID, but check for null/undefined/NaN)
+  const numericStoreId = (storeId !== undefined && storeId !== null) ? Number(storeId) : NaN;
 
-  if (!numericStoreId || isNaN(numericStoreId)) {
+  if (isNaN(numericStoreId)) {
     throw new TRPCError({ 
       code: "BAD_REQUEST", 
       message: `storeId is required` 
