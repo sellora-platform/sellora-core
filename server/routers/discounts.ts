@@ -80,6 +80,47 @@ export const discountsRouter = router({
       return db.getDiscountsByStoreId(input.storeId);
     }),
 
+  // ─── Get analytics for discounts ────────────────────────────
+  getAnalytics: protectedProcedure
+    .input(z.object({ storeId: z.number() }))
+    .query(async ({ input, ctx }) => {
+      const store = await db.getStoreByMerchantId(ctx.user.id);
+      if (!store || store.id !== input.storeId) {
+        throw new Error("Unauthorized");
+      }
+
+      const discounts = await db.getDiscountsByStoreId(input.storeId);
+      
+      let active = 0;
+      let scheduled = 0;
+      let expired = 0;
+      let totalUsed = 0;
+
+      const now = new Date();
+
+      for (const d of discounts) {
+        if (d.usedCount) totalUsed += d.usedCount;
+        
+        if (!d.isActive) continue;
+        
+        if (d.endDate && new Date(d.endDate) < now) {
+          expired++;
+        } else if (d.startDate && new Date(d.startDate) > now) {
+          scheduled++;
+        } else {
+          active++;
+        }
+      }
+
+      return {
+        total: discounts.length,
+        active,
+        scheduled,
+        expired,
+        totalUsed,
+      };
+    }),
+
   // ─── Get single discount by ID ──────────────────────────────
   getById: protectedProcedure
     .input(z.object({ discountId: z.number(), storeId: z.number() }))
