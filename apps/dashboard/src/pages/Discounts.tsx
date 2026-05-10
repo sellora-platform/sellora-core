@@ -294,7 +294,6 @@ function CreateDiscountForm({ storeId, onSuccess, onCancel }: { storeId: number;
 // ─── Main Page ───────────────────────────────────────────
 export default function Discounts() {
   const { isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
-  const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [tab, setTab] = useState<TabKey>("all");
@@ -319,8 +318,6 @@ export default function Discounts() {
   const duplicateMutation = trpc.discounts.duplicate.useMutation({
     onSuccess: () => { discountsQuery.refetch(); analyticsQuery.refetch(); toast.success("Discount duplicated!"); },
   });
-
-  if (!isAuthenticated) { setLocation("/"); return null; }
 
   const discounts = discountsQuery.data || [];
   const analytics = analyticsQuery.data;
