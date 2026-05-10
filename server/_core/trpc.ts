@@ -107,9 +107,19 @@ const storeGuard = t.middleware(async (opts) => {
     storeId = findStoreId(ctx.req.body);
   }
 
-  // Fallback: Query parameter
-  if (storeId === undefined && ctx.req.query?.storeId) {
-    storeId = ctx.req.query.storeId;
+  // Fallback: Query parameters (for GET requests)
+  if (storeId === undefined && ctx.req?.query) {
+    if (ctx.req.query.storeId) {
+      storeId = ctx.req.query.storeId;
+    } else if (ctx.req.query.input) {
+      // tRPC GET requests often stringify the input in the 'input' query param
+      try {
+        const parsedInput = JSON.parse(ctx.req.query.input as string);
+        storeId = findStoreId(parsedInput);
+      } catch (e) {
+        // Not JSON or parse failed, skip
+      }
+    }
   }
 
   // 2. Convert and validate (Allow 0 if it's a valid ID, but check for null/undefined/NaN)
