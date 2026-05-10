@@ -150,6 +150,11 @@ export async function updateProduct(productId: number, data: Partial<InsertProdu
   return db.update(products).set(data).where(eq(products.id, productId));
 }
 
+export async function getProductBySlug(storeId: number, slug: string) {
+  const all = await getProductsByStoreId(storeId);
+  return all.find(p => p.slug === slug) || null;
+}
+
 export async function deleteProduct(productId: number) {
   const db = getDb();
   if (!db) throw new Error("Database not available");

@@ -85,6 +85,15 @@ export const productsRouter = router({
       return product;
     }),
 
+  // Get a single product by slug (for storefront)
+  getBySlug: publicProcedure
+    .input(z.object({ slug: z.string(), storeId: z.number() }))
+    .query(async ({ input }) => {
+      const product = await db.getProductBySlug(input.storeId, input.slug);
+      if (!product) throw new TRPCError({ code: "NOT_FOUND", message: "Product not found" });
+      return product;
+    }),
+
   // Update a product
   update: auditedStoreProcedure
     .input(
