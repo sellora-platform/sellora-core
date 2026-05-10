@@ -75,25 +75,31 @@ const storeGuard = t.middleware(async (opts) => {
   // 1. ROBUST EXTRACTION: Try all possible tRPC input locations
   let storeId: any = undefined;
 
-  // Case A: Standard input object
+  // Function to recursively find storeId in an object/array
+  const findStoreId = (obj: any): any => {
+    if (!obj || typeof obj !== 'object') return undefined;
+    if ('storeId' in obj) return obj.storeId;
+    
+    // If it's an array or batch object, check children
+    const keys = Object.keys(obj);
+    for (const key of keys) {
+      const found = findStoreId(obj[key]);
+      if (found !== undefined) return found;
+    }
+    return undefined;
+  };
+
+  // Try standard input first
   if (input && typeof input === 'object' && 'storeId' in input) {
     storeId = (input as any).storeId;
   } 
   
-  // Case B: Raw input (rawInput) fallback
-  if (storeId === undefined && rawInput && typeof rawInput === 'object') {
-    if ('storeId' in rawInput) {
-      storeId = (rawInput as any).storeId;
-    } else {
-      // Handle tRPC batching (input might be an array or indexed object)
-      const firstKey = Object.keys(rawInput)[0];
-      if (firstKey && /^\d+$/.test(firstKey)) {
-        storeId = (rawInput as any)[firstKey]?.storeId;
-      }
-    }
+  // Try rawInput or deep search if still missing
+  if (storeId === undefined) {
+    storeId = findStoreId(rawInput) || findStoreId(input);
   }
 
-  // Case C: Query parameter fallback (for some GET requests)
+  // Final fallback to Query parameter
   if (storeId === undefined && ctx.req.query.storeId) {
     storeId = ctx.req.query.storeId;
   }
