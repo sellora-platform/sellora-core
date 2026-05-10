@@ -16,6 +16,9 @@ export const userRoleEnum = pgEnum("user_role", ["user", "admin"]);
 export const storeThemeEnum = pgEnum("store_theme", ["light", "dark", "auto"]);
 export const orderStatusEnum = pgEnum("order_status", ["pending", "processing", "shipped", "delivered", "cancelled", "refunded"]);
 export const discountTypeEnum = pgEnum("discount_type", ["percentage", "fixed_amount"]);
+export const discountMethodEnum = pgEnum("discount_method", ["code", "automatic"]);
+export const discountScopeEnum = pgEnum("discount_scope", ["order", "products", "shipping"]);
+export const discountAppliesToEnum = pgEnum("discount_applies_to", ["all", "specific_products", "specific_collections"]);
 export const aiInteractionTypeEnum = pgEnum("ai_interaction_type", ["design", "product_description", "banner", "content", "layout", "general"]);
 export const aiInteractionStatusEnum = pgEnum("ai_interaction_status", ["pending", "completed", "failed"]);
 export const subscriptionTierEnum = pgEnum("subscription_tier", ["free", "starter", "growth", "scale", "empire"]);
@@ -320,12 +323,34 @@ export type InsertOrderItem = typeof orderItems.$inferInsert;
 export const discounts = pgTable("discounts", {
   id: serial("id").primaryKey(),
   storeId: integer("store_id").notNull(),
+  // Identity
+  title: varchar("title", { length: 255 }).notNull().default("Untitled Discount"),
   code: varchar("code", { length: 100 }).notNull().unique(),
+  description: text("description"),
+  // Method & Scope
+  method: discountMethodEnum("method").default("code").notNull(),
   type: discountTypeEnum("type").notNull(),
+  scope: discountScopeEnum("scope").default("order").notNull(),
   value: numeric("value", { precision: 10, scale: 2 }).notNull(),
+  maxDiscount: numeric("max_discount", { precision: 10, scale: 2 }),
+  // Product/Collection Targeting
+  appliesTo: discountAppliesToEnum("applies_to").default("all").notNull(),
+  productIds: jsonb("product_ids").$type<number[]>().default([]),
+  collectionIds: jsonb("collection_ids").$type<number[]>().default([]),
+  // Requirements
   minPurchase: numeric("min_purchase", { precision: 10, scale: 2 }),
+  minQuantity: integer("min_quantity"),
+  // Usage Limits
   maxUses: integer("max_uses"),
+  maxUsesPerCustomer: integer("max_uses_per_customer"),
   usedCount: integer("used_count").default(0),
+  // Combinability
+  combinesWith: jsonb("combines_with").$type<{
+    productDiscounts: boolean;
+    orderDiscounts: boolean;
+    shippingDiscounts: boolean;
+  }>().default({ productDiscounts: false, orderDiscounts: false, shippingDiscounts: false }),
+  // Scheduling
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
   isActive: boolean("is_active").default(true),
@@ -333,6 +358,7 @@ export const discounts = pgTable("discounts", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
   storeIdIdx: index("discounts_store_id_idx").on(table.storeId),
+  codeIdx: index("discounts_code_idx").on(table.code),
 }));
 
 export type Discount = typeof discounts.$inferSelect;

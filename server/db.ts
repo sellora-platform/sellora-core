@@ -263,13 +263,21 @@ export async function getOrderItemsByOrderId(orderId: number) {
 export async function createDiscount(data: InsertDiscount) {
   const db = getDb();
   if (!db) throw new Error("Database not available");
-  return db.insert(discounts).values(data);
+  const result = await db.insert(discounts).values(data).returning();
+  return result[0];
 }
 
 export async function getDiscountsByStoreId(storeId: number) {
   const db = getDb();
   if (!db) return [];
-  return db.select().from(discounts).where(eq(discounts.storeId, storeId));
+  return db.select().from(discounts).where(eq(discounts.storeId, storeId)).orderBy(desc(discounts.createdAt));
+}
+
+export async function getDiscountById(discountId: number) {
+  const db = getDb();
+  if (!db) return null;
+  const result = await db.select().from(discounts).where(eq(discounts.id, discountId)).limit(1);
+  return result.length > 0 ? result[0] : null;
 }
 
 export async function getDiscountByCode(code: string) {
@@ -282,7 +290,21 @@ export async function getDiscountByCode(code: string) {
 export async function updateDiscount(discountId: number, data: Partial<InsertDiscount>) {
   const db = getDb();
   if (!db) throw new Error("Database not available");
-  return db.update(discounts).set(data).where(eq(discounts.id, discountId));
+  return db.update(discounts).set({ ...data, updatedAt: new Date() }).where(eq(discounts.id, discountId)).returning();
+}
+
+export async function deleteDiscount(discountId: number) {
+  const db = getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(discounts).where(eq(discounts.id, discountId));
+}
+
+export async function incrementDiscountUsage(discountId: number) {
+  const db = getDb();
+  if (!db) throw new Error("Database not available");
+  const discount = await getDiscountById(discountId);
+  if (!discount) return;
+  return db.update(discounts).set({ usedCount: (discount.usedCount || 0) + 1, updatedAt: new Date() }).where(eq(discounts.id, discountId));
 }
 
 // ============================================================================
