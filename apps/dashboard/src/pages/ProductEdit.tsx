@@ -93,10 +93,8 @@ export default function ProductEdit() {
   if (!isAuthenticated) return null;
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.price || !storeQuery.data) {
-      toast.error("Please fill in required fields");
-      return;
-    }
+    const storeId = storeQuery.data?.id;
+    console.log("[ProductEdit] DEBUG: storeId being sent:", storeId);
 
     await updateMutation.mutateAsync({
       productId,

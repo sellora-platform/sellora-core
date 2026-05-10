@@ -70,6 +70,7 @@ export default function ProductCreate() {
     if (storeQuery.isLoading) return;
 
     const storeId = storeQuery.data?.id;
+    console.log("[ProductCreate] DEBUG: storeId being sent:", storeId);
     console.log("[ProductCreate] Current store data:", storeQuery.data);
 
     if (!storeId) {
