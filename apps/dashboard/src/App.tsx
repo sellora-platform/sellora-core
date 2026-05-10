@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import AIAssistant from "./pages/AIAssistant";
 import Products from "./pages/Products";
 import Orders from "./pages/Orders";
+import OrderDetails from "./pages/OrderDetails";
 import Customers from "./pages/Customers";
 import Discounts from "./pages/Discounts";
 import Settings from "./pages/Settings";
@@ -146,6 +147,7 @@ function Router() {
       <Route path={"/products/new"} component={ProductCreate} />
       <Route path={"/products/:id/edit"} component={ProductEdit} />
       <Route path={"/orders"} component={Orders} />
+      <Route path={"/orders/:id"} component={OrderDetails} />
       <Route path={"/customers"} component={Customers} />
       <Route path={"/discounts"} component={Discounts} />
       <Route path={"/reviews"} component={Reviews} />

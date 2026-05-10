@@ -98,7 +98,7 @@ export const ordersRouter = router({
     }),
 
   // PROTECTED — Merchant lists orders
-  list: protectedProcedure
+  listByStore: protectedProcedure
     .input(z.object({
       storeId: z.number(),
       status: z.string().optional(),
