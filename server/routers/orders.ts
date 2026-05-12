@@ -11,7 +11,7 @@ export const ordersRouter = router({
   // PUBLIC — Customer places order
   create: publicProcedure
     .input(z.object({
-      storeId: z.number(),
+      storeId: z.coerce.number(),
       customerName: z.string().min(1),
       customerEmail: z.string().email(),
       customerPhone: z.string().min(1),
@@ -28,8 +28,8 @@ export const ordersRouter = router({
       paymentMethod: z.enum(["cod", "bank_transfer", "jazzcash", "easypaisa"]),
       paymentScreenshot: z.string().optional(),
       items: z.array(z.object({
-        productId: z.number().optional(),
-        variantId: z.number().optional(),
+        productId: z.coerce.number().optional().nullable(),
+        variantId: z.coerce.number().optional().nullable(),
         title: z.string(),
         sku: z.string().optional(),
         price: z.number(),
