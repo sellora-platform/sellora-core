@@ -26,7 +26,7 @@ export const ordersRouter = router({
         country: z.string().default("Pakistan"),
       }),
       paymentMethod: z.enum(["cod", "bank_transfer", "jazzcash", "easypaisa"]),
-      paymentScreenshot: z.string().optional(),
+      paymentScreenshot: z.string().optional().nullable(),
       items: z.array(z.object({
         productId: z.coerce.number().optional().nullable(),
         variantId: z.coerce.number().optional().nullable(),
