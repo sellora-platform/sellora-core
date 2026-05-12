@@ -513,5 +513,56 @@ export const pages = pgTable("pages", {
   slugIdx: index("pages_slug_idx").on(table.slug),
 }));
 
+// ─── COMMUNICATION & MESSAGING ──────────────────────────────
+
+export const channelTypeEnum = pgEnum("channel_type", ["whatsapp", "instagram", "facebook", "email", "sms"]);
+export const messageStatusEnum = pgEnum("message_status", ["sent", "delivered", "read", "failed", "pending"]);
+
+export const communicationChannels = pgTable("communication_channels", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull(),
+  type: channelTypeEnum("type").notNull(),
+  providerId: varchar("provider_id", { length: 255 }), // e.g. WhatsApp Business ID
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  status: varchar("status", { length: 50 }).default("active"), // active, disconnected, pending
+  settings: jsonb("settings").default({}), // Webhook secrets, custom names
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  storeChannelIdx: index("store_channel_idx").on(table.storeId, table.type),
+}));
+
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull(),
+  channelId: integer("channel_id").references(() => communicationChannels.id),
+  customerName: varchar("customer_name", { length: 255 }),
+  customerIdentifier: varchar("customer_identifier", { length: 255 }).notNull(), // Phone number or Email
+  lastMessage: text("last_message"),
+  unreadCount: integer("unread_count").default(0),
+  metadata: jsonb("metadata").default({}), // Avatar, social profile link
+  lastActivity: timestamp("last_activity").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  storeCustIdx: index("store_cust_conv_idx").on(table.storeId, table.customerIdentifier),
+  lastActivityIdx: index("conv_last_activity_idx").on(table.lastActivity),
+}));
+
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversation_id").notNull().references(() => conversations.id),
+  senderType: varchar("sender_type", { length: 20 }).notNull(), // 'customer' or 'merchant'
+  senderId: varchar("sender_id", { length: 255 }), // Merchant user ID or customer identifier
+  body: text("body").notNull(),
+  type: varchar("type", { length: 20 }).default("text"), // text, image, file, template
+  status: messageStatusEnum("status").default("sent"),
+  metadata: jsonb("metadata").default({}), // Media URLs, message IDs from provider
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  convIdIdx: index("msg_conv_id_idx").on(table.conversationId),
+  createdAtIdx: index("msg_created_at_idx").on(table.createdAt),
+}));
+
 export type Page = typeof pages.$inferSelect;
 export type InsertPage = typeof pages.$inferInsert;

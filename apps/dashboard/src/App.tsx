@@ -12,6 +12,7 @@ import Orders from "./pages/Orders";
 import OrderDetails from "./pages/OrderDetails";
 import Pages from "./pages/Pages";
 import PageEdit from "./pages/PageEdit";
+import Connect from "./pages/Connect";
 import Customers from "./pages/Customers";
 import Discounts from "./pages/Discounts";
 import Settings from "./pages/Settings";
@@ -153,6 +154,7 @@ function Router() {
       <Route path={"/pages"} component={Pages} />
       <Route path={"/pages/new"} component={PageEdit} />
       <Route path={"/pages/:id/edit"} component={PageEdit} />
+      <Route path={"/connect"} component={Connect} />
       <Route path={"/customers"} component={Customers} />
       <Route path={"/discounts"} component={Discounts} />
       <Route path={"/reviews"} component={Reviews} />

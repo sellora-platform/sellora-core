@@ -35,7 +35,8 @@ import {
   Palette,
   Star,
   Package,
-  FileText
+  FileText,
+  MessageCircle
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -53,6 +54,7 @@ const menuItems = [
   { icon: FileText, label: "Pages", path: "/pages" },
   { icon: Globe, label: "Domains", path: "/domains" },
   { icon: MessageSquare, label: "AI Assistant", path: "/ai-assistant" },
+  { icon: MessageCircle, label: "Sellora Connect", path: "/connect" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
