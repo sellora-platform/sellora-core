@@ -16,7 +16,7 @@ import {
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import RichTextEditor from "@/components/RichTextEditor";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 
 const TEMPLATES = {
   about: {
@@ -156,9 +156,8 @@ export default function PageEdit() {
                   <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Visual Editor Active</span>
                 </div>
                 <RichTextEditor 
-                  content={content} 
+                  value={content} 
                   onChange={setContent} 
-                  placeholder="Write your page content here..."
                 />
               </div>
             </Card>
