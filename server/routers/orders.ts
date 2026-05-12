@@ -19,6 +19,8 @@ export const ordersRouter = router({
         line1: z.string().min(1),
         line2: z.string().optional(),
         city: z.string().min(1),
+        area: z.string().optional(),
+        landmark: z.string().optional(),
         state: z.string().optional(),
         postalCode: z.string().optional(),
         country: z.string().default("Pakistan"),
