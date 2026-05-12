@@ -19,11 +19,11 @@ import {
   AlignCenter,
   AlignLeft,
   AlignRight,
-  Strikethrough,
-  Code
+  Strikethrough
 } from 'lucide-react';
 import { Toggle } from './ui/toggle';
 import { Separator } from './ui/separator';
+import { Button } from './ui/button';
 
 interface RichTextEditorProps {
   content: string;
@@ -212,33 +212,7 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
       {/* Footer Info */}
       <div className="px-4 py-2 bg-muted/10 border-t flex items-center justify-between text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
         <span>Rich Text Editor Active</span>
-        <div className="flex items-center gap-3">
-          <span>Characters: {editor.storage.characterCount?.characters?.() || 0}</span>
-          <span>Words: {editor.storage.characterCount?.words?.() || 0}</span>
-        </div>
       </div>
     </div>
-  );
-}
-
-// Sub-components to avoid import issues
-function Button({ children, className, onClick, disabled, variant, size }: any) {
-  const base = "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50";
-  const variants = {
-    ghost: "hover:bg-accent hover:text-accent-foreground",
-    outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-  };
-  const sizes = {
-    sm: "h-9 px-3",
-    icon: "h-10 w-10",
-  };
-  return (
-    <button
-      className={`${base} ${variants[variant as keyof typeof variants] || ""} ${sizes[size as keyof typeof sizes] || ""} ${className}`}
-      onClick={onClick}
-      disabled={disabled}
-    >
-      {children}
-    </button>
   );
 }
