@@ -20,6 +20,7 @@ import { trpc } from "@/lib/trpc";
 
 export default function Orders() {
   const { isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
+  const [location, setLocation] = useLocation();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
