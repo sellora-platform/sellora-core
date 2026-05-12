@@ -494,3 +494,24 @@ export const subscriptionRequests = pgTable("subscription_requests", {
 
 export type SubscriptionRequest = typeof subscriptionRequests.$inferSelect;
 export type InsertSubscriptionRequest = typeof subscriptionRequests.$inferInsert;
+
+// ============================================================================
+// Pages (Static Content)
+// ============================================================================
+
+export const pages = pgTable("pages", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  isPublished: boolean("is_published").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  storeIdIdx: index("pages_store_id_idx").on(table.storeId),
+  slugIdx: index("pages_slug_idx").on(table.slug),
+}));
+
+export type Page = typeof pages.$inferSelect;
+export type InsertPage = typeof pages.$inferInsert;

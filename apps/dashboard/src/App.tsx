@@ -10,6 +10,8 @@ import AIAssistant from "./pages/AIAssistant";
 import Products from "./pages/Products";
 import Orders from "./pages/Orders";
 import OrderDetails from "./pages/OrderDetails";
+import Pages from "./pages/Pages";
+import PageEdit from "./pages/PageEdit";
 import Customers from "./pages/Customers";
 import Discounts from "./pages/Discounts";
 import Settings from "./pages/Settings";
@@ -148,6 +150,9 @@ function Router() {
       <Route path={"/products/:id/edit"} component={ProductEdit} />
       <Route path={"/orders"} component={Orders} />
       <Route path={"/orders/:id"} component={OrderDetails} />
+      <Route path={"/pages"} component={Pages} />
+      <Route path={"/pages/new"} component={PageEdit} />
+      <Route path={"/pages/:id/edit"} component={PageEdit} />
       <Route path={"/customers"} component={Customers} />
       <Route path={"/discounts"} component={Discounts} />
       <Route path={"/reviews"} component={Reviews} />

@@ -34,7 +34,8 @@ import {
   Globe,
   Palette,
   Star,
-  Package
+  Package,
+  FileText
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -49,6 +50,7 @@ const menuItems = [
   { icon: Users, label: "Customers", path: "/customers" },
   { icon: Tag, label: "Discounts", path: "/discounts" },
   { icon: Star, label: "Reviews", path: "/reviews" },
+  { icon: FileText, label: "Pages", path: "/pages" },
   { icon: Globe, label: "Domains", path: "/domains" },
   { icon: MessageSquare, label: "AI Assistant", path: "/ai-assistant" },
   { icon: Settings, label: "Settings", path: "/settings" },
