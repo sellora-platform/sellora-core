@@ -3,7 +3,7 @@ import { router, protectedProcedure, publicProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { db } from "../db";
 import { orders, orderItems } from "../../db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, or } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 export const ordersRouter = router({
@@ -97,6 +97,42 @@ export const ordersRouter = router({
         orderId: order.id,
         orderNumber: order.orderNumber 
       };
+    }),
+
+  // PUBLIC — Customer tracks their order
+  track: publicProcedure
+    .input(z.object({
+      orderNumber: z.string().min(1),
+      identifier: z.string().min(1), // Email or Phone
+    }))
+    .query(async ({ input }) => {
+      const order = await db
+        .select()
+        .from(orders)
+        .where(
+          and(
+            eq(orders.orderNumber, input.orderNumber),
+            or(
+              eq(orders.customerEmail, input.identifier),
+              eq(orders.customerPhone, input.identifier)
+            )
+          )
+        )
+        .limit(1);
+
+      if (!order[0]) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No order found with these details. Please check your order number and email/phone."
+        });
+      }
+
+      const items = await db
+        .select()
+        .from(orderItems)
+        .where(eq(orderItems.orderId, order[0].id));
+
+      return { ...order[0], items };
     }),
 
   // PROTECTED — Merchant lists orders
