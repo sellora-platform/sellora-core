@@ -30,7 +30,7 @@ export default function Pages() {
   const [search, setSearch] = useState("");
 
   const storeQuery = trpc.stores.getMyStore.useQuery();
-  const pagesQuery = trpc.pages.list.useQuery(
+  const pagesQuery = trpc.pages.merchantList.useQuery(
     { storeId: storeQuery.data?.id || 0 },
     { enabled: !!storeQuery.data?.id }
   );

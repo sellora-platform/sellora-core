@@ -35,8 +35,23 @@ export const pagesRouter = router({
       return page[0];
     }),
 
-  // PROTECTED — List all pages for merchant
-  list: protectedProcedure
+  // PUBLIC — List all published pages for storefront
+  list: publicProcedure
+    .input(z.object({ storeId: z.number() }))
+    .query(async ({ input }) => {
+      return await db
+        .select()
+        .from(pages)
+        .where(
+          and(
+            eq(pages.storeId, input.storeId),
+            eq(pages.isPublished, true)
+          )
+        );
+    }),
+
+  // PROTECTED — List all pages for merchant (including drafts)
+  merchantList: protectedProcedure
     .input(z.object({ storeId: z.number() }))
     .query(async ({ input }) => {
       return await db
