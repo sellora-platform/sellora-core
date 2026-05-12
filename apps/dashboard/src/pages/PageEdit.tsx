@@ -10,11 +10,35 @@ import {
   Loader2, 
   Globe, 
   FileText,
-  AlertCircle
+  AlertCircle,
+  Copy
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+
+const TEMPLATES = {
+  about: {
+    title: "About Us",
+    slug: "about-us",
+    content: `<h2>Our Story</h2><p>Welcome to [Store Name]! Founded in [Year], we have been dedicated to providing our customers with the highest quality products and exceptional service.</p><h2>Our Mission</h2><p>Our mission is to [Insert Mission Statement]. We believe in [Insert Values] and strive to make a positive impact in the lives of our customers.</p><h2>Why Choose Us?</h2><ul><li>Quality Guaranteed</li><li>Secure Payments</li><li>Fast Shipping</li><li>24/7 Support</li></ul>`
+  },
+  privacy: {
+    title: "Privacy Policy",
+    slug: "privacy-policy",
+    content: `<h2>Privacy Policy</h2><p>Your privacy is important to us. It is [Store Name]'s policy to respect your privacy regarding any information we may collect from you across our website.</p><h2>Information We Collect</h2><p>We only ask for personal information when we truly need it to provide a service to you. We collect it by fair and lawful means, with your knowledge and consent.</p><h2>Data Security</h2><p>We protect your personal data within commercially acceptable means to prevent loss and theft, as well as unauthorized access, disclosure, copying, use or modification.</p>`
+  },
+  terms: {
+    title: "Terms of Service",
+    slug: "terms-of-service",
+    content: `<h2>Terms of Service</h2><p>By accessing our website, you are agreeing to be bound by these terms of service, all applicable laws and regulations, and agree that you are responsible for compliance with any applicable local laws.</p><h2>Use License</h2><p>Permission is granted to temporarily download one copy of the materials (information or software) on [Store Name]'s website for personal, non-commercial transitory viewing only.</p><h2>Governing Law</h2><p>These terms and conditions are governed by and construed in accordance with the laws of Pakistan and you irrevocably submit to the exclusive jurisdiction of the courts in that State or location.</p>`
+  },
+  refund: {
+    title: "Refund Policy",
+    slug: "refund-policy",
+    content: `<h2>Refund & Return Policy</h2><p>We want you to be totally satisfied with your purchase. If you are not happy with your order, we are here to help.</p><h2>Returns</h2><p>You have [Number] calendar days to return an item from the date you received it. To be eligible for a return, your item must be unused and in the same condition that you received it.</p><h2>Refunds</h2><p>Once we receive your item, we will inspect it and notify you that we have received your returned item. If your return is approved, we will initiate a refund to your original method of payment.</p>`
+  }
+};
 
 export default function PageEdit() {
   const { isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
@@ -142,6 +166,34 @@ export default function PageEdit() {
 
           {/* Sidebar Settings */}
           <div className="space-y-6">
+            <Card className="p-6 space-y-4">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-bold flex items-center gap-2">
+                  <Copy className="w-4 h-4 text-primary" />
+                  Quick Templates
+                </label>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.entries(TEMPLATES).map(([key, t]) => (
+                  <Button
+                    key={key}
+                    variant="outline"
+                    size="sm"
+                    className="text-[11px] justify-start h-9 font-bold bg-muted/30 hover:bg-primary/5 hover:border-primary/30 transition-all"
+                    onClick={() => {
+                      if (confirm("This will replace your current content. Continue?")) {
+                        setTitle(t.title);
+                        setSlug(t.slug);
+                        setContent(t.content.replace(/\[Store Name\]/g, storeQuery.data?.name || 'our store'));
+                      }
+                    }}
+                  >
+                    {t.title}
+                  </Button>
+                ))}
+              </div>
+            </Card>
+
             <Card className="p-6 space-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-semibold flex items-center gap-2">
