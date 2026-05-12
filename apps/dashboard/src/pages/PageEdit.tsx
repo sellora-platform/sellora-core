@@ -16,6 +16,7 @@ import {
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import RichTextEditor from "@/components/RichTextEditor";
 
 const TEMPLATES = {
   about: {
@@ -152,13 +153,12 @@ export default function PageEdit() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-semibold">Content</label>
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">HTML Supported</span>
+                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Visual Editor Active</span>
                 </div>
-                <textarea
-                  className="w-full min-h-[500px] p-4 border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all font-mono text-sm leading-relaxed"
+                <RichTextEditor 
+                  content={content} 
+                  onChange={setContent} 
                   placeholder="Write your page content here..."
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
                 />
               </div>
             </Card>
