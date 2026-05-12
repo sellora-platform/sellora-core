@@ -1,6 +1,6 @@
 'use client';
 
-import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
+import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
@@ -15,7 +15,6 @@ import {
   Redo, 
   Heading1, 
   Heading2, 
-  Link as LinkIcon,
   AlignCenter,
   AlignLeft,
   AlignRight,
@@ -175,34 +174,6 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
           </Button>
         </div>
       </div>
-
-      {/* Bubble Menu */}
-      <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }} className="flex bg-popover border shadow-md rounded-lg p-1 gap-1 overflow-hidden">
-        <Toggle
-          size="sm"
-          pressed={editor.isActive('bold')}
-          onPressedChange={() => editor.chain().focus().toggleBold().run()}
-        >
-          <Bold className="h-3.5 w-3.5" />
-        </Toggle>
-        <Toggle
-          size="sm"
-          pressed={editor.isActive('italic')}
-          onPressedChange={() => editor.chain().focus().toggleItalic().run()}
-        >
-          <Italic className="h-3.5 w-3.5" />
-        </Toggle>
-        <Toggle
-          size="sm"
-          pressed={editor.isActive('link')}
-          onPressedChange={() => {
-            const url = window.prompt('URL');
-            if (url) editor.chain().focus().setLink({ href: url }).run();
-          }}
-        >
-          <LinkIcon className="h-3.5 w-3.5" />
-        </Toggle>
-      </BubbleMenu>
 
       {/* Editor Content */}
       <div className="flex-1 overflow-auto bg-background">
