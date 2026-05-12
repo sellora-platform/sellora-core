@@ -20,9 +20,6 @@ import {
   AlignRight,
   Strikethrough
 } from 'lucide-react';
-import { Toggle } from './ui/toggle';
-import { Separator } from './ui/separator';
-import { Button } from './ui/button';
 
 interface RichTextEditorProps {
   content: string;
@@ -55,123 +52,132 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
 
   if (!editor) return null;
 
+  const ToolbarButton = ({ onClick, isActive, children, title }: any) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`p-2 rounded-md transition-colors ${
+        isActive 
+          ? 'bg-primary text-primary-foreground' 
+          : 'hover:bg-muted text-muted-foreground'
+      }`}
+      title={title}
+    >
+      {children}
+    </button>
+  );
+
   return (
     <div className="border rounded-lg bg-background overflow-hidden flex flex-col group focus-within:ring-2 focus-within:ring-primary/20 transition-all">
       {/* Toolbar */}
-      <div className="p-1 border-b bg-muted/20 flex flex-wrap items-center gap-0.5 sticky top-0 z-10 backdrop-blur-md">
-        <Toggle
-          size="sm"
-          pressed={editor.isActive('heading', { level: 1 })}
-          onPressedChange={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+      <div className="p-1 border-b bg-muted/20 flex flex-wrap items-center gap-1 sticky top-0 z-10 backdrop-blur-md">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          isActive={editor.isActive('heading', { level: 1 })}
+          title="Heading 1"
         >
           <Heading1 className="h-4 w-4" />
-        </Toggle>
-        <Toggle
-          size="sm"
-          pressed={editor.isActive('heading', { level: 2 })}
-          onPressedChange={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          isActive={editor.isActive('heading', { level: 2 })}
+          title="Heading 2"
         >
           <Heading2 className="h-4 w-4" />
-        </Toggle>
+        </ToolbarButton>
         
-        <Separator orientation="vertical" className="mx-1 h-6" />
+        <div className="w-px h-6 bg-border mx-1" />
 
-        <Toggle
-          size="sm"
-          pressed={editor.isActive('bold')}
-          onPressedChange={() => editor.chain().focus().toggleBold().run()}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          isActive={editor.isActive('bold')}
+          title="Bold"
         >
           <Bold className="h-4 w-4" />
-        </Toggle>
-        <Toggle
-          size="sm"
-          pressed={editor.isActive('italic')}
-          onPressedChange={() => editor.chain().focus().toggleItalic().run()}
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          isActive={editor.isActive('italic')}
+          title="Italic"
         >
           <Italic className="h-4 w-4" />
-        </Toggle>
-        <Toggle
-          size="sm"
-          pressed={editor.isActive('underline')}
-          onPressedChange={() => editor.chain().focus().toggleUnderline().run()}
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          isActive={editor.isActive('underline')}
+          title="Underline"
         >
           <Underline className="h-4 w-4" />
-        </Toggle>
-        <Toggle
-          size="sm"
-          pressed={editor.isActive('strike')}
-          onPressedChange={() => editor.chain().focus().toggleStrike().run()}
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          isActive={editor.isActive('strike')}
+          title="Strikethrough"
         >
           <Strikethrough className="h-4 w-4" />
-        </Toggle>
+        </ToolbarButton>
 
-        <Separator orientation="vertical" className="mx-1 h-6" />
+        <div className="w-px h-6 bg-border mx-1" />
 
-        <Toggle
-          size="sm"
-          pressed={editor.isActive({ textAlign: 'left' })}
-          onPressedChange={() => editor.chain().focus().setTextAlign('left').run()}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          isActive={editor.isActive({ textAlign: 'left' })}
+          title="Align Left"
         >
           <AlignLeft className="h-4 w-4" />
-        </Toggle>
-        <Toggle
-          size="sm"
-          pressed={editor.isActive({ textAlign: 'center' })}
-          onPressedChange={() => editor.chain().focus().setTextAlign('center').run()}
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          isActive={editor.isActive({ textAlign: 'center' })}
+          title="Align Center"
         >
           <AlignCenter className="h-4 w-4" />
-        </Toggle>
-        <Toggle
-          size="sm"
-          pressed={editor.isActive({ textAlign: 'right' })}
-          onPressedChange={() => editor.chain().focus().setTextAlign('right').run()}
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          isActive={editor.isActive({ textAlign: 'right' })}
+          title="Align Right"
         >
           <AlignRight className="h-4 w-4" />
-        </Toggle>
+        </ToolbarButton>
 
-        <Separator orientation="vertical" className="mx-1 h-6" />
+        <div className="w-px h-6 bg-border mx-1" />
 
-        <Toggle
-          size="sm"
-          pressed={editor.isActive('bulletList')}
-          onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          isActive={editor.isActive('bulletList')}
+          title="Bullet List"
         >
           <List className="h-4 w-4" />
-        </Toggle>
-        <Toggle
-          size="sm"
-          pressed={editor.isActive('orderedList')}
-          onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          isActive={editor.isActive('orderedList')}
+          title="Numbered List"
         >
           <ListOrdered className="h-4 w-4" />
-        </Toggle>
-        <Toggle
-          size="sm"
-          pressed={editor.isActive('blockquote')}
-          onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          isActive={editor.isActive('blockquote')}
+          title="Quote"
         >
           <Quote className="h-4 w-4" />
-        </Toggle>
+        </ToolbarButton>
 
-        <div className="ml-auto flex items-center gap-0.5">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
+        <div className="ml-auto flex items-center gap-1">
+          <ToolbarButton
             onClick={() => editor.chain().focus().undo().run()}
-            disabled={!editor.can().undo()}
+            title="Undo"
           >
             <Undo className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
+          </ToolbarButton>
+          <ToolbarButton
             onClick={() => editor.chain().focus().redo().run()}
-            disabled={!editor.can().redo()}
+            title="Redo"
           >
             <Redo className="h-4 w-4" />
-          </Button>
+          </ToolbarButton>
         </div>
       </div>
 
