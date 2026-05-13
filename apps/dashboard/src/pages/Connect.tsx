@@ -87,10 +87,14 @@ export default function Connect() {
 
   const utils = trpc.useUtils();
   
+  // 0. Get the merchant's store ID
+  const { data: myStores } = trpc.stores.getMyStores.useQuery();
+  const activeStoreId = myStores?.[0]?.id || 0;
+
   // 1. Fetch real connection status from backend
   const { data: connectedChannels, isLoading: isLoadingStatus } = trpc.messages.listChannels.useQuery({
-    storeId: (window as any).__STORE_ID__ || 0
-  });
+    storeId: activeStoreId
+  }, { enabled: !!activeStoreId });
 
   const connectChannel = trpc.messages.connectChannel.useMutation({
     onSuccess: () => {
@@ -121,7 +125,7 @@ export default function Connect() {
   const handleSmtpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     connectChannel.mutate({
-      storeId: (window as any).__STORE_ID__ || 0,
+      storeId: activeStoreId,
       type: 'email',
       settings: {
         ...smtpForm,
@@ -131,8 +135,8 @@ export default function Connect() {
   };
 
   const getGoogleUrl = trpc.messages.getGoogleAuthUrl.useQuery({
-    storeId: (window as any).__STORE_ID__ || 0
-  }, { enabled: false });
+    storeId: activeStoreId
+  }, { enabled: !!activeStoreId && false });
 
   const handleGoogleConnect = async () => {
     const { data } = await getGoogleUrl.refetch();
