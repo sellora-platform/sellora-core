@@ -146,7 +146,7 @@ export default function Connect() {
   };
 
   const isConnected = (type: string) => {
-    return connectedChannels?.some(c => c.type === type && c.status === 'active');
+    return connectedChannels?.some((c: any) => c.type === type && c.status === 'active');
   };
 
   const getChannelStatus = (type: string) => {

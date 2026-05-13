@@ -185,7 +185,7 @@ export default function Products() {
           
           for (let j = 0; j < headers.length; j++) {
             let val = currentline[j] || lines[i].split(",")[j]?.trim().replace(/(^"|"$)/g, "");
-            if (val === "") val = undefined;
+            if (val === "") val = "";
             
             if (headers[j] === "quantity") obj[headers[j]] = val ? parseInt(val) : 0;
             else if (headers[j] === "isActive") obj[headers[j]] = val === "true" || val === "1";

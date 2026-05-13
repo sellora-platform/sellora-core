@@ -4,10 +4,11 @@
  * All database queries are centralized here.
  * Uses Drizzle ORM with Neon PostgreSQL serverless driver.
  */
-import { eq, desc, asc } from "drizzle-orm";
+import { eq, desc, asc, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
 import * as schema from "../db/schema";
+
 const {
   users,
   stores,
@@ -21,13 +22,29 @@ const {
   aiInteractions,
   storeThemes,
   plans,
+  communicationChannels,
+  conversations,
+  messages
 } = schema;
+
+// Re-export types for usage across the app
+export type InsertUser = typeof users.$inferInsert;
+export type InsertStore = typeof stores.$inferInsert;
+export type InsertProduct = typeof products.$inferInsert;
+export type InsertCategory = typeof categories.$inferInsert;
+export type InsertProductVariant = typeof productVariants.$inferInsert;
+export type InsertCustomer = typeof customers.$inferInsert;
+export type InsertOrder = typeof orders.$inferInsert;
+export type InsertOrderItem = typeof orderItems.$inferInsert;
+export type InsertDiscount = typeof discounts.$inferInsert;
+export type InsertAIInteraction = typeof aiInteractions.$inferInsert;
+export type InsertStoreTheme = typeof storeThemes.$inferInsert;
 
 // ============================================================================
 // Database Connection
 // ============================================================================
 
-let _db: ReturnType<typeof drizzle> | null = null;
+let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
 function getDb() {
   if (!_db && process.env.DATABASE_URL) {
@@ -43,7 +60,7 @@ function getDb() {
 }
 
 // Export db for use in auth routes
-export const db = new Proxy({} as NonNullable<ReturnType<typeof drizzle>>, {
+export const db = new Proxy({} as ReturnType<typeof drizzle<typeof schema>>, {
   get(_target, prop) {
     const instance = getDb();
     if (!instance) throw new Error("Database not available. Set DATABASE_URL.");

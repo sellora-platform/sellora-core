@@ -50,7 +50,7 @@ export default function OrderDetails() {
 
   if (!isAuthenticated) return null;
 
-  if (orderQuery.isLoading) {
+  if (orderQuery.isPending) {
     return (
       <DashboardLayout>
         <div className="h-[60vh] flex items-center justify-center">
@@ -122,7 +122,7 @@ export default function OrderDetails() {
             {order.status === "pending" && (
               <Button 
                 onClick={() => updateStatusMutation.mutate({ id: order.id, status: "processing" })}
-                disabled={updateStatusMutation.isLoading}
+                disabled={updateStatusMutation.isPending}
               >
                 Mark as Processing
               </Button>
@@ -130,7 +130,7 @@ export default function OrderDetails() {
             {order.status === "processing" && (
               <Button 
                 onClick={() => updateStatusMutation.mutate({ id: order.id, status: "shipped" })}
-                disabled={updateStatusMutation.isLoading}
+                disabled={updateStatusMutation.isPending}
                 className="bg-purple-600 hover:bg-purple-700"
               >
                 Ship Order
@@ -139,7 +139,7 @@ export default function OrderDetails() {
             {order.status === "shipped" && (
               <Button 
                 onClick={() => updateStatusMutation.mutate({ id: order.id, status: "delivered" })}
-                disabled={updateStatusMutation.isLoading}
+                disabled={updateStatusMutation.isPending}
                 className="bg-green-600 hover:bg-green-700"
               >
                 Mark as Delivered
@@ -150,7 +150,7 @@ export default function OrderDetails() {
                 variant="outline"
                 className="text-red-600 border-red-200 hover:bg-red-50"
                 onClick={() => updateStatusMutation.mutate({ id: order.id, status: "cancelled" })}
-                disabled={updateStatusMutation.isLoading}
+                disabled={updateStatusMutation.isPending}
               >
                 Cancel Order
               </Button>
@@ -270,10 +270,10 @@ export default function OrderDetails() {
               </h3>
               <div className="space-y-1 text-sm text-foreground/80">
                 <p className="font-bold text-foreground">{order.customerName}</p>
-                <p>{order.shippingAddress?.line1}</p>
-                {order.shippingAddress?.line2 && <p>{order.shippingAddress.line2}</p>}
-                <p>{order.shippingAddress?.city}, {order.shippingAddress?.state}</p>
-                <p>{order.shippingAddress?.country} {order.shippingAddress?.postalCode}</p>
+                <p>{(order.shippingAddress as any)?.line1}</p>
+                {(order.shippingAddress as any)?.line2 && <p>{(order.shippingAddress as any).line2}</p>}
+                <p>{(order.shippingAddress as any)?.city}, {(order.shippingAddress as any)?.state}</p>
+                <p>{(order.shippingAddress as any)?.country} {(order.shippingAddress as any)?.postalCode}</p>
               </div>
             </Card>
 
@@ -286,7 +286,7 @@ export default function OrderDetails() {
               <div className="space-y-6">
                 <div>
                   <p className="text-xs text-foreground/60 font-medium mb-1">Method</p>
-                  <p className="font-bold uppercase tracking-wider">{order.paymentMethod.replace("_", " ")}</p>
+                  <p className="font-bold uppercase tracking-wider">{order.paymentMethod?.replace("_", " ") || "N/A"}</p>
                 </div>
                 
                 <div className="flex items-center justify-between p-3 bg-muted/30 rounded border border-border/50">
@@ -301,7 +301,7 @@ export default function OrderDetails() {
                       size="sm" 
                       variant="outline"
                       onClick={() => confirmPaymentMutation.mutate({ id: order.id })}
-                      disabled={confirmPaymentMutation.isLoading}
+                      disabled={confirmPaymentMutation.isPending}
                     >
                       Confirm
                     </Button>
