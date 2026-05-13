@@ -86,6 +86,12 @@ export default function Connect() {
   });
 
   const utils = trpc.useUtils();
+  
+  // 1. Fetch real connection status from backend
+  const { data: connectedChannels, isLoading: isLoadingStatus } = trpc.messages.listChannels.useQuery({
+    storeId: (window as any).__STORE_ID__ || 0
+  });
+
   const connectChannel = trpc.messages.connectChannel.useMutation({
     onSuccess: () => {
       toast.success("Channel connected successfully!");
@@ -135,6 +141,15 @@ export default function Connect() {
     }
   };
 
+  const isConnected = (type: string) => {
+    return connectedChannels?.some(c => c.type === type && c.status === 'active');
+  };
+
+  const getChannelStatus = (type: string) => {
+    if (isLoadingStatus) return "Loading...";
+    return isConnected(type) ? "Connected" : "Not Connected";
+  };
+
   return (
     <div className="p-8 space-y-8 max-w-7xl mx-auto animate-in fade-in duration-500">
       {/* Header */}
@@ -166,8 +181,12 @@ export default function Connect() {
                   </div>
                   <div>
                     <h3 className="font-bold text-xl">{channel.name}</h3>
-                    <Badge variant={channel.comingSoon ? "outline" : "secondary"} className="mt-1">
-                      {channel.status}
+                    <Badge 
+                      variant={isConnected(channel.id) ? "default" : (channel.comingSoon ? "outline" : "secondary")} 
+                      className={`mt-1 ${isConnected(channel.id) ? "bg-emerald-500/10 text-emerald-600 border-emerald-200 hover:bg-emerald-500/20" : ""}`}
+                    >
+                      {isConnected(channel.id) && <CheckCircle2 className="w-3 h-3 mr-1 inline" />}
+                      {getChannelStatus(channel.id)}
                     </Badge>
                   </div>
                 </div>
@@ -196,16 +215,16 @@ export default function Connect() {
 
               <div className="pt-4 flex items-center gap-3">
                 <Button 
-                  className="flex-1 font-bold h-11" 
-                  disabled={channel.comingSoon || loadingChannel === channel.id}
+                  className={`flex-1 font-bold h-11 transition-all ${isConnected(channel.id) ? "bg-muted text-muted-foreground hover:bg-muted" : ""}`} 
+                  disabled={channel.comingSoon || loadingChannel === channel.id || isConnected(channel.id)}
                   onClick={() => handleConnect(channel.id)}
                 >
                   {loadingChannel === channel.id ? (
                     <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                   ) : (
-                    <Zap className="w-4 h-4 mr-2" />
+                    isConnected(channel.id) ? <CheckCircle2 className="w-4 h-4 mr-2" /> : <Zap className="w-4 h-4 mr-2" />
                   )}
-                  {channel.comingSoon ? "Get Early Access" : "Connect Account"}
+                  {channel.comingSoon ? "Get Early Access" : (isConnected(channel.id) ? "Connected" : "Connect Account")}
                 </Button>
                 {!channel.comingSoon && (
                   <Button variant="outline" size="icon" className="h-11 w-11">
@@ -260,29 +279,32 @@ export default function Connect() {
               <TabsTrigger value="smtp">Custom SMTP</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="gmail" className="space-y-4 py-4">
-              <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg space-y-3">
-                <div className="flex items-center gap-2 text-blue-700 font-bold text-sm">
-                  <Info className="w-4 h-4" />
-                  Gmail App Password Required
+            <TabsContent value="gmail" className="space-y-6 py-8 flex flex-col items-center justify-center text-center">
+              <div className="space-y-4 max-w-[320px]">
+                <div className="p-4 bg-gray-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto border-2 border-dashed border-gray-200">
+                  <Mail className="w-10 h-10 text-gray-400" />
                 </div>
-                <p className="text-xs text-blue-600 leading-relaxed">
-                  For security, Google requires an <strong>App Password</strong>. Go to Google Account {">"} Security {">"} 2-Step Verification {">"} App Passwords.
-                </p>
-              </div>
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <Label>Gmail Address</Label>
-                  <Input placeholder="yourstore@gmail.com" />
-                </div>
-                <div className="space-y-1">
-                  <Label>App Password</Label>
-                  <Input type="password" placeholder="xxxx xxxx xxxx xxxx" />
+                <div className="space-y-2">
+                  <h4 className="font-bold text-lg">One-Click Google Sync</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Link your store to Gmail in seconds. Send order notifications and marketing emails via Google's secure servers.
+                  </p>
                 </div>
               </div>
-              <Button className="w-full font-bold" onClick={handleGoogleConnect} disabled={getGoogleUrl.isFetching}>
-                {getGoogleUrl.isFetching ? "Redirecting..." : "Connect with Google"}
+
+              <Button 
+                variant="outline"
+                className="w-full max-w-[320px] h-12 font-bold flex items-center justify-center gap-3 border-2 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm active:scale-95" 
+                onClick={handleGoogleConnect} 
+                disabled={getGoogleUrl.isFetching}
+              >
+                <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" alt="Google" className="w-5 h-5" />
+                {getGoogleUrl.isFetching ? "Initializing..." : "Continue with Google"}
               </Button>
+
+              <div className="pt-4 flex items-center gap-2 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
+                <CheckCircle2 className="w-3 h-3 text-emerald-500" /> 100% Secure OAuth 2.0 Integration
+              </div>
             </TabsContent>
 
             <TabsContent value="smtp" className="space-y-4 py-4">
