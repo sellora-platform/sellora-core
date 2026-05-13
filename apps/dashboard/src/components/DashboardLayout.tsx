@@ -36,7 +36,8 @@ import {
   Star,
   Package,
   FileText,
-  MessageCircle
+  MessageCircle,
+  Zap
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
