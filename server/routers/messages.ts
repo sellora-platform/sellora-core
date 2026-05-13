@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
-import { db } from "../../db";
+import { db } from "../db";
 import { conversations, messages, communicationChannels, stores } from "../../db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { sendEmail } from "../_core/email";
