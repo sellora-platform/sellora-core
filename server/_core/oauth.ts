@@ -5,9 +5,9 @@
  * Replaces the Manus OAuth callback system with email/password auth.
  */
 import type { Express } from "express";
-import { eq } from "drizzle-orm";
+import { users, communicationChannels } from "../../db/schema";
+import { eq, and } from "drizzle-orm";
 import { db } from "../db";
-import { users } from "../../db/schema";
 import {
   hashPassword,
   verifyPassword,
@@ -410,6 +410,85 @@ export function registerAuthRoutes(app: Express) {
     } catch (error) {
       console.error("[Auth] Google Login error:", error);
       res.status(500).json({ error: "Google login failed" });
+    }
+  });
+
+  /**
+   * GET /api/auth/google/callback
+   * Handle the OAuth redirect from Google for Sellora Connect.
+   */
+  app.get("/api/auth/google/callback", async (req, res) => {
+    try {
+      const { code, state } = req.query;
+      if (!code || !state) {
+        res.redirect("/connect?error=missing_params");
+        return;
+      }
+
+      const { storeId } = JSON.parse(state as string);
+
+      // Exchange code for tokens
+      const apiBase = (process.env.NEXT_PUBLIC_API_URL || "https://www.raaenai.com").replace(/\/$/, '');
+      const redirectUri = `${apiBase}/api/auth/google/callback`;
+      
+      const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          code: code as string,
+          client_id: process.env.GOOGLE_CLIENT_ID || "PLACEHOLDER",
+          client_secret: process.env.GOOGLE_CLIENT_SECRET || "PLACEHOLDER",
+          redirect_uri: redirectUri,
+          grant_type: "authorization_code",
+        }),
+      });
+
+      const tokens = await tokenRes.json();
+      if (!tokenRes.ok) {
+        console.error("[OAuth] Token exchange failed:", tokens);
+        res.redirect("/connect?error=token_exchange_failed");
+        return;
+      }
+
+      // Get user info to get the email address
+      const userRes = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+        headers: { Authorization: `Bearer ${tokens.access_token}` },
+      });
+      const userData = await userRes.json();
+
+      // Save to communication_channels
+      const existing = await db.query.communicationChannels.findFirst({
+        where: and(
+          eq(communicationChannels.storeId, storeId),
+          eq(communicationChannels.type, "email")
+        )
+      });
+
+      const settings = {
+        provider: 'google',
+        email: userData.email,
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token, // Crucial for long-term access
+        expiryDate: Date.now() + tokens.expires_in * 1000
+      };
+
+      if (existing) {
+        await db.update(communicationChannels)
+          .set({ settings, updatedAt: new Date() })
+          .where(eq(communicationChannels.id, existing.id));
+      } else {
+        await db.insert(communicationChannels).values({
+          storeId,
+          type: "email",
+          settings,
+          status: 'active'
+        });
+      }
+
+      res.redirect("/connect?success=true&channel=email");
+    } catch (error) {
+      console.error("[OAuth] Google Callback error:", error);
+      res.redirect("/connect?error=internal_server_error");
     }
   });
 

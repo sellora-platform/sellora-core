@@ -125,6 +125,31 @@ export const messagesRouter = router({
       });
     }),
 
+  // PUBLIC — Get Google OAuth URL for merchant to login
+  getGoogleAuthUrl: publicProcedure
+    .input(z.object({ storeId: z.number() }))
+    .query(async ({ input }) => {
+      // In a real scenario, you'd use the 'googleapis' library here.
+      // For now, I'm constructing the URL structure.
+      const rootUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+      const options = {
+        redirect_uri: (process.env.NEXT_PUBLIC_API_URL || "https://www.raaenai.com").replace(/\/$/, '') + "/api/auth/google/callback",
+        client_id: process.env.GOOGLE_CLIENT_ID || "PLACEHOLDER_CLIENT_ID",
+        access_type: "offline",
+        response_type: "code",
+        prompt: "consent",
+        scope: [
+          "https://www.googleapis.com/auth/userinfo.profile",
+          "https://www.googleapis.com/auth/userinfo.email",
+          "https://www.googleapis.com/auth/gmail.send"
+        ].join(" "),
+        state: JSON.stringify({ storeId: input.storeId })
+      };
+
+      const qs = new URLSearchParams(options);
+      return { url: `${rootUrl}?${qs.toString()}` };
+    }),
+
   // PROTECTED — List conversations for merchant
   listConversations: protectedProcedure
     .input(z.object({ storeId: z.number() }))

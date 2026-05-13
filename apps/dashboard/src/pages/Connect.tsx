@@ -124,6 +124,17 @@ export default function Connect() {
     });
   };
 
+  const getGoogleUrl = trpc.messages.getGoogleAuthUrl.useQuery({
+    storeId: (window as any).__STORE_ID__ || 0
+  }, { enabled: false });
+
+  const handleGoogleConnect = async () => {
+    const { data } = await getGoogleUrl.refetch();
+    if (data?.url) {
+      window.location.href = data.url;
+    }
+  };
+
   return (
     <div className="p-8 space-y-8 max-w-7xl mx-auto animate-in fade-in duration-500">
       {/* Header */}
@@ -269,8 +280,8 @@ export default function Connect() {
                   <Input type="password" placeholder="xxxx xxxx xxxx xxxx" />
                 </div>
               </div>
-              <Button className="w-full font-bold" onClick={() => toast.info("Google OAuth is being configured.")}>
-                Connect with Google
+              <Button className="w-full font-bold" onClick={handleGoogleConnect} disabled={getGoogleUrl.isFetching}>
+                {getGoogleUrl.isFetching ? "Redirecting..." : "Connect with Google"}
               </Button>
             </TabsContent>
 
