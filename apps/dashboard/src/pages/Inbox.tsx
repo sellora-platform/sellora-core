@@ -29,16 +29,22 @@ export default function Inbox() {
   const { data: myStores } = trpc.stores.getMyStores.useQuery();
   const storeId = myStores?.[0]?.id || 0;
 
-  // 2. Fetch Conversations
+  // 2. Fetch Conversations with Polling (every 5s)
   const { data: conversations, isLoading: isLoadingConvs, refetch: refetchConvs } = trpc.messages.listConversations.useQuery(
     { storeId },
-    { enabled: !!storeId }
+    { 
+      enabled: !!storeId,
+      refetchInterval: 5000 // Poll every 5 seconds for new messages
+    }
   );
 
-  // 3. Fetch Messages for selected conversation
+  // 3. Fetch Messages for selected conversation with Polling
   const { data: messages, isLoading: isLoadingMsgs, refetch: refetchMsgs } = trpc.messages.listMessages.useQuery(
     { conversationId: selectedId || 0 },
-    { enabled: !!selectedId }
+    { 
+      enabled: !!selectedId,
+      refetchInterval: 3000 // Poll faster for active chat
+    }
   );
 
   const sendMutation = trpc.messages.sendMessage.useMutation({
@@ -64,11 +70,11 @@ export default function Inbox() {
         
         {/* Left Sidebar: Conversation List */}
         <div className="w-96 flex flex-col gap-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col">
             <h1 className="text-2xl font-black tracking-tight">Inbox</h1>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Filter className="w-4 h-4" />
-            </Button>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+              Store ID: {storeId} • {conversations?.length || 0} Chats Found
+            </p>
           </div>
 
           <div className="relative">
