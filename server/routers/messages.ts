@@ -82,6 +82,49 @@ export const messagesRouter = router({
       return { success: true };
     }),
 
+  // PROTECTED — Connect a new communication channel
+  connectChannel: protectedProcedure
+    .input(z.object({
+      storeId: z.number(),
+      type: z.enum(["whatsapp", "instagram", "facebook", "email", "sms"]),
+      settings: z.any()
+    }))
+    .mutation(async ({ input }) => {
+      const { storeId, type, settings } = input;
+
+      // Update if exists, otherwise insert
+      const existing = await db.query.communicationChannels.findFirst({
+        where: and(
+          eq(communicationChannels.storeId, storeId),
+          eq(communicationChannels.type, type)
+        )
+      });
+
+      if (existing) {
+        await db.update(communicationChannels)
+          .set({ settings, updatedAt: new Date() })
+          .where(eq(communicationChannels.id, existing.id));
+      } else {
+        await db.insert(communicationChannels).values({
+          storeId,
+          type,
+          settings,
+          status: 'active'
+        });
+      }
+
+      return { success: true };
+    }),
+
+  // PROTECTED — List all connected channels for a store
+  listChannels: protectedProcedure
+    .input(z.object({ storeId: z.number() }))
+    .query(async ({ input }) => {
+      return await db.query.communicationChannels.findMany({
+        where: eq(communicationChannels.storeId, input.storeId)
+      });
+    }),
+
   // PROTECTED — List conversations for merchant
   listConversations: protectedProcedure
     .input(z.object({ storeId: z.number() }))

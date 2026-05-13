@@ -9,12 +9,25 @@ import {
   Settings2,
   RefreshCw,
   Zap,
-  Info
+  Info,
+  X,
+  Plus
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
@@ -63,17 +76,52 @@ const CHANNELS = [
 
 export default function Connect() {
   const [loadingChannel, setLoadingChannel] = useState<string | null>(null);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [smtpForm, setSmtpForm] = useState({
+    host: '',
+    port: '465',
+    user: '',
+    pass: '',
+    fromName: ''
+  });
+
+  const utils = trpc.useUtils();
+  const connectChannel = trpc.messages.connectChannel.useMutation({
+    onSuccess: () => {
+      toast.success("Channel connected successfully!");
+      setShowEmailModal(false);
+      utils.messages.listChannels.invalidate();
+    },
+    onError: (err) => {
+      toast.error("Failed to connect channel: " + err.message);
+    }
+  });
 
   const handleConnect = (channelId: string) => {
+    if (channelId === 'email') {
+      setShowEmailModal(true);
+      return;
+    }
+
     setLoadingChannel(channelId);
-    // Simulation for now
     setTimeout(() => {
-      toast.info(`Connecting to ${channelId}... OAuth popup would appear here.`, {
-        description: "Official Meta/Google login integration is being initialized.",
-        icon: <Zap className="w-4 h-4 text-yellow-500" />
+      toast.info(`Connecting to ${channelId}...`, {
+        description: "Official Meta integration is coming in the next update.",
       });
       setLoadingChannel(null);
     }, 1500);
+  };
+
+  const handleSmtpSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    connectChannel.mutate({
+      storeId: (window as any).__STORE_ID__ || 0,
+      type: 'email',
+      settings: {
+        ...smtpForm,
+        provider: 'smtp'
+      }
+    });
   };
 
   return (
@@ -181,6 +229,112 @@ export default function Connect() {
           View Detailed Integration Guide <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
         </div>
       </div>
+
+      {/* Email Setup Modal */}
+      <Dialog open={showEmailModal} onOpenChange={setShowEmailModal}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              <Mail className="w-6 h-6 text-blue-600" />
+              Connect Business Email
+            </DialogTitle>
+            <DialogDescription>
+              Choose your email provider and enter your credentials to sync messages.
+            </DialogDescription>
+          </DialogHeader>
+
+          <Tabs defaultValue="smtp" className="mt-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="gmail">Google / Gmail</TabsTrigger>
+              <TabsTrigger value="smtp">Custom SMTP</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="gmail" className="space-y-4 py-4">
+              <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg space-y-3">
+                <div className="flex items-center gap-2 text-blue-700 font-bold text-sm">
+                  <Info className="w-4 h-4" />
+                  Gmail App Password Required
+                </div>
+                <p className="text-xs text-blue-600 leading-relaxed">
+                  For security, Google requires an <strong>App Password</strong>. Go to Google Account {">"} Security {">"} 2-Step Verification {">"} App Passwords.
+                </p>
+              </div>
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <Label>Gmail Address</Label>
+                  <Input placeholder="yourstore@gmail.com" />
+                </div>
+                <div className="space-y-1">
+                  <Label>App Password</Label>
+                  <Input type="password" placeholder="xxxx xxxx xxxx xxxx" />
+                </div>
+              </div>
+              <Button className="w-full font-bold" onClick={() => toast.info("Google OAuth is being configured.")}>
+                Connect with Google
+              </Button>
+            </TabsContent>
+
+            <TabsContent value="smtp" className="space-y-4 py-4">
+              <form onSubmit={handleSmtpSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label>SMTP Host</Label>
+                    <Input 
+                      placeholder="smtp.yourhost.com" 
+                      required 
+                      value={smtpForm.host}
+                      onChange={e => setSmtpForm({...smtpForm, host: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Port</Label>
+                    <Input 
+                      placeholder="465" 
+                      required 
+                      value={smtpForm.port}
+                      onChange={e => setSmtpForm({...smtpForm, port: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label>User / Email</Label>
+                  <Input 
+                    type="email" 
+                    placeholder="info@yourstore.com" 
+                    required 
+                    value={smtpForm.user}
+                    onChange={e => setSmtpForm({...smtpForm, user: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>Password</Label>
+                  <Input 
+                    type="password" 
+                    placeholder="••••••••" 
+                    required 
+                    value={smtpForm.pass}
+                    onChange={e => setSmtpForm({...smtpForm, pass: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>Sender Name (Displayed to customer)</Label>
+                  <Input 
+                    placeholder="Sellora Support" 
+                    required 
+                    value={smtpForm.fromName}
+                    onChange={e => setSmtpForm({...smtpForm, fromName: e.target.value})}
+                  />
+                </div>
+                <DialogFooter className="pt-4">
+                  <Button type="submit" className="w-full font-bold" disabled={connectChannel.isPending}>
+                    {connectChannel.isPending ? "Connecting..." : "Save SMTP Settings"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
