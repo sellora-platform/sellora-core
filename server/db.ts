@@ -7,20 +7,21 @@
 import { eq, desc, asc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
-import {
-  users, type InsertUser,
-  stores, type InsertStore,
-  products, type InsertProduct,
-  categories, type InsertCategory,
-  productVariants, type InsertProductVariant,
-  customers, type InsertCustomer,
-  orders, type InsertOrder,
-  orderItems, type InsertOrderItem,
-  discounts, type InsertDiscount,
-  aiInteractions, type InsertAIInteraction,
-  storeThemes, type InsertStoreTheme,
+import * as schema from "../db/schema";
+const {
+  users,
+  stores,
+  products,
+  categories,
+  productVariants,
+  customers,
+  orders,
+  orderItems,
+  discounts,
+  aiInteractions,
+  storeThemes,
   plans,
-} from "../db/schema";
+} = schema;
 
 // ============================================================================
 // Database Connection
@@ -32,7 +33,7 @@ function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
       const sql = neon(process.env.DATABASE_URL);
-      _db = drizzle(sql);
+      _db = drizzle(sql, { schema });
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
