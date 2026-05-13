@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import { db } from "../db";
-import { conversations, messages, communicationChannels, stores } from "../../db/schema";
+import { conversations, messages, communicationChannels, stores, users } from "../../db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { sendEmail } from "../_core/email";
 
@@ -64,7 +64,12 @@ export const messagesRouter = router({
       });
 
       // 4. Send Email Notification to Merchant
-      const merchantEmail = store.email || "support@sellora.com"; 
+      // Fetch the merchant (user) who owns this store to get their email
+      const merchant = await db.query.users.findFirst({
+        where: eq(users.id, store.merchantId),
+      });
+
+      const merchantEmail = merchant?.email || "support@sellora.com"; 
       await sendEmail({
         to: merchantEmail,
         subject: `New Contact Message from ${name} - ${store.name}`,
@@ -75,7 +80,7 @@ export const messagesRouter = router({
           <p><strong>Message:</strong></p>
           <p>${message}</p>
           <hr/>
-          <p>Reply directly from your <a href="https://dashboard.raaenai.com/connect">Sellora Connect Dashboard</a></p>
+          <p>Reply directly from your <a href="https://dashboard.raaenai.com/inbox">Sellora Inbox</a></p>
         `
       });
 
