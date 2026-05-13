@@ -1,8 +1,7 @@
 /**
  * Sellora Email Service
  * 
- * Industry standard email abstraction. Supports switching between 
- * providers (Resend, AWS SES, SMTP) easily.
+ * Industry standard email abstraction using Resend.
  */
 
 export async function sendEmail({ 
@@ -16,17 +15,31 @@ export async function sendEmail({
   html: string, 
   from?: string 
 }) {
-  console.log("-----------------------------------------");
-  console.log(`📧 SENDING EMAIL`);
-  console.log(`TO: ${to}`);
-  console.log(`FROM: ${from}`);
-  console.log(`SUBJECT: ${subject}`);
-  console.log(`HTML: ${html.substring(0, 100)}...`);
-  console.log("-----------------------------------------");
+  const apiKey = process.env.RESEND_API_KEY;
 
-  // Integration point for production (e.g. Resend)
-  // const resend = new Resend(process.env.RESEND_API_KEY);
-  // await resend.emails.send({ from, to, subject, html });
+  if (!apiKey) {
+    console.warn("⚠️ [Email] No RESEND_API_KEY found in environment. Logging to console instead.");
+    console.log(`TO: ${to}\nSUBJECT: ${subject}\nFROM: ${from}`);
+    return { success: true, mocked: true };
+  }
 
-  return { success: true, messageId: `mock_${Date.now()}` };
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ from, to, subject, html }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Failed to send email");
+
+    console.log(`✅ [Email] Successfully sent to ${to}`);
+    return { success: true, id: data.id };
+  } catch (error) {
+    console.error("❌ [Email] Send error:", error);
+    return { success: false, error };
+  }
 }
