@@ -53,8 +53,9 @@ const menuItems = [
   { icon: Star, label: "Reviews", path: "/reviews" },
   { icon: FileText, label: "Pages", path: "/pages" },
   { icon: Globe, label: "Domains", path: "/domains" },
-  { icon: MessageSquare, label: "AI Assistant", path: "/ai-assistant" },
-  { icon: MessageCircle, label: "Sellora Connect", path: "/connect" },
+  {icon: MessageSquare, label: "Inbox", path: "/inbox" },
+  { icon: MessageCircle, label: "Channels", path: "/connect" },
+  { icon: Zap, label: "AI Assistant", path: "/ai-assistant" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 

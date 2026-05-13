@@ -13,6 +13,7 @@ import OrderDetails from "./pages/OrderDetails";
 import Pages from "./pages/Pages";
 import PageEdit from "./pages/PageEdit";
 import Connect from "./pages/Connect";
+import Inbox from "./pages/Inbox";
 import Customers from "./pages/Customers";
 import Discounts from "./pages/Discounts";
 import Settings from "./pages/Settings";
@@ -145,6 +146,7 @@ function Router() {
       <Route path={"/features"} component={Features} />
       <Route path={"/benefits"} component={Benefits} />
       <Route path={"/dashboard"} component={Dashboard} />
+      <Route path={"/inbox"} component={Inbox} />
       <Route path={"/ai-assistant"} component={AIAssistant} />
       <Route path={"/products"} component={Products} />
       <Route path={"/products/new"} component={ProductCreate} />

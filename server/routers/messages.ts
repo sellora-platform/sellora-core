@@ -169,4 +169,60 @@ export const messagesRouter = router({
         orderBy: [messages.createdAt],
       });
     }),
+
+  // PROTECTED — Send a reply message from merchant
+  sendMessage: protectedProcedure
+    .input(z.object({
+      conversationId: z.number(),
+      body: z.string().min(1),
+    }))
+    .mutation(async ({ input }) => {
+      const { conversationId, body } = input;
+
+      // 1. Get conversation details
+      const conversation = await db.query.conversations.findFirst({
+        where: eq(conversations.id, conversationId),
+        with: {
+          channel: true
+        }
+      });
+
+      if (!conversation) throw new Error("Conversation not found");
+
+      // 2. Insert message into DB
+      await db.insert(messages).values({
+        conversationId,
+        senderType: 'merchant',
+        body,
+        status: 'sent',
+      });
+
+      // 3. Update conversation
+      await db.update(conversations)
+        .set({ 
+          lastMessage: body, 
+          lastActivity: new Date(),
+          unreadCount: 0 // Merchant has replied
+        })
+        .where(eq(conversations.id, conversationId));
+
+      // 4. Actually send the external message
+      if (conversation.channel?.type === 'email') {
+        const settings = (conversation.channel.settings as any) || {};
+        
+        // Use Resend for merchant notifications, but we can also use their own SMTP/Gmail later
+        // For now, we reply via our system email to the customer's email
+        await sendEmail({
+          to: conversation.customerIdentifier,
+          subject: `Re: Message regarding your inquiry`,
+          html: `
+            <p>${body}</p>
+            <br/>
+            <p>— ${conversation.customerName || 'Store Team'}</p>
+          `
+        });
+      }
+
+      return { success: true };
+    }),
 });
