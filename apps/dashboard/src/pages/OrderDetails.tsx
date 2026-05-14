@@ -47,6 +47,11 @@ export default function OrderDetails() {
     },
     onError: (err) => toast.error(err.message)
   });
+  
+  const sendEmailMutation = trpc.orders.sendManualConfirmationEmail.useMutation({
+    onSuccess: () => toast.success("Confirmation email sent to customer"),
+    onError: (err) => toast.error(err.message)
+  });
 
   if (!isAuthenticated) return null;
 
@@ -118,7 +123,15 @@ export default function OrderDetails() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+            <Button 
+              variant="outline"
+              className="gap-2"
+              onClick={() => sendEmailMutation.mutate({ orderId: order.id })}
+              disabled={sendEmailMutation.isPending}
+            >
+              <Mail className="w-4 h-4" />
+              Send Email
+            </Button>
             {order.status === "pending" && (
               <Button 
                 onClick={() => updateStatusMutation.mutate({ id: order.id, status: "processing" })}

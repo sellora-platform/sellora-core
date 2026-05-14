@@ -83,6 +83,8 @@ export const stores = pgTable("stores", {
   fontFamily: varchar("font_family", { length: 100 }).default("Inter"),
   theme: storeThemeEnum("theme").default("light"),
   isActive: boolean("is_active").default(true),
+  autoOrderEmail: boolean("auto_order_email").default(true),
+  autoContactReply: boolean("auto_contact_reply").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({

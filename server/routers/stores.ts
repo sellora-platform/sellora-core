@@ -225,6 +225,8 @@ export const storesRouter = router({
         fontFamily: z.string().optional(),
         theme: z.enum(["light", "dark", "auto"]).optional(),
         customDomain: z.string().nullable().optional(),
+        autoOrderEmail: z.boolean().optional(),
+        autoContactReply: z.boolean().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {

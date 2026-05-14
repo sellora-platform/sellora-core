@@ -5,9 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Settings, Save, Palette, Globe, ArrowRight } from "lucide-react";
+import { Settings, Save, Palette, Globe, ArrowRight, Zap } from "lucide-react";
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 
 export default function StoreSettings() {
   const { isAuthenticated, loading } = useAuth({ redirectOnUnauthenticated: true });
@@ -27,6 +29,8 @@ export default function StoreSettings() {
     secondaryColor: "#ffffff",
     fontFamily: "sans-serif",
     customDomain: "",
+    autoOrderEmail: true,
+    autoContactReply: true,
   });
 
   // Sync form data when store query finishes
@@ -39,6 +43,8 @@ export default function StoreSettings() {
         secondaryColor: storeQuery.data.secondaryColor || "#ffffff",
         fontFamily: storeQuery.data.fontFamily || "sans-serif",
         customDomain: storeQuery.data.customDomain || "",
+        autoOrderEmail: storeQuery.data.autoOrderEmail ?? true,
+        autoContactReply: storeQuery.data.autoContactReply ?? true,
       });
     }
   }, [storeQuery.data]);
@@ -55,9 +61,10 @@ export default function StoreSettings() {
         storeId: storeQuery.data.id,
         ...formData,
       });
-      // Success toast is handled by TRPC or we could add one here
+      toast.success("Settings updated successfully");
     } catch (error) {
       console.error("Failed to update store:", error);
+      toast.error("Failed to update settings");
     }
   };
 
@@ -110,6 +117,37 @@ export default function StoreSettings() {
                     className="border-border/50 focus:border-primary resize-none"
                     rows={4}
                     placeholder="Tell your customers about your store"
+                  />
+                </div>
+              </div>
+            </Card>
+
+            {/* Automations */}
+            <Card className="p-6 border-border/50">
+              <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Zap className="w-5 h-5 text-yellow-500" />
+                Automations & Notifications
+              </h2>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/10">
+                  <div className="space-y-0.5">
+                    <h3 className="font-medium text-foreground">Auto Order Confirmation Email</h3>
+                    <p className="text-sm text-foreground/60">Automatically send an email to customers after they place an order.</p>
+                  </div>
+                  <Switch
+                    checked={formData.autoOrderEmail}
+                    onCheckedChange={(checked) => setFormData({ ...formData, autoOrderEmail: checked })}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/10">
+                  <div className="space-y-0.5">
+                    <h3 className="font-medium text-foreground">Auto Contact Form Reply</h3>
+                    <p className="text-sm text-foreground/60">Automatically send a reply after someone submits your contact form.</p>
+                  </div>
+                  <Switch
+                    checked={formData.autoContactReply}
+                    onCheckedChange={(checked) => setFormData({ ...formData, autoContactReply: checked })}
                   />
                 </div>
               </div>

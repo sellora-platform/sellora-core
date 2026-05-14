@@ -108,42 +108,48 @@ export const ordersRouter = router({
           
           const trackUrl = `${storeUrl}/track?order=${orderNumber}&email=${input.customerEmail}`;
 
-          // 2. Send Order Confirmation Email to Customer
-          await sendEmail({
-            from: `${storeName} <no-reply@raaenai.com>`,
-            to: input.customerEmail,
-            subject: `Order Confirmed - #${orderNumber}`,
-            html: `
-              <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden; color: #333;">
-                <div style="background: #000; padding: 30px; text-align: center; color: #fff;">
-                  <h1 style="margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px;">Order Confirmed</h1>
-                  <p style="opacity: 0.7; margin-top: 10px;">Thank you for shopping with ${storeName}</p>
-                </div>
-                <div style="padding: 40px;">
-                  <p style="font-size: 16px; line-height: 1.6;">Hello <strong>${input.customerName}</strong>,</p>
-                  <p style="font-size: 16px; line-height: 1.6;">Your order <strong>#${orderNumber}</strong> has been received and is currently being processed.</p>
-                  
-                  <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 30px 0;">
-                    <h3 style="margin-top: 0; font-size: 14px; text-transform: uppercase; color: #999;">Order Summary</h3>
-                    <p style="font-size: 18px; font-weight: bold; margin: 5px 0;">Total: $${total.toFixed(2)}</p>
-                    <p style="font-size: 14px; margin: 5px 0;">Status: Pending Payment / Processing</p>
+          // 2. Send Order Confirmation Email to Customer (ONLY IF AUTO-EMAIL IS ENABLED)
+          if (store.autoOrderEmail) {
+            await sendEmail({
+              from: `${storeName} <no-reply@raaenai.com>`,
+              to: input.customerEmail,
+              subject: `Order Confirmed - #${orderNumber}`,
+              html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden; color: #333;">
+                  <div style="background: #000; padding: 30px; text-align: center; color: #fff;">
+                    <h1 style="margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px;">Order Confirmed</h1>
+                    <p style="opacity: 0.7; margin-top: 10px;">Thank you for shopping with ${storeName}</p>
                   </div>
+                  <div style="padding: 40px;">
+                    <p style="font-size: 16px; line-height: 1.6;">Hello <strong>${input.customerName}</strong>,</p>
+                    <p style="font-size: 16px; line-height: 1.6;">We've received your order <strong>#${orderNumber}</strong> and it is now being processed by our team.</p>
+                    
+                    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 30px 0;">
+                      <h3 style="margin-top: 0; font-size: 14px; text-transform: uppercase; color: #999;">Order Details</h3>
+                      <p style="font-size: 18px; font-weight: bold; margin: 5px 0;">Total Amount: $${total.toFixed(2)}</p>
+                      <p style="font-size: 14px; margin: 5px 0;">Payment Method: ${input.paymentMethod.toUpperCase()}</p>
+                    </div>
 
-                  <div style="text-align: center; margin: 40px 0;">
-                    <a href="${trackUrl}" style="background: #000; color: #fff; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Track Your Order</a>
-                  </div>
+                    <div style="text-align: center; margin: 40px 0;">
+                      <a href="${trackUrl}" style="background: #000; color: #fff; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Track Your Order</a>
+                    </div>
 
-                  <div style="border-top: 1px solid #eee; padding-top: 30px; margin-top: 30px; text-align: center;">
-                    <p style="font-size: 14px; color: #666;">Need help? Contact us via WhatsApp</p>
-                    <a href="https://wa.me/${input.customerPhone.replace(/[^0-9]/g, '')}" style="color: #25D366; font-weight: bold; text-decoration: none; font-size: 16px;">Chat on WhatsApp</a>
+                    <p style="font-size: 14px; color: #666; line-height: 1.5;">
+                      You will receive another update as soon as your items are on their way. If you have any questions in the meantime, feel free to reach out to us.
+                    </p>
+
+                    <div style="border-top: 1px solid #eee; padding-top: 30px; margin-top: 30px; text-align: center;">
+                      <p style="font-size: 14px; color: #666;">Need quick help? Contact us via WhatsApp</p>
+                      <a href="https://wa.me/${input.customerPhone.replace(/[^0-9]/g, '')}" style="color: #25D366; font-weight: bold; text-decoration: none; font-size: 16px;">Chat on WhatsApp</a>
+                    </div>
+                  </div>
+                  <div style="background: #fcfcfc; padding: 20px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee;">
+                    &copy; ${new Date().getFullYear()} ${storeName}. All rights reserved.
                   </div>
                 </div>
-                <div style="background: #fcfcfc; padding: 20px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee;">
-                  &copy; ${new Date().getFullYear()} ${storeName}. All rights reserved.
-                </div>
-              </div>
-            `
-          });
+              `
+            });
+          }
 
           // 3. Integrate with Inbox (Unified Messaging)
           // Find or create conversation for this order
@@ -303,5 +309,68 @@ export const ordersRouter = router({
         .where(eq(orders.id, input.id))
         .returning();
       return updated;
+    }),
+  
+  // PROTECTED — Manually send confirmation email
+  sendManualConfirmationEmail: protectedProcedure
+    .input(z.object({ orderId: z.number() }))
+    .mutation(async ({ input }) => {
+      // 1. Fetch Order and Store
+      const order = await db.query.orders.findFirst({
+        where: eq(orders.id, input.orderId),
+      });
+
+      if (!order) throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
+
+      const store = await db.query.stores.findFirst({
+        where: eq(stores.id, order.storeId),
+      });
+
+      if (!store) throw new TRPCError({ code: "NOT_FOUND", message: "Store not found" });
+
+      const storeName = store.name;
+      const storeUrl = store.customDomain 
+        ? `https://${store.customDomain}` 
+        : `https://${store.slug}.raaenai.com`;
+      
+      const trackUrl = `${storeUrl}/track?order=${order.orderNumber}&email=${order.customerEmail}`;
+
+      // 2. Send Email
+      await sendEmail({
+        from: `${storeName} <no-reply@raaenai.com>`,
+        to: order.customerEmail,
+        subject: `Order Confirmation - #${order.orderNumber}`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden; color: #333;">
+            <div style="background: #000; padding: 30px; text-align: center; color: #fff;">
+              <h1 style="margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px;">Order Confirmed</h1>
+              <p style="opacity: 0.7; margin-top: 10px;">Thank you for shopping with ${storeName}</p>
+            </div>
+            <div style="padding: 40px;">
+              <p style="font-size: 16px; line-height: 1.6;">Hello <strong>${order.customerName}</strong>,</p>
+              <p style="font-size: 16px; line-height: 1.6;">Your order <strong>#${order.orderNumber}</strong> has been confirmed and is being processed.</p>
+              
+              <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 30px 0;">
+                <h3 style="margin-top: 0; font-size: 14px; text-transform: uppercase; color: #999;">Order Summary</h3>
+                <p style="font-size: 18px; font-weight: bold; margin: 5px 0;">Total Amount: $${order.total}</p>
+              </div>
+
+              <div style="text-align: center; margin: 40px 0;">
+                <a href="${trackUrl}" style="background: #000; color: #fff; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Track Your Order</a>
+              </div>
+
+              <div style="border-top: 1px solid #eee; padding-top: 30px; margin-top: 30px; text-align: center;">
+                <p style="font-size: 14px; color: #666;">Need help? Contact us via WhatsApp</p>
+                <a href="https://wa.me/${order.customerPhone.replace(/[^0-9]/g, '')}" style="color: #25D366; font-weight: bold; text-decoration: none; font-size: 16px;">Chat on WhatsApp</a>
+              </div>
+            </div>
+            <div style="background: #fcfcfc; padding: 20px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee;">
+              &copy; ${new Date().getFullYear()} ${storeName}. All rights reserved.
+            </div>
+          </div>
+        `
+      });
+
+      return { success: true };
     }),
 });
