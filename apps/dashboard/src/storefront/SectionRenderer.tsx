@@ -54,7 +54,12 @@ export const SECTION_SCHEMAS: Record<string, any> = {
         { label: "Light", value: "light" },
         { label: "Dark", value: "dark" },
         { label: "Accent", value: "accent" }
-      ], default: "light" }
+      ], default: "light" },
+      { id: "instagram", type: "text", label: "Instagram URL", default: "" },
+      { id: "tiktok", type: "text", label: "TikTok URL", default: "" },
+      { id: "facebook", type: "text", label: "Facebook URL", default: "" },
+      { id: "youtube", type: "text", label: "YouTube URL", default: "" },
+      { id: "x", type: "text", label: "X (Twitter) URL", default: "" },
     ]
   },
   hero: HeroSchema,
