@@ -43,16 +43,6 @@ const CHANNELS = [
     comingSoon: false
   },
   {
-    id: 'instagram',
-    name: 'Instagram Direct',
-    description: 'Manage Instagram DMs and Story replies directly from your inbox.',
-    icon: Instagram,
-    color: 'bg-pink-600',
-    status: 'Not Connected',
-    features: ['DM Management', 'Story Reply Tracking', 'Lead Generation'],
-    comingSoon: false
-  },
-  {
     id: 'email',
     name: 'Business Email',
     description: 'Sync your Gmail, Outlook or custom SMTP email addresses.',
@@ -61,16 +51,6 @@ const CHANNELS = [
     status: 'Not Connected',
     features: ['Unified Inbox', 'Custom Domain Tracking', 'Campaigns'],
     comingSoon: false
-  },
-  {
-    id: 'messenger',
-    name: 'FB Messenger',
-    description: 'Integrate your Facebook Page messages with your storefront.',
-    icon: MessageSquare,
-    color: 'bg-blue-500',
-    status: 'Coming Soon',
-    features: ['Page Messages', 'Automated Chatbots'],
-    comingSoon: true
   }
 ];
 

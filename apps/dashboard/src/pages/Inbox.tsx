@@ -352,12 +352,6 @@ export default function Inbox() {
                   </div>
                   <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">WhatsApp</span>
                 </div>
-                <div className="flex flex-col items-center gap-2 group opacity-40 grayscale">
-                  <div className="w-12 h-12 rounded-2xl bg-pink-500/10 text-pink-500 flex items-center justify-center border border-pink-500/20">
-                    <Instagram className="w-6 h-6" />
-                  </div>
-                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Instagram</span>
-                </div>
               </div>
             </div>
           )}

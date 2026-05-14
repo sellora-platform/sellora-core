@@ -91,7 +91,7 @@ export const messagesRouter = router({
   connectChannel: protectedProcedure
     .input(z.object({
       storeId: z.number(),
-      type: z.enum(["whatsapp", "instagram", "facebook", "email", "sms"]),
+      type: z.enum(["whatsapp", "email"]),
       settings: z.any()
     }))
     .mutation(async ({ input }) => {
