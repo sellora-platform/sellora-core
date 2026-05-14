@@ -656,7 +656,6 @@ export default function ThemeEditor() {
                     Brand Colors
                   </h3>
                   
-                  {/* Color Preview Bar */}
                   <div className="flex h-8 rounded-lg overflow-hidden mb-4 border border-[#f1f1f1]">
                     <div className="flex-1" style={{ background: globalSettings.backgroundColor }} />
                     <div className="flex-1" style={{ background: globalSettings.primaryColor }} />
@@ -703,12 +702,66 @@ export default function ThemeEditor() {
                   </div>
                 </div>
 
-                {/* Divider */}
                 <div className="border-t border-[#f1f1f1]" />
 
+                {/* Typography Section */}
+                <div>
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a1a1a] mb-4 flex items-center gap-2">
+                    <Box className="w-3.5 h-3.5 text-[#008060]" />
+                    Typography
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="p-2.5 bg-white border border-[#f1f1f1] rounded-lg">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Body Font</p>
+                      <Select
+                        value={globalSettings.fontFamily}
+                        onValueChange={(val: string) => setGlobalSettings({ ...globalSettings, fontFamily: val })}
+                      >
+                        <SelectTrigger className="w-full h-9 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[
+                            { value: "Inter", label: "Inter", hint: "Clean & Modern" },
+                            { value: "Outfit", label: "Outfit", hint: "Bold & Contemporary" },
+                            { value: "Playfair Display", label: "Playfair Display", hint: "Elegant Serif" },
+                            { value: "DM Sans", label: "DM Sans", hint: "Friendly & Readable" },
+                          ].map(f => (
+                            <SelectItem key={f.value} value={f.value}>
+                              <span>{f.label}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="p-2.5 bg-white border border-[#f1f1f1] rounded-lg">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Button Style</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { value: "0rem", label: "Sharp" },
+                          { value: "0.5rem", label: "Rounded" },
+                          { value: "9999px", label: "Pill" },
+                        ].map(opt => (
+                          <button
+                            key={opt.value}
+                            onClick={() => setGlobalSettings({ ...globalSettings, borderRadius: opt.value })}
+                            className={`py-2 text-xs font-bold border transition-all ${
+                              globalSettings.borderRadius === opt.value 
+                                ? 'border-[#008060] bg-[#008060]/5 text-[#008060]' 
+                                : 'border-[#e1e1e1] text-[#616161]'
+                            }`}
+                            style={{ borderRadius: opt.value === '9999px' ? '9999px' : '4px' }}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
+
+                <div className="border-t border-[#f1f1f1]" />
 
                 {/* Social Media Section */}
                 <div>
@@ -718,24 +771,23 @@ export default function ThemeEditor() {
                   </h3>
                   <div className="space-y-4">
                     {[
-                      { id: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/yourstore', icon: <Instagram className="w-4 h-4" /> },
-                      { id: 'tiktok', label: 'TikTok', placeholder: 'https://tiktok.com/@yourstore', icon: <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.06-1.51-.38-.31-.73-.67-1.04-1.07v10.3c0 1.9-.43 3.81-1.63 5.23-1.61 1.93-4.21 2.79-6.66 2.37-2.35-.38-4.48-2.07-5.32-4.32-.97-2.52-.39-5.6 1.48-7.58 1.41-1.53 3.49-2.28 5.53-2.13v4.11c-1.25-.11-2.58.26-3.48 1.18-1.06 1.05-1.19 2.8-.46 4.1 1 1.66 3.19 2.37 4.97 1.61 1.06-.44 1.78-1.5 1.78-2.64V.02z"/></svg> },
-                      { id: 'x', label: 'X (Twitter)', placeholder: 'https://x.com/yourstore', icon: <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> },
-                      { id: 'facebook', label: 'Facebook', placeholder: 'https://facebook.com/yourstore', icon: <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> },
-                      { id: 'youtube', label: 'YouTube', placeholder: 'https://youtube.com/@yourstore', icon: <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg> },
+                      { id: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/yourstore', icon: <Star className="w-4 h-4" /> },
+                      { id: 'tiktok', label: 'TikTok', placeholder: 'https://tiktok.com/@yourstore', icon: <Star className="w-4 h-4" /> },
+                      { id: 'x', label: 'X (Twitter)', placeholder: 'https://x.com/yourstore', icon: <Star className="w-4 h-4" /> },
+                      { id: 'facebook', label: 'Facebook', placeholder: 'https://facebook.com/yourstore', icon: <Star className="w-4 h-4" /> },
+                      { id: 'youtube', label: 'YouTube', placeholder: 'https://youtube.com/@yourstore', icon: <Star className="w-4 h-4" /> },
                     ].map((platform) => (
                       <div key={platform.id} className="space-y-2">
                         <Label className="text-xs font-semibold flex items-center gap-2">
-                          {platform.icon}
                           {platform.label}
                         </Label>
                         <Input 
                           placeholder={platform.placeholder}
-                          value={globalSettings.socialLinks[platform.id as keyof typeof globalSettings.socialLinks]}
+                          value={(globalSettings.socialLinks as any)?.[platform.id] || ""}
                           onChange={(e) => setGlobalSettings({
                             ...globalSettings,
                             socialLinks: {
-                              ...globalSettings.socialLinks,
+                              ...(globalSettings.socialLinks as any),
                               [platform.id]: e.target.value
                             }
                           })}
@@ -743,9 +795,6 @@ export default function ThemeEditor() {
                         />
                       </div>
                     ))}
-                  </div>
-                </div>
-
                   </div>
                 </div>
 
