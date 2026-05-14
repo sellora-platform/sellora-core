@@ -24,6 +24,21 @@ import {
 import { trpc } from "@/lib/trpc";
 import { formatDistanceToNow, format } from "date-fns";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
+
+const WHATSAPP_TEMPLATES = [
+  { name: 'Order Confirmed', text: 'Hi! Your order has been received and is being processed. Thanks for shopping with us!' },
+  { name: 'Shipping Update', text: 'Great news! Your order is on its way. You will receive tracking info shortly.' },
+  { name: 'Support Reply', text: 'Hi! We have received your query. Our team will get back to you shortly.' },
+  { name: 'Payment Reminder', text: 'Hi! We noticed your order is pending. Let us know if you need help completing the payment.' },
+];
 
 export default function Inbox() {
   const { isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
@@ -258,18 +273,54 @@ export default function Inbox() {
                   />
                   <div className="flex justify-between items-center px-2 pb-1">
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"><Clock className="w-4 h-4" /></Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors">
+                            <Clock className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-64">
+                          <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Quick Templates</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {WHATSAPP_TEMPLATES.map((t, i) => (
+                            <DropdownMenuItem 
+                              key={i} 
+                              className="text-xs font-medium cursor-pointer py-2"
+                              onClick={() => setReplyText(t.text)}
+                            >
+                              {t.name}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"><Mail className="w-4 h-4" /></Button>
                     </div>
-                    <Button 
-                      size="sm" 
-                      className="rounded-xl font-bold h-9 px-6 shadow-lg shadow-primary/20 transition-all active:scale-95"
-                      onClick={handleSend}
-                      disabled={sendMutation.isPending || !replyText.trim()}
-                    >
-                      {sendMutation.isPending ? "Sending..." : "Send"}
-                      <Send className="w-3.5 h-3.5 ml-2" />
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      {/* WhatsApp Reply Button (shows if identifier is not an email) */}
+                      {!activeConv.customerIdentifier.includes('@') && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="rounded-xl font-bold h-9 px-4 border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all"
+                          onClick={() => {
+                            const phone = activeConv.customerIdentifier.replace(/[^0-9]/g, '');
+                            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(replyText || 'Hello!')}`, '_blank');
+                          }}
+                        >
+                          <MessageCircle className="w-3.5 h-3.5 mr-2" />
+                          WhatsApp
+                        </Button>
+                      )}
+                      <Button 
+                        size="sm" 
+                        className="rounded-xl font-bold h-9 px-6 shadow-lg shadow-primary/20 transition-all active:scale-95"
+                        onClick={handleSend}
+                        disabled={sendMutation.isPending || !replyText.trim()}
+                      >
+                        {sendMutation.isPending ? "Sending..." : "Send"}
+                        <Send className="w-3.5 h-3.5 ml-2" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 <p className="text-[9px] text-center text-muted-foreground mt-3 font-bold uppercase tracking-[0.2em] opacity-50">
