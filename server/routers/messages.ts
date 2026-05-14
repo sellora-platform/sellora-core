@@ -230,17 +230,26 @@ export const messagesRouter = router({
       const isEmail = conversation.customerIdentifier.includes('@');
       
       if (channel?.type === 'email' || (isEmail && !conversation.channelId)) {
-        // Use Resend for merchant notifications
-        // If it's a contact form message (no channelId), we still want to reply via email
+        // Fetch store name for branding
+        const store = await db.query.stores.findFirst({
+          where: eq(stores.id, conversation.storeId),
+        });
+
+        const storeName = store?.name || "Sellora Store";
+
         await sendEmail({
+          from: `${storeName} <no-reply@raaenai.com>`,
           to: conversation.customerIdentifier,
-          subject: `Re: Message from ${conversation.customerName || 'Customer'}`,
+          subject: `Reply from ${storeName}`,
           html: `
-            <div style="font-family: sans-serif; line-height: 1.6; color: #333;">
-              <p>${body.replace(/\n/g, '<br/>')}</p>
-              <br/>
-              <hr style="border: none; border-top: 1px solid #eee;" />
-              <p style="font-size: 12px; color: #666;">This is a reply from the store team regarding your inquiry.</p>
+            <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+              <h2 style="color: #000; margin-top: 0;">${storeName}</h2>
+              <div style="padding: 10px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; margin: 20px 0;">
+                <p style="white-space: pre-wrap;">${body}</p>
+              </div>
+              <p style="font-size: 12px; color: #999;">
+                This is a response to your inquiry. You can reply to this email or visit our store.
+              </p>
             </div>
           `
         });
