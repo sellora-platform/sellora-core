@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { 
   Search, 
   Send, 
@@ -14,16 +15,22 @@ import {
   MoreVertical,
   CheckCircle2,
   Clock,
-  ChevronRight
+  ChevronRight,
+  Info,
+  Calendar,
+  ShoppingBag,
+  History
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function Inbox() {
   const { isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [replyText, setReplyText] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showDetails, setShowDetails] = useState(true);
 
   // 1. Fetch Store ID first
   const { data: myStores } = trpc.stores.getMyStores.useQuery();
@@ -38,7 +45,6 @@ export default function Inbox() {
     }
   );
 
-  // 3. Fetch Messages for selected conversation with Polling
   const { data: messages, isLoading: isLoadingMsgs, refetch: refetchMsgs } = trpc.messages.listMessages.useQuery(
     { conversationId: selectedId || 0 },
     { 
@@ -46,6 +52,10 @@ export default function Inbox() {
       refetchInterval: 3000 // Poll faster for active chat
     }
   );
+
+  const markAsRead = trpc.messages.markAsRead.useMutation({
+    onSuccess: () => refetchConvs()
+  });
 
   const sendMutation = trpc.messages.sendMessage.useMutation({
     onSuccess: () => {
@@ -55,7 +65,21 @@ export default function Inbox() {
     }
   });
 
-  const activeConv = conversations?.find(c => c.id === selectedId);
+  const activeConv = (conversations as any[])?.find((c: any) => c.id === selectedId);
+
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  // Mark as read when selecting conversation
+  useEffect(() => {
+    if (selectedId && activeConv && activeConv.unreadCount > 0) {
+      markAsRead.mutate({ conversationId: selectedId });
+    }
+  }, [selectedId, activeConv?.unreadCount]);
 
   const handleSend = () => {
     if (!selectedId || !replyText.trim()) return;
@@ -94,7 +118,7 @@ export default function Inbox() {
                   <p className="text-sm font-bold text-muted-foreground">No messages yet.</p>
                 </div>
               ) : (
-                conversations?.map((conv) => (
+                (conversations as any[])?.map((conv: any) => (
                   <div 
                     key={conv.id}
                     onClick={() => setSelectedId(conv.id)}
@@ -152,45 +176,72 @@ export default function Inbox() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon"><Search className="w-4 h-4" /></Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setShowDetails(!showDetails)}
+                    className={showDetails ? "text-primary bg-primary/10" : ""}
+                  >
+                    <Info className="w-4 h-4" />
+                  </Button>
                   <Button variant="ghost" size="icon"><MoreVertical className="w-4 h-4" /></Button>
                 </div>
               </div>
 
               {/* Message List */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-primary/10">
+              <div 
+                ref={scrollRef}
+                className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-primary/10 scroll-smooth"
+              >
                 {isLoadingMsgs ? (
-                  <div className="h-full flex items-center justify-center animate-pulse">Loading history...</div>
-                ) : (
-                  messages?.map((msg) => (
-                    <div 
-                      key={msg.id} 
-                      className={`flex ${msg.senderType === 'merchant' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div className={`max-w-[70%] group ${msg.senderType === 'merchant' ? 'items-end' : 'items-start'} flex flex-col gap-1.5`}>
-                        <div className={`px-4 py-3 rounded-2xl text-sm font-medium leading-relaxed shadow-sm ${
-                          msg.senderType === 'merchant' 
-                          ? 'bg-primary text-primary-foreground rounded-tr-none' 
-                          : 'bg-muted/80 text-foreground border border-border/50 rounded-tl-none'
-                        }`}>
-                          {msg.body}
-                        </div>
-                        <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
-                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          {msg.senderType === 'merchant' && <CheckCircle2 className="w-2.5 h-2.5 inline ml-1 text-primary" />}
-                        </span>
-                      </div>
+                  <div className="h-full flex items-center justify-center animate-pulse">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Loading history...</p>
                     </div>
-                  ))
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-6">
+                    <div className="flex justify-center">
+                      <Badge variant="outline" className="bg-muted/50 text-[10px] font-bold uppercase tracking-widest px-3 py-1">
+                        Conversation Started {format(new Date(activeConv.createdAt), 'MMM dd, yyyy')}
+                      </Badge>
+                    </div>
+                    {(messages as any[])?.map((msg: any, idx: number) => {
+                      const showAvatar = idx === 0 || (messages as any[])[idx-1].senderType !== msg.senderType;
+                      return (
+                        <div 
+                          key={msg.id} 
+                          className={`flex ${msg.senderType === 'merchant' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
+                        >
+                          <div className={`max-w-[80%] group ${msg.senderType === 'merchant' ? 'items-end' : 'items-start'} flex flex-col gap-1.5`}>
+                            <div className={`px-4 py-3 rounded-2xl text-[13px] font-medium leading-relaxed shadow-sm transition-all hover:shadow-md ${
+                              msg.senderType === 'merchant' 
+                              ? 'bg-primary text-primary-foreground rounded-tr-none' 
+                              : 'bg-card text-foreground border border-border/50 rounded-tl-none'
+                            }`}>
+                              {msg.body.split('\n').map((line: string, i: number) => (
+                                <p key={i}>{line}</p>
+                              ))}
+                            </div>
+                            <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                              {format(new Date(msg.createdAt), 'hh:mm a')}
+                              {msg.senderType === 'merchant' && <CheckCircle2 className="w-2.5 h-2.5 text-primary" />}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
 
               {/* Reply Box */}
               <div className="p-4 bg-muted/20 border-t border-border/50">
-                <div className="bg-background border border-border/50 rounded-2xl p-2 focus-within:ring-2 ring-primary/20 transition-all flex flex-col gap-2">
+                <div className="bg-background border border-border/50 rounded-2xl p-2 focus-within:ring-2 ring-primary/20 transition-all flex flex-col gap-2 shadow-sm">
                   <textarea 
-                    className="w-full bg-transparent border-none focus:ring-0 resize-none px-3 pt-2 text-sm min-h-[80px]"
-                    placeholder={`Reply to ${activeConv.customerName}...`}
+                    className="w-full bg-transparent border-none focus:ring-0 resize-none px-3 pt-2 text-[13px] min-h-[100px] scrollbar-none"
+                    placeholder={`Type a professional reply to ${activeConv.customerName}...`}
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     onKeyDown={(e) => {
@@ -202,58 +253,127 @@ export default function Inbox() {
                   />
                   <div className="flex justify-between items-center px-2 pb-1">
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"><Clock className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"><Clock className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"><Mail className="w-4 h-4" /></Button>
                     </div>
                     <Button 
                       size="sm" 
-                      className="rounded-xl font-bold h-9 px-5 shadow-lg shadow-primary/20"
+                      className="rounded-xl font-bold h-9 px-6 shadow-lg shadow-primary/20 transition-all active:scale-95"
                       onClick={handleSend}
                       disabled={sendMutation.isPending || !replyText.trim()}
                     >
-                      {sendMutation.isPending ? "Sending..." : "Send Reply"}
+                      {sendMutation.isPending ? "Sending..." : "Send"}
                       <Send className="w-3.5 h-3.5 ml-2" />
                     </Button>
                   </div>
                 </div>
-                <p className="text-[10px] text-center text-muted-foreground mt-3 font-bold uppercase tracking-widest">
-                  Secure message via {activeConv.customerIdentifier}
+                <p className="text-[9px] text-center text-muted-foreground mt-3 font-bold uppercase tracking-[0.2em] opacity-50">
+                  Transmitting via {activeConv.customerIdentifier}
                 </p>
               </div>
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-6">
-              <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center animate-bounce duration-[3000ms]">
+              <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center animate-bounce duration-[3000ms] border border-primary/10">
                 <MessageSquare className="w-12 h-12 text-primary/30" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl font-black text-foreground">Your Unified Inbox</h3>
-                <p className="text-muted-foreground max-w-sm font-medium">
-                  Select a conversation from the left to start chatting with your customers in real-time.
+                <h3 className="text-3xl font-black text-foreground tracking-tighter uppercase italic">Unified Inbox</h3>
+                <p className="text-muted-foreground max-w-sm font-medium text-sm">
+                  Select a communication to begin. Your omnichannel support is now operational.
                 </p>
               </div>
-              <div className="flex gap-4 pt-4">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
-                    <Mail className="w-5 h-5" />
+              <div className="flex gap-6 pt-4">
+                <div className="flex flex-col items-center gap-2 group cursor-help">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center border border-blue-500/20 group-hover:bg-blue-500 group-hover:text-white transition-all">
+                    <Mail className="w-6 h-6" />
                   </div>
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Email</span>
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Email</span>
                 </div>
-                <div className="flex flex-col items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center grayscale opacity-40">
-                    <MessageCircle className="w-5 h-5" />
+                <div className="flex flex-col items-center gap-2 group opacity-40 grayscale">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20">
+                    <MessageCircle className="w-6 h-6" />
                   </div>
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">WhatsApp</span>
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">WhatsApp</span>
                 </div>
-                <div className="flex flex-col items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-pink-500/10 text-pink-500 flex items-center justify-center grayscale opacity-40">
-                    <Instagram className="w-5 h-5" />
+                <div className="flex flex-col items-center gap-2 group opacity-40 grayscale">
+                  <div className="w-12 h-12 rounded-2xl bg-pink-500/10 text-pink-500 flex items-center justify-center border border-pink-500/20">
+                    <Instagram className="w-6 h-6" />
                   </div>
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Instagram</span>
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Instagram</span>
                 </div>
               </div>
             </div>
           )}
         </Card>
+
+        {/* Right Sidebar: Customer Details */}
+        {activeConv && showDetails && (
+          <div className="w-80 flex flex-col gap-4 animate-in slide-in-from-right duration-500">
+            <Card className="flex-1 border-border/50 bg-card/40 backdrop-blur-sm overflow-hidden flex flex-col">
+              <div className="p-6 text-center space-y-4 border-b border-border/50 bg-muted/20">
+                <div className="w-20 h-20 rounded-full bg-primary/10 text-primary flex items-center justify-center text-3xl font-black mx-auto border-4 border-background shadow-xl">
+                  {activeConv.customerName?.[0] || 'C'}
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg">{activeConv.customerName}</h3>
+                  <p className="text-xs text-muted-foreground font-medium">{activeConv.customerIdentifier}</p>
+                </div>
+                <div className="flex justify-center gap-2">
+                  <Badge variant="secondary" className="text-[9px] font-black uppercase">Customer</Badge>
+                  <Badge variant="outline" className="text-[9px] font-black uppercase text-emerald-500 border-emerald-500/20 bg-emerald-500/5">Verified</Badge>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 rounded-2xl bg-muted/30 border border-border/50 text-center">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Orders</p>
+                    <p className="text-xl font-black">0</p>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-muted/30 border border-border/50 text-center">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Spent</p>
+                    <p className="text-xl font-black">$0</p>
+                  </div>
+                </div>
+
+                {/* Details */}
+                <div className="space-y-4">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+                    <User className="w-3 h-3" /> Profile Info
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center"><Calendar className="w-4 h-4 text-muted-foreground" /></div>
+                      <div>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase">First Seen</p>
+                        <p className="text-xs font-bold">{format(new Date(activeConv.createdAt), 'MMM dd, yyyy')}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center"><History className="w-4 h-4 text-muted-foreground" /></div>
+                      <div>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase">Last Activity</p>
+                        <p className="text-xs font-bold">{formatDistanceToNow(new Date(activeConv.lastActivity), { addSuffix: true })}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="pt-4 space-y-2">
+                   <Button variant="outline" className="w-full justify-start font-bold text-xs rounded-xl h-11">
+                     <ShoppingBag className="w-4 h-4 mr-2 opacity-50" /> Create Order
+                   </Button>
+                   <Button variant="outline" className="w-full justify-start font-bold text-xs rounded-xl h-11 text-destructive hover:text-destructive hover:bg-destructive/5">
+                     <MoreVertical className="w-4 h-4 mr-2 opacity-50" /> Block Customer
+                   </Button>
+                </div>
+              </div>
+            </Card>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

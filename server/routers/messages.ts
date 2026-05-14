@@ -164,6 +164,16 @@ export const messagesRouter = router({
         orderBy: [desc(conversations.lastActivity)],
       });
     }),
+  
+  // PROTECTED — Mark conversation as read
+  markAsRead: protectedProcedure
+    .input(z.object({ conversationId: z.number() }))
+    .mutation(async ({ input }) => {
+      await db.update(conversations)
+        .set({ unreadCount: 0 })
+        .where(eq(conversations.id, input.conversationId));
+      return { success: true };
+    }),
 
   // PROTECTED — List messages in a conversation
   listMessages: protectedProcedure
@@ -187,12 +197,17 @@ export const messagesRouter = router({
       // 1. Get conversation details
       const conversation = await db.query.conversations.findFirst({
         where: eq(conversations.id, conversationId),
-        with: {
-          channel: true
-        }
       });
-
+      
       if (!conversation) throw new Error("Conversation not found");
+
+      // 2. Get channel info separately since relations are not set up
+      let channel: any = null;
+      if (conversation.channelId) {
+        channel = await db.query.communicationChannels.findFirst({
+          where: eq(communicationChannels.id, conversation.channelId)
+        });
+      }
 
       // 2. Insert message into DB
       await db.insert(messages).values({
@@ -212,18 +227,21 @@ export const messagesRouter = router({
         .where(eq(conversations.id, conversationId));
 
       // 4. Actually send the external message
-      if (conversation.channel?.type === 'email') {
-        const settings = (conversation.channel.settings as any) || {};
-        
-        // Use Resend for merchant notifications, but we can also use their own SMTP/Gmail later
-        // For now, we reply via our system email to the customer's email
+      const isEmail = conversation.customerIdentifier.includes('@');
+      
+      if (channel?.type === 'email' || (isEmail && !conversation.channelId)) {
+        // Use Resend for merchant notifications
+        // If it's a contact form message (no channelId), we still want to reply via email
         await sendEmail({
           to: conversation.customerIdentifier,
-          subject: `Re: Message regarding your inquiry`,
+          subject: `Re: Message from ${conversation.customerName || 'Customer'}`,
           html: `
-            <p>${body}</p>
-            <br/>
-            <p>— ${conversation.customerName || 'Store Team'}</p>
+            <div style="font-family: sans-serif; line-height: 1.6; color: #333;">
+              <p>${body.replace(/\n/g, '<br/>')}</p>
+              <br/>
+              <hr style="border: none; border-top: 1px solid #eee;" />
+              <p style="font-size: 12px; color: #666;">This is a reply from the store team regarding your inquiry.</p>
+            </div>
           `
         });
       }
