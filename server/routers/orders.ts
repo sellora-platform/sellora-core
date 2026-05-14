@@ -174,12 +174,12 @@ export const ordersRouter = router({
               .where(eq(conversations.id, conversation.id));
           }
 
-          // Insert order notification message into chat
+          // Insert order notification message into chat as a merchant confirmation
           await db.insert(messages).values({
             conversationId: conversation.id,
-            senderType: 'customer',
+            senderType: 'merchant',
             senderId: 'system',
-            body: `📦 **NEW ORDER PLACED**\nOrder Number: #${orderNumber}\nTotal Amount: $${total.toFixed(2)}\nView details in the Orders section.`,
+            body: `📦 **ORDER CONFIRMATION**\nOrder Number: #${orderNumber}\nTotal Amount: $${total.toFixed(2)}\n\nThank you for your order! We have received it and are currently processing it. You will receive an update once it's shipped.`,
             status: 'sent',
             metadata: { type: 'order_notification', orderNumber, orderId: order.id }
           });
