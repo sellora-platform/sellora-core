@@ -54,6 +54,8 @@ const CHANNELS = [
   }
 ];
 
+import DashboardLayout from "@/components/DashboardLayout";
+
 export default function Connect() {
   const [loadingChannel, setLoadingChannel] = useState<string | null>(null);
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -154,280 +156,292 @@ export default function Connect() {
   };
 
   return (
-    <div className="p-8 space-y-8 max-w-7xl mx-auto animate-in fade-in duration-500">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-extrabold tracking-tight">Sellora Connect</h1>
-          <p className="text-muted-foreground max-w-2xl">
-            Unify your customer communication across all platforms. Connect your accounts to enable centralized messaging and AI-powered automation.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-full border border-primary/10">
-          <Zap className="w-4 h-4 text-primary animate-pulse" />
-          <span className="text-xs font-bold text-primary uppercase tracking-widest">Active Sync Enabled</span>
-        </div>
-      </div>
-
-      {/* Integration Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {CHANNELS.map((channel) => (
-          <Card key={channel.id} className="relative overflow-hidden group hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-xl border-border/50">
-            {/* Visual Background Accent */}
-            <div className={`absolute top-0 right-0 w-32 h-32 ${channel.color} opacity-[0.03] -mr-16 -mt-16 rounded-full group-hover:scale-150 transition-transform duration-500`} />
-            
-            <div className="p-8 space-y-6 relative">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-4">
-                  <div className={`p-4 rounded-2xl ${channel.color} text-white shadow-lg`}>
-                    <channel.icon className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-xl">{channel.name}</h3>
-                    <Badge 
-                      variant={isConnected(channel.id) ? "default" : (channel.comingSoon ? "outline" : "secondary")} 
-                      className={`mt-1 ${isConnected(channel.id) ? "bg-emerald-500/10 text-emerald-600 border-emerald-200 hover:bg-emerald-500/20" : ""}`}
-                    >
-                      {isConnected(channel.id) && <CheckCircle2 className="w-3 h-3 mr-1 inline" />}
-                      {getChannelStatus(channel.id)}
-                    </Badge>
-                  </div>
-                </div>
-                {!channel.comingSoon && (
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
-                    <Settings2 className="w-5 h-5" />
-                  </Button>
-                )}
-              </div>
-
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {channel.description}
-              </p>
-
-              <div className="space-y-3">
-                <div className="text-[10px] uppercase font-extrabold tracking-widest text-muted-foreground/70">Included Features</div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {channel.features.map((feature, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs font-medium">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                      {feature}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-4 flex items-center gap-3">
-                <Button 
-                  className={`flex-1 font-bold h-11 transition-all ${isConnected(channel.id) ? "bg-muted text-muted-foreground hover:bg-muted" : ""}`} 
-                  disabled={channel.comingSoon || loadingChannel === channel.id || isConnected(channel.id)}
-                  onClick={() => handleConnect(channel.id)}
-                >
-                  {loadingChannel === channel.id ? (
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    isConnected(channel.id) ? <CheckCircle2 className="w-4 h-4 mr-2" /> : <Zap className="w-4 h-4 mr-2" />
-                  )}
-                  {channel.comingSoon ? "Get Early Access" : (isConnected(channel.id) ? "Connected" : "Connect Account")}
-                </Button>
-                {!channel.comingSoon && (
-                  <Button variant="outline" size="icon" className="h-11 w-11">
-                    <Info className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {/* Info Banner */}
-      <Card className="bg-muted/30 border-dashed p-6 border-2">
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-full bg-background border shadow-sm">
-            <AlertCircle className="w-5 h-5 text-primary" />
-          </div>
+    <DashboardLayout>
+      <div className="p-8 space-y-8 max-w-7xl mx-auto animate-in fade-in duration-500">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <h4 className="font-bold">Enterprise Scale Connectivity</h4>
-            <p className="text-sm text-muted-foreground">
-              Sellora Connect uses enterprise-grade OAuth 2.0 and official Meta/Google APIs. Your data is encrypted and we never store your personal passwords. 
-              Our architecture is designed to handle high-volume traffic with 99.9% uptime.
+            <h1 className="text-3xl font-extrabold tracking-tight">Sellora Connect</h1>
+            <p className="text-muted-foreground max-w-2xl">
+              Unify your customer communication across all platforms. Connect your accounts to enable centralized messaging and AI-powered automation.
             </p>
           </div>
+          <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-full border border-primary/10">
+            <Zap className="w-4 h-4 text-primary animate-pulse" />
+            <span className="text-xs font-bold text-primary uppercase tracking-widest">Active Sync Enabled</span>
+          </div>
         </div>
-      </Card>
 
-      {/* Quick Action */}
-      <div className="flex items-center justify-center pt-4">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium group cursor-pointer hover:text-primary transition-colors">
-          View Detailed Integration Guide <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-        </div>
-      </div>
-
-      {/* Email Setup Modal */}
-      <Dialog open={showEmailModal} onOpenChange={setShowEmailModal}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-              <Mail className="w-6 h-6 text-blue-600" />
-              Connect Business Email
-            </DialogTitle>
-            <DialogDescription>
-              Choose your email provider and enter your credentials to sync messages.
-            </DialogDescription>
-          </DialogHeader>
-
-          <Tabs defaultValue="smtp" className="mt-4">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="gmail">Google / Gmail</TabsTrigger>
-              <TabsTrigger value="smtp">Custom SMTP</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="gmail" className="space-y-6 py-8 flex flex-col items-center justify-center text-center">
-              <div className="space-y-4 max-w-[320px]">
-                <div className="p-4 bg-gray-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto border-2 border-dashed border-gray-200">
-                  <Mail className="w-10 h-10 text-gray-400" />
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-bold text-lg">One-Click Google Sync</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Link your store to Gmail in seconds. Send order notifications and marketing emails via Google's secure servers.
-                  </p>
-                </div>
-              </div>
-
-              <Button 
-                variant="outline"
-                className="w-full max-w-[320px] h-12 font-bold flex items-center justify-center gap-3 border-2 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm active:scale-95" 
-                onClick={handleGoogleConnect} 
-                disabled={getGoogleUrl.isFetching}
-              >
-                <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" alt="Google" className="w-5 h-5" />
-                {getGoogleUrl.isFetching ? "Initializing..." : "Continue with Google"}
-              </Button>
-
-              <div className="pt-4 flex items-center gap-2 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
-                <CheckCircle2 className="w-3 h-3 text-emerald-500" /> 100% Secure OAuth 2.0 Integration
-              </div>
-            </TabsContent>
-
-            <TabsContent value="smtp" className="space-y-4 py-4">
-              <form onSubmit={handleSmtpSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <Label>SMTP Host</Label>
-                    <Input 
-                      placeholder="smtp.yourhost.com" 
-                      required 
-                      value={smtpForm.host}
-                      onChange={e => setSmtpForm({...smtpForm, host: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Port</Label>
-                    <Input 
-                      placeholder="465" 
-                      required 
-                      value={smtpForm.port}
-                      onChange={e => setSmtpForm({...smtpForm, port: e.target.value})}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <Label>User / Email</Label>
-                  <Input 
-                    type="email" 
-                    placeholder="info@yourstore.com" 
-                    required 
-                    value={smtpForm.user}
-                    onChange={e => setSmtpForm({...smtpForm, user: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label>Password</Label>
-                  <Input 
-                    type="password" 
-                    placeholder="••••••••" 
-                    required 
-                    value={smtpForm.pass}
-                    onChange={e => setSmtpForm({...smtpForm, pass: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label>Sender Name (Displayed to customer)</Label>
-                  <Input 
-                    placeholder="Sellora Support" 
-                    required 
-                    value={smtpForm.fromName}
-                    onChange={e => setSmtpForm({...smtpForm, fromName: e.target.value})}
-                  />
-                </div>
-                <DialogFooter className="pt-4">
-                  <Button type="submit" className="w-full font-bold" disabled={connectChannel.isPending}>
-                    {connectChannel.isPending ? "Connecting..." : "Save SMTP Settings"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </DialogContent>
-      </Dialog>
-
-      {/* WhatsApp Setup Modal */}
-      <Dialog open={showWhatsappModal} onOpenChange={setShowWhatsappModal}>
-        <DialogContent className="sm:max-w-[450px]">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-              <MessageCircle className="w-6 h-6 text-emerald-600" />
-              Connect WhatsApp
-            </DialogTitle>
-            <DialogDescription>
-              Direct your customers to chat with you on WhatsApp instantly.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleWhatsappSubmit} className="space-y-6 py-4">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="phone">WhatsApp Number (with Country Code)</Label>
-                <Input 
-                  id="phone"
-                  placeholder="e.g. 923123456789" 
-                  required 
-                  value={whatsappForm.phoneNumber}
-                  onChange={e => setWhatsappForm({...whatsappForm, phoneNumber: e.target.value})}
-                />
-                <p className="text-[10px] text-muted-foreground font-medium">Include country code without + or zeros (e.g., 92 for Pakistan).</p>
-              </div>
+        {/* Integration Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {CHANNELS.map((channel) => (
+            <Card key={channel.id} className="relative overflow-hidden group hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-xl border-border/50">
+              {/* Visual Background Accent */}
+              <div className={`absolute top-0 right-0 w-32 h-32 ${channel.color} opacity-[0.03] -mr-16 -mt-16 rounded-full group-hover:scale-150 transition-transform duration-500`} />
               
-              <div className="space-y-2">
-                <Label htmlFor="msg">Default Welcome Message</Label>
-                <textarea 
-                  id="msg"
-                  className="w-full min-h-[100px] rounded-lg border border-border/50 bg-background px-3 py-2 text-sm focus:ring-2 ring-primary/20 outline-none transition-all"
-                  placeholder="Hello! How can we help you today?" 
-                  value={whatsappForm.message}
-                  onChange={e => setWhatsappForm({...whatsappForm, message: e.target.value})}
-                />
-              </div>
-            </div>
+              <div className="p-8 space-y-6 relative">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className={`p-4 rounded-2xl ${channel.color} text-white shadow-lg`}>
+                      <channel.icon className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-xl">{channel.name}</h3>
+                      <Badge 
+                        variant={isConnected(channel.id) ? "default" : (channel.comingSoon ? "outline" : "secondary")} 
+                        className={`mt-1 ${isConnected(channel.id) ? "bg-emerald-500/10 text-emerald-600 border-emerald-200 hover:bg-emerald-500/20" : ""}`}
+                      >
+                        {isConnected(channel.id) && <CheckCircle2 className="w-3 h-3 mr-1 inline" />}
+                        {getChannelStatus(channel.id)}
+                      </Badge>
+                    </div>
+                  </div>
+                  {!channel.comingSoon && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-muted-foreground hover:text-primary"
+                      onClick={() => handleConnect(channel.id)}
+                    >
+                      <Settings2 className="w-5 h-5" />
+                    </Button>
+                  )}
+                </div>
 
-            <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 space-y-2">
-              <h5 className="text-xs font-bold text-emerald-800 uppercase tracking-widest flex items-center gap-2">
-                <Zap className="w-3 h-3" /> Professional Widget
-              </h5>
-              <p className="text-[11px] text-emerald-700 leading-relaxed">
-                Saving these settings will automatically enable a floating WhatsApp button on your storefront.
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {channel.description}
+                </p>
+
+                <div className="space-y-3">
+                  <div className="text-[10px] uppercase font-extrabold tracking-widest text-muted-foreground/70">Included Features</div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {channel.features.map((feature, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs font-medium">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                        {feature}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-4 flex items-center gap-3">
+                  <Button 
+                    className={`flex-1 font-bold h-11 transition-all ${isConnected(channel.id) ? "bg-muted text-muted-foreground hover:bg-muted" : ""}`} 
+                    disabled={channel.comingSoon || loadingChannel === channel.id || isConnected(channel.id)}
+                    onClick={() => handleConnect(channel.id)}
+                  >
+                    {loadingChannel === channel.id ? (
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      isConnected(channel.id) ? <CheckCircle2 className="w-4 h-4 mr-2" /> : <Zap className="w-4 h-4 mr-2" />
+                    )}
+                    {channel.comingSoon ? "Get Early Access" : (isConnected(channel.id) ? "Connected" : "Connect Account")}
+                  </Button>
+                  {!channel.comingSoon && (
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-11 w-11"
+                      onClick={() => handleConnect(channel.id)}
+                    >
+                      <Info className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {/* Info Banner */}
+        <Card className="bg-muted/30 border-dashed p-6 border-2">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-full bg-background border shadow-sm">
+              <AlertCircle className="w-5 h-5 text-primary" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-bold">Enterprise Scale Connectivity</h4>
+              <p className="text-sm text-muted-foreground">
+                Sellora Connect uses enterprise-grade OAuth 2.0 and official Meta/Google APIs. Your data is encrypted and we never store your personal passwords. 
+                Our architecture is designed to handle high-volume traffic with 99.9% uptime.
               </p>
             </div>
+          </div>
+        </Card>
 
-            <DialogFooter>
-              <Button type="submit" className="w-full font-bold bg-emerald-600 hover:bg-emerald-700 text-white" disabled={connectChannel.isPending}>
-                {connectChannel.isPending ? "Connecting..." : "Enable WhatsApp Widget"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </div>
+        {/* Quick Action */}
+        <div className="flex items-center justify-center pt-4">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium group cursor-pointer hover:text-primary transition-colors">
+            View Detailed Integration Guide <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </div>
+
+        {/* Email Setup Modal */}
+        <Dialog open={showEmailModal} onOpenChange={setShowEmailModal}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                <Mail className="w-6 h-6 text-blue-600" />
+                Connect Business Email
+              </DialogTitle>
+              <DialogDescription>
+                Choose your email provider and enter your credentials to sync messages.
+              </DialogDescription>
+            </DialogHeader>
+
+            <Tabs defaultValue="smtp" className="mt-4">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="gmail">Google / Gmail</TabsTrigger>
+                <TabsTrigger value="smtp">Custom SMTP</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="gmail" className="space-y-6 py-8 flex flex-col items-center justify-center text-center">
+                <div className="space-y-4 max-w-[320px]">
+                  <div className="p-4 bg-gray-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto border-2 border-dashed border-gray-200">
+                    <Mail className="w-10 h-10 text-gray-400" />
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-lg">One-Click Google Sync</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Link your store to Gmail in seconds. Send order notifications and marketing emails via Google's secure servers.
+                    </p>
+                  </div>
+                </div>
+
+                <Button 
+                  variant="outline"
+                  className="w-full max-w-[320px] h-12 font-bold flex items-center justify-center gap-3 border-2 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm active:scale-95" 
+                  onClick={handleGoogleConnect} 
+                  disabled={getGoogleUrl.isFetching}
+                >
+                  <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" alt="Google" className="w-5 h-5" />
+                  {getGoogleUrl.isFetching ? "Initializing..." : "Continue with Google"}
+                </Button>
+
+                <div className="pt-4 flex items-center gap-2 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-500" /> 100% Secure OAuth 2.0 Integration
+                </div>
+              </TabsContent>
+
+              <TabsContent value="smtp" className="space-y-4 py-4">
+                <form onSubmit={handleSmtpSubmit} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <Label>SMTP Host</Label>
+                      <Input 
+                        placeholder="smtp.yourhost.com" 
+                        required 
+                        value={smtpForm.host}
+                        onChange={e => setSmtpForm({...smtpForm, host: e.target.value})}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>Port</Label>
+                      <Input 
+                        placeholder="465" 
+                        required 
+                        value={smtpForm.port}
+                        onChange={e => setSmtpForm({...smtpForm, port: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label>User / Email</Label>
+                    <Input 
+                      type="email" 
+                      placeholder="info@yourstore.com" 
+                      required 
+                      value={smtpForm.user}
+                      onChange={e => setSmtpForm({...smtpForm, user: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Password</Label>
+                    <Input 
+                      type="password" 
+                      placeholder="••••••••" 
+                      required 
+                      value={smtpForm.pass}
+                      onChange={e => setSmtpForm({...smtpForm, pass: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Sender Name (Displayed to customer)</Label>
+                    <Input 
+                      placeholder="Sellora Support" 
+                      required 
+                      value={smtpForm.fromName}
+                      onChange={e => setSmtpForm({...smtpForm, fromName: e.target.value})}
+                    />
+                  </div>
+                  <DialogFooter className="pt-4">
+                    <Button type="submit" className="w-full font-bold" disabled={connectChannel.isPending}>
+                      {connectChannel.isPending ? "Connecting..." : "Save SMTP Settings"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </DialogContent>
+        </Dialog>
+
+        {/* WhatsApp Setup Modal */}
+        <Dialog open={showWhatsappModal} onOpenChange={setShowWhatsappModal}>
+          <DialogContent className="sm:max-w-[450px]">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                <MessageCircle className="w-6 h-6 text-emerald-600" />
+                Connect WhatsApp
+              </DialogTitle>
+              <DialogDescription>
+                Direct your customers to chat with you on WhatsApp instantly.
+              </DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={handleWhatsappSubmit} className="space-y-6 py-4">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">WhatsApp Number (with Country Code)</Label>
+                  <Input 
+                    id="phone"
+                    placeholder="e.g. 923123456789" 
+                    required 
+                    value={whatsappForm.phoneNumber}
+                    onChange={e => setWhatsappForm({...whatsappForm, phoneNumber: e.target.value})}
+                  />
+                  <p className="text-[10px] text-muted-foreground font-medium">Include country code without + or zeros (e.g., 92 for Pakistan).</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="msg">Default Welcome Message</Label>
+                  <textarea 
+                    id="msg"
+                    className="w-full min-h-[100px] rounded-lg border border-border/50 bg-background px-3 py-2 text-sm focus:ring-2 ring-primary/20 outline-none transition-all"
+                    placeholder="Hello! How can we help you today?" 
+                    value={whatsappForm.message}
+                    onChange={e => setWhatsappForm({...whatsappForm, message: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 space-y-2">
+                <h5 className="text-xs font-bold text-emerald-800 uppercase tracking-widest flex items-center gap-2">
+                  <Zap className="w-3 h-3" /> Professional Widget
+                </h5>
+                <p className="text-[11px] text-emerald-700 leading-relaxed">
+                  Saving these settings will automatically enable a floating WhatsApp button on your storefront.
+                </p>
+              </div>
+
+              <DialogFooter>
+                <Button type="submit" className="w-full font-bold bg-emerald-600 hover:bg-emerald-700 text-white" disabled={connectChannel.isPending}>
+                  {connectChannel.isPending ? "Connecting..." : "Enable WhatsApp Widget"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </DashboardLayout>
   );
 }
