@@ -680,7 +680,7 @@ export default function ThemeEditor() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] font-mono text-muted-foreground">
-                            {globalSettings[key as keyof typeof globalSettings]}
+                            {globalSettings[key as keyof typeof globalSettings] as string}
                           </span>
                           <div className="relative">
                             <div 
