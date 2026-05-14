@@ -2,9 +2,10 @@ import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { db } from "../db";
-import { orders, orderItems } from "../../db/schema";
+import { orders, orderItems, stores, conversations, messages, communicationChannels } from "../../db/schema";
 import { eq, and, desc, or } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { sendEmail } from "../_core/email";
 
 export const ordersRouter = router({
 
@@ -91,6 +92,102 @@ export const ordersRouter = router({
           total: (item.price * item.quantity).toFixed(2),
         }))
       );
+
+      // --- AUTOMATED NOTIFICATIONS ---
+      try {
+        // 1. Fetch Store Details for Branding
+        const store = await db.query.stores.findFirst({
+          where: eq(stores.id, input.storeId),
+        });
+
+        if (store) {
+          const storeName = store.name;
+          const storeUrl = store.customDomain 
+            ? `https://${store.customDomain}` 
+            : `https://${store.slug}.raaenai.com`;
+          
+          const trackUrl = `${storeUrl}/track?order=${orderNumber}&email=${input.customerEmail}`;
+
+          // 2. Send Order Confirmation Email to Customer
+          await sendEmail({
+            from: `${storeName} <no-reply@raaenai.com>`,
+            to: input.customerEmail,
+            subject: `Order Confirmed - #${orderNumber}`,
+            html: `
+              <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden; color: #333;">
+                <div style="background: #000; padding: 30px; text-align: center; color: #fff;">
+                  <h1 style="margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px;">Order Confirmed</h1>
+                  <p style="opacity: 0.7; margin-top: 10px;">Thank you for shopping with ${storeName}</p>
+                </div>
+                <div style="padding: 40px;">
+                  <p style="font-size: 16px; line-height: 1.6;">Hello <strong>${input.customerName}</strong>,</p>
+                  <p style="font-size: 16px; line-height: 1.6;">Your order <strong>#${orderNumber}</strong> has been received and is currently being processed.</p>
+                  
+                  <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 30px 0;">
+                    <h3 style="margin-top: 0; font-size: 14px; text-transform: uppercase; color: #999;">Order Summary</h3>
+                    <p style="font-size: 18px; font-weight: bold; margin: 5px 0;">Total: $${total.toFixed(2)}</p>
+                    <p style="font-size: 14px; margin: 5px 0;">Status: Pending Payment / Processing</p>
+                  </div>
+
+                  <div style="text-align: center; margin: 40px 0;">
+                    <a href="${trackUrl}" style="background: #000; color: #fff; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Track Your Order</a>
+                  </div>
+
+                  <div style="border-top: 1px solid #eee; padding-top: 30px; margin-top: 30px; text-align: center;">
+                    <p style="font-size: 14px; color: #666;">Need help? Contact us via WhatsApp</p>
+                    <a href="https://wa.me/${input.customerPhone.replace(/[^0-9]/g, '')}" style="color: #25D366; font-weight: bold; text-decoration: none; font-size: 16px;">Chat on WhatsApp</a>
+                  </div>
+                </div>
+                <div style="background: #fcfcfc; padding: 20px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee;">
+                  &copy; ${new Date().getFullYear()} ${storeName}. All rights reserved.
+                </div>
+              </div>
+            `
+          });
+
+          // 3. Integrate with Inbox (Unified Messaging)
+          // Find or create conversation for this order
+          let conversation = await db.query.conversations.findFirst({
+            where: and(
+              eq(conversations.storeId, input.storeId),
+              eq(conversations.customerIdentifier, input.customerEmail)
+            )
+          });
+
+          if (!conversation) {
+            const [newConv] = await db.insert(conversations).values({
+              storeId: input.storeId,
+              customerName: input.customerName,
+              customerIdentifier: input.customerEmail,
+              lastMessage: `New Order: #${orderNumber}`,
+              lastActivity: new Date(),
+              unreadCount: 1
+            }).returning();
+            conversation = newConv;
+          } else {
+            await db.update(conversations)
+              .set({ 
+                lastMessage: `New Order: #${orderNumber}`,
+                lastActivity: new Date(),
+                unreadCount: (conversation.unreadCount || 0) + 1
+              })
+              .where(eq(conversations.id, conversation.id));
+          }
+
+          // Insert order notification message into chat
+          await db.insert(messages).values({
+            conversationId: conversation.id,
+            senderType: 'customer',
+            senderId: 'system',
+            body: `📦 **NEW ORDER PLACED**\nOrder Number: #${orderNumber}\nTotal Amount: $${total.toFixed(2)}\nView details in the Orders section.`,
+            status: 'sent',
+            metadata: { type: 'order_notification', orderNumber, orderId: order.id }
+          });
+        }
+      } catch (err) {
+        console.error("❌ [Order Notification Error]:", err);
+        // We don't throw here to ensure the order creation isn't rolled back due to email failure
+      }
 
       return { 
         success: true, 
