@@ -249,6 +249,7 @@ export const customers = pgTable("customers", {
   totalOrders: integer("total_orders").default(0),
   lastOrderAt: timestamp("last_order_at"),
   notes: text("notes"),
+  acceptsMarketing: boolean("accepts_marketing").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({

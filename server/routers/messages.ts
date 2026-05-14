@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import { db } from "../db";
-import { conversations, messages, communicationChannels, stores, users } from "../../db/schema";
+import { conversations, messages, communicationChannels, stores, users, customers } from "../../db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { sendEmail } from "../_core/email";
 
@@ -252,6 +252,39 @@ export const messagesRouter = router({
               </p>
             </div>
           `
+        });
+      }
+
+      return { success: true };
+    }),
+  // PUBLIC — Subscribe to newsletter
+  subscribeNewsletter: publicProcedure
+    .input(z.object({
+      storeId: z.number(),
+      email: z.string().email(),
+    }))
+    .mutation(async ({ input }) => {
+      const { storeId, email } = input;
+
+      // Find or create customer
+      const existing = await db.query.customers.findFirst({
+        where: and(
+          eq(customers.storeId, storeId),
+          eq(customers.email, email)
+        )
+      });
+
+      if (existing) {
+        await db.update(customers)
+          .set({ acceptsMarketing: true, updatedAt: new Date() })
+          .where(eq(customers.id, existing.id));
+      } else {
+        await db.insert(customers).values({
+          storeId,
+          email,
+          acceptsMarketing: true,
+          totalSpent: "0",
+          totalOrders: 0
         });
       }
 
