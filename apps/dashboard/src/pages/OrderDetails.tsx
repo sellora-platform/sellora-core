@@ -123,6 +123,7 @@ export default function OrderDetails() {
             </div>
           </div>
 
+          <div className="flex flex-wrap gap-3">
             <Button 
               variant="outline"
               className="gap-2"
