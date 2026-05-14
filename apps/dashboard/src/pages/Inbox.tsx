@@ -44,6 +44,11 @@ export default function Inbox() {
       refetchInterval: 5000 // Poll every 5 seconds for new messages
     }
   );
+  
+  const { data: connectedChannels } = trpc.messages.listChannels.useQuery(
+    { storeId },
+    { enabled: !!storeId }
+  );
 
   const { data: messages, isLoading: isLoadingMsgs, refetch: refetchMsgs } = trpc.messages.listMessages.useQuery(
     { conversationId: selectedId || 0 },
@@ -290,8 +295,8 @@ export default function Inbox() {
                   </div>
                   <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Email</span>
                 </div>
-                <div className="flex flex-col items-center gap-2 group opacity-40 grayscale">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20">
+                <div className={`flex flex-col items-center gap-2 group ${connectedChannels?.some(c => c.type === 'whatsapp') ? '' : 'opacity-40 grayscale'}`}>
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-white transition-all">
                     <MessageCircle className="w-6 h-6" />
                   </div>
                   <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">WhatsApp</span>

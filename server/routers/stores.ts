@@ -192,7 +192,8 @@ export const storesRouter = router({
       if (store) {
         const themes = await db.getThemesByStoreId(store.id);
         const activeTheme = themes.find(t => t.isActive) || themes[0] || null;
-        return { ...store, activeTheme };
+        const channels = await db.getChannelsByStoreId(store.id);
+        return { ...store, activeTheme, channels };
       }
       return null;
     }),
@@ -205,7 +206,8 @@ export const storesRouter = router({
       if (store) {
         const themes = await db.getThemesByStoreId(store.id);
         const activeTheme = themes.find(t => t.isActive) || themes[0] || null;
-        return { ...store, activeTheme };
+        const channels = await db.getChannelsByStoreId(store.id);
+        return { ...store, activeTheme, channels };
       }
       return null;
     }),

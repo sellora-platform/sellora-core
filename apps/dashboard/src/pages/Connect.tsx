@@ -84,6 +84,11 @@ export default function Connect() {
     pass: '',
     fromName: ''
   });
+  const [showWhatsappModal, setShowWhatsappModal] = useState(false);
+  const [whatsappForm, setWhatsappForm] = useState({
+    phoneNumber: '',
+    message: 'Hello! I have a question about your products.'
+  });
 
   const utils = trpc.useUtils();
   
@@ -112,6 +117,10 @@ export default function Connect() {
       setShowEmailModal(true);
       return;
     }
+    if (channelId === 'whatsapp') {
+      setShowWhatsappModal(true);
+      return;
+    }
 
     setLoadingChannel(channelId);
     setTimeout(() => {
@@ -132,6 +141,16 @@ export default function Connect() {
         provider: 'smtp'
       }
     });
+  };
+
+  const handleWhatsappSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    connectChannel.mutate({
+      storeId: activeStoreId,
+      type: 'whatsapp',
+      settings: whatsappForm
+    });
+    setShowWhatsappModal(false);
   };
 
   const getGoogleUrl = trpc.messages.getGoogleAuthUrl.useQuery({
@@ -370,6 +389,63 @@ export default function Connect() {
               </form>
             </TabsContent>
           </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      {/* WhatsApp Setup Modal */}
+      <Dialog open={showWhatsappModal} onOpenChange={setShowWhatsappModal}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              <MessageCircle className="w-6 h-6 text-emerald-600" />
+              Connect WhatsApp
+            </DialogTitle>
+            <DialogDescription>
+              Direct your customers to chat with you on WhatsApp instantly.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleWhatsappSubmit} className="space-y-6 py-4">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone">WhatsApp Number (with Country Code)</Label>
+                <Input 
+                  id="phone"
+                  placeholder="e.g. 923123456789" 
+                  required 
+                  value={whatsappForm.phoneNumber}
+                  onChange={e => setWhatsappForm({...whatsappForm, phoneNumber: e.target.value})}
+                />
+                <p className="text-[10px] text-muted-foreground font-medium">Include country code without + or zeros (e.g., 92 for Pakistan).</p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="msg">Default Welcome Message</Label>
+                <textarea 
+                  id="msg"
+                  className="w-full min-h-[100px] rounded-lg border border-border/50 bg-background px-3 py-2 text-sm focus:ring-2 ring-primary/20 outline-none transition-all"
+                  placeholder="Hello! How can we help you today?" 
+                  value={whatsappForm.message}
+                  onChange={e => setWhatsappForm({...whatsappForm, message: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 space-y-2">
+              <h5 className="text-xs font-bold text-emerald-800 uppercase tracking-widest flex items-center gap-2">
+                <Zap className="w-3 h-3" /> Professional Widget
+              </h5>
+              <p className="text-[11px] text-emerald-700 leading-relaxed">
+                Saving these settings will automatically enable a floating WhatsApp button on your storefront.
+              </p>
+            </div>
+
+            <DialogFooter>
+              <Button type="submit" className="w-full font-bold bg-emerald-600 hover:bg-emerald-700 text-white" disabled={connectChannel.isPending}>
+                {connectChannel.isPending ? "Connecting..." : "Enable WhatsApp Widget"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

@@ -413,3 +413,14 @@ export async function updateStoreTheme(themeId: string, data: Partial<InsertStor
   if (!db) throw new Error("Database not available");
   return db.update(storeThemes).set(data).where(eq(storeThemes.id, themeId));
 }
+
+// ============================================================================
+// Communication Channel Queries
+// ============================================================================
+
+export async function getChannelsByStoreId(storeId: number) {
+  const db = getDb();
+  if (!db) return [];
+  return db.select().from(communicationChannels).where(eq(communicationChannels.storeId, storeId));
+}
+
