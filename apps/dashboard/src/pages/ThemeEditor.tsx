@@ -35,7 +35,8 @@ import {
   Eye,
   Settings,
   Layers,
-  Star
+  Star,
+  LayoutGrid
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
@@ -632,6 +633,27 @@ export default function ThemeEditor() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
+        {/* 2. ACTIVITY BAR (Narrow Sidebar) */}
+        <div className="w-16 bg-white border-r border-[#d1d1d1] flex flex-col items-center py-4 gap-4 z-20">
+          <button 
+            onClick={() => {
+              setActiveActivity("sections");
+              setSelectedSectionId(null);
+            }}
+            className={`p-3 rounded-xl transition-all ${activeActivity === "sections" ? "bg-[#008060] text-white shadow-lg shadow-[#008060]/20" : "text-[#616161] hover:bg-[#f1f1f1]"}`}
+            title="Sections"
+          >
+            <LayoutGrid className="w-6 h-6" />
+          </button>
+          <button 
+            onClick={() => setActiveActivity("settings")}
+            className={`p-3 rounded-xl transition-all ${activeActivity === "settings" ? "bg-[#008060] text-white shadow-lg shadow-[#008060]/20" : "text-[#616161] hover:bg-[#f1f1f1]"}`}
+            title="Theme Settings"
+          >
+            <Settings className="w-6 h-6" />
+          </button>
+        </div>
+
         {/* CONFIGURATION PANE (Sidebar) */}
         <aside className="w-80 bg-white border-r border-[#d1d1d1] flex flex-col shadow-sm">
           <div className="h-12 border-b border-[#f1f1f1] flex items-center px-4 font-bold text-sm bg-white sticky top-0 z-10">
