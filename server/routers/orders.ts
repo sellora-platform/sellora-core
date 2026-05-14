@@ -2,7 +2,7 @@ import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { db } from "../db";
-import { orders, orderItems, stores, conversations, messages, communicationChannels } from "../../db/schema";
+import { orders, orderItems, stores, conversations, messages, communicationChannels, customers } from "../../db/schema";
 import { eq, and, desc, or } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { sendEmail } from "../_core/email";
@@ -193,6 +193,50 @@ export const ordersRouter = router({
       } catch (err) {
         console.error("❌ [Order Notification Error]:", err);
         // We don't throw here to ensure the order creation isn't rolled back due to email failure
+      }
+
+      // 4. Update/Create Customer Record
+      try {
+        const existingCustomer = await db.query.customers.findFirst({
+          where: and(
+            eq(customers.storeId, input.storeId),
+            eq(customers.email, input.customerEmail)
+          )
+        });
+
+        if (existingCustomer) {
+          // Update existing customer
+          const newTotalSpent = (parseFloat(existingCustomer.totalSpent || "0") + total).toFixed(2);
+          const newTotalOrders = (existingCustomer.totalOrders || 0) + 1;
+          
+          await db.update(customers)
+            .set({
+              firstName: input.customerName.split(' ')[0],
+              lastName: input.customerName.split(' ').slice(1).join(' ') || null,
+              phone: input.customerPhone,
+              totalSpent: newTotalSpent,
+              totalOrders: newTotalOrders,
+              lastOrderAt: new Date(),
+              updatedAt: new Date()
+            })
+            .where(eq(customers.id, existingCustomer.id));
+        } else {
+          // Create new customer
+          await db.insert(customers).values({
+            storeId: input.storeId,
+            email: input.customerEmail,
+            firstName: input.customerName.split(' ')[0],
+            lastName: input.customerName.split(' ').slice(1).join(' ') || null,
+            phone: input.customerPhone,
+            totalSpent: total.toFixed(2),
+            totalOrders: 1,
+            lastOrderAt: new Date(),
+            acceptsMarketing: false, // Default to false unless they opted in (could add a checkbox later)
+          });
+        }
+      } catch (custErr) {
+        console.error("❌ [Customer Update Error]:", custErr);
+        // Don't fail order creation if customer CRM update fails
       }
 
       return { 
