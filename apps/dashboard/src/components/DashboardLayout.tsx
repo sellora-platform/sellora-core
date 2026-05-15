@@ -38,7 +38,8 @@ import {
   FileText,
   MessageCircle,
   Zap,
-  Megaphone
+  Megaphone,
+  CreditCard
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -59,6 +60,7 @@ const menuItems = [
   {icon: MessageSquare, label: "Inbox", path: "/inbox" },
   { icon: MessageCircle, label: "Channels", path: "/connect" },
   { icon: Zap, label: "AI Assistant", path: "/ai-assistant" },
+  { icon: CreditCard, label: "Payments", path: "/payments" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 

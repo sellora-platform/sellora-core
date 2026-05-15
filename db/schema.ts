@@ -85,6 +85,14 @@ export const stores = pgTable("stores", {
   isActive: boolean("is_active").default(true),
   autoOrderEmail: boolean("auto_order_email").default(true),
   autoContactReply: boolean("auto_contact_reply").default(true),
+  // Payment Settings
+  paymentCodEnabled: boolean("payment_cod_enabled").default(true),
+  paymentBankEnabled: boolean("payment_bank_enabled").default(false),
+  paymentBankDetails: jsonb("payment_bank_details").$type<{ bankName: string; accountTitle: string; accountNumber: string }>().default({ bankName: "", accountTitle: "", accountNumber: "" }),
+  paymentJazzcashEnabled: boolean("payment_jazzcash_enabled").default(false),
+  paymentJazzcashNumber: varchar("payment_jazzcash_number", { length: 20 }),
+  paymentEasypaisaEnabled: boolean("payment_easypaisa_enabled").default(false),
+  paymentEasypaisaNumber: varchar("payment_easypaisa_number", { length: 20 }),
   // Tracking & Analytics Pixels
   trackingPixels: jsonb("tracking_pixels").$type<{
     metaPixelId?: string;

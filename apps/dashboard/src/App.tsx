@@ -40,6 +40,7 @@ import ThemeMarketplace from "./pages/ThemeMarketplace";
 import ThemeManager from "./pages/ThemeManager";
 import Reviews from "./pages/Reviews";
 import Marketing from "./pages/Marketing";
+import Payments from "./pages/Payments";
 
 
 
@@ -163,6 +164,7 @@ function Router() {
       <Route path={"/reviews"} component={Reviews} />
       <Route path={"/marketing"} component={Marketing} />
       <Route path={"/settings"} component={Settings} />
+      <Route path={"/payments"} component={Payments} />
       <Route path={"/domains"} component={Domains} />
       <Route path={"/store/:slug"} component={Storefront} />
       <Route path={"/store/:slug/products"} component={Storefront} />

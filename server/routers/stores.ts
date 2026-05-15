@@ -229,6 +229,14 @@ export const storesRouter = router({
         customDomain: z.string().nullable().optional(),
         autoOrderEmail: z.boolean().optional(),
         autoContactReply: z.boolean().optional(),
+        // Payment Settings
+        paymentCodEnabled: z.boolean().optional(),
+        paymentBankEnabled: z.boolean().optional(),
+        paymentBankDetails: z.object({ bankName: z.string(), accountTitle: z.string(), accountNumber: z.string() }).optional(),
+        paymentJazzcashEnabled: z.boolean().optional(),
+        paymentJazzcashNumber: z.string().nullable().optional(),
+        paymentEasypaisaEnabled: z.boolean().optional(),
+        paymentEasypaisaNumber: z.string().nullable().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -237,6 +245,12 @@ export const storesRouter = router({
       // Transform empty string to null to avoid unique constraint violations
       if (updateData.customDomain === "") {
         updateData.customDomain = null;
+      }
+      if (updateData.paymentJazzcashNumber === "") {
+        updateData.paymentJazzcashNumber = null;
+      }
+      if (updateData.paymentEasypaisaNumber === "") {
+        updateData.paymentEasypaisaNumber = null;
       }
       
       // 1. Verify ownership
