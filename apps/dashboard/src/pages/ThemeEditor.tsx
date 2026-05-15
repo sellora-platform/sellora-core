@@ -193,6 +193,10 @@ export default function ThemeEditor() {
     accentColor: "#10b981",
     secondaryTextColor: "#71717a",
     borderColor: "#e4e4e7",
+    buttonTextColor: "#ffffff",
+    headerFooterBg: "#ffffff",
+    bannerOverlay: "rgba(0, 0, 0, 0.4)",
+    selectionColor: "#008060",
     fontFamily: "Inter",
     headingFont: "Inter",
     baseFontSize: "16px",
@@ -708,10 +712,14 @@ export default function ThemeEditor() {
                     <div className="space-y-1.5">
                       {[
                         { key: 'primaryColor', label: 'Primary Color', hint: 'Used for buttons, links, and main navigation highlights.' },
+                        { key: 'buttonTextColor', label: 'Button Text', hint: 'Color of the text inside primary buttons.' },
                         { key: 'backgroundColor', label: 'Background Color', hint: 'The main background color of your entire store pages.' },
+                        { key: 'headerFooterBg', label: 'Header & Footer', hint: 'Specific background for top and bottom bars.' },
                         { key: 'textColor', label: 'Main Text Color', hint: 'Primary font color for all headings and descriptions.' },
                         { key: 'accentColor', label: 'Accent Color', hint: 'Used for small UI highlights, badges, and active indicators.' },
+                        { key: 'bannerOverlay', label: 'Banner Overlay', hint: 'The tint color applied over Hero and Banner images.' },
                         { key: 'secondaryTextColor', label: 'Muted Text Color', hint: 'For secondary info like labels, dates, and placeholder text.' },
+                        { key: 'selectionColor', label: 'Selection Color', hint: 'The color that appears when text is highlighted.' },
                         { key: 'borderColor', label: 'Border & Line Color', hint: 'Used for separators, card outlines, and section dividers.' },
                       ].map(({ key, label, hint }) => (
                         <div key={key} className="flex items-center justify-between p-3 rounded-xl hover:bg-[#f6f6f7] transition-all group">
