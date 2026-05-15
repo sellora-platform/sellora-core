@@ -50,16 +50,12 @@ export const SECTION_SCHEMAS: Record<string, any> = {
     settings: [
       { id: "copyright_text", type: "text", label: "Copyright Text", default: "All rights reserved." },
       { id: "show_payment_icons", type: "checkbox", label: "Show Payment Icons", default: true },
+      { id: "payment_methods", type: "text", label: "Custom Payment Text", default: "Visa, Mastercard, PayPal" },
       { id: "background_color", type: "select", label: "Background Scheme", options: [
         { label: "Light", value: "light" },
         { label: "Dark", value: "dark" },
         { label: "Accent", value: "accent" }
       ], default: "light" },
-      { id: "instagram", type: "text", label: "Instagram URL", default: "" },
-      { id: "tiktok", type: "text", label: "TikTok URL", default: "" },
-      { id: "facebook", type: "text", label: "Facebook URL", default: "" },
-      { id: "youtube", type: "text", label: "YouTube URL", default: "" },
-      { id: "x", type: "text", label: "X (Twitter) URL", default: "" },
     ]
   },
   hero: HeroSchema,
