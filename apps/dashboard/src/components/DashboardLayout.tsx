@@ -37,7 +37,8 @@ import {
   Package,
   FileText,
   MessageCircle,
-  Zap
+  Zap,
+  Megaphone
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -51,6 +52,7 @@ const menuItems = [
   { icon: Palette, label: "Themes", path: "/themes" },
   { icon: Users, label: "Customers", path: "/customers" },
   { icon: Tag, label: "Discounts", path: "/discounts" },
+  { icon: Megaphone, label: "Marketing", path: "/marketing" },
   { icon: Star, label: "Reviews", path: "/reviews" },
   { icon: FileText, label: "Pages", path: "/pages" },
   { icon: Globe, label: "Domains", path: "/domains" },
