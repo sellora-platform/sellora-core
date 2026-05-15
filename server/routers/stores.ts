@@ -278,4 +278,66 @@ export const storesRouter = router({
       
       return result;
     }),
+
+  // ─── Tracking Pixels ──────────────────────────────────────
+
+  // Get tracking pixel configuration
+  getTrackingPixels: protectedProcedure
+    .input(z.object({ storeId: z.number() }))
+    .query(async ({ input, ctx }) => {
+      const store = await db.getStoreByMerchantId(ctx.user.id);
+      if (!store || store.id !== input.storeId) {
+        throw new Error("Unauthorized");
+      }
+      return (store as any).trackingPixels || {};
+    }),
+
+  // Update tracking pixel configuration
+  updateTrackingPixels: auditedProcedure
+    .input(z.object({
+      storeId: z.number(),
+      pixels: z.object({
+        metaPixelId: z.string().optional(),
+        metaAccessToken: z.string().optional(),
+        tiktokPixelId: z.string().optional(),
+        tiktokAccessToken: z.string().optional(),
+        ga4MeasurementId: z.string().optional(),
+        googleAdsId: z.string().optional(),
+        snapchatPixelId: z.string().optional(),
+        pinterestTagId: z.string().optional(),
+      }),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const store = await db.getStoreByMerchantId(ctx.user.id);
+      if (!store || store.id !== input.storeId) {
+        throw new Error("Unauthorized");
+      }
+
+      // Clean empty strings to undefined
+      const cleaned: Record<string, string | undefined> = {};
+      for (const [key, value] of Object.entries(input.pixels)) {
+        cleaned[key] = value?.trim() || undefined;
+      }
+
+      await db.updateStore(input.storeId, { trackingPixels: cleaned } as any);
+      return { success: true };
+    }),
+
+  // PUBLIC — Get pixels for storefront injection
+  getPublicPixels: publicProcedure
+    .input(z.object({ storeId: z.number() }))
+    .query(async ({ input }) => {
+      const store = await db.getStoreById(input.storeId);
+      if (!store) return {};
+      const pixels = (store as any).trackingPixels || {};
+      // Only return pixel IDs, never access tokens (security)
+      return {
+        metaPixelId: pixels.metaPixelId,
+        tiktokPixelId: pixels.tiktokPixelId,
+        ga4MeasurementId: pixels.ga4MeasurementId,
+        googleAdsId: pixels.googleAdsId,
+        snapchatPixelId: pixels.snapchatPixelId,
+        pinterestTagId: pixels.pinterestTagId,
+      };
+    }),
 });

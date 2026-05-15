@@ -12,9 +12,10 @@ import { Switch } from "@/components/ui/switch";
 import {
   Megaphone, Mail, MessageSquare, ShoppingCart, Users, TrendingUp, Send, Plus, Trash2,
   Clock, Zap, BarChart3, ArrowRight, Eye, MousePointerClick, Target, Edit, Power,
-  Bot, Gift, UserPlus, ShoppingBag, CalendarClock, Sparkles, AlertTriangle
+  Bot, Gift, UserPlus, ShoppingBag, CalendarClock, Sparkles, AlertTriangle,
+  Activity, Check, Save, ExternalLink
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
@@ -77,6 +78,12 @@ export default function Marketing() {
   const toggleAutomation = trpc.marketing.toggleAutomation.useMutation({ onSuccess: () => { automations.refetch(); overview.refetch(); } });
   const deleteAutomation = trpc.marketing.deleteAutomation.useMutation({ onSuccess: () => { automations.refetch(); overview.refetch(); toast.success("Automation deleted"); } });
 
+  // Pixels
+  const pixelsQuery = trpc.stores.getTrackingPixels.useQuery({ storeId }, { enabled: !!storeId });
+  const updatePixels = trpc.stores.updateTrackingPixels.useMutation({ onSuccess: () => { pixelsQuery.refetch(); toast.success("Tracking pixels saved!"); } });
+  const [px, setPx] = useState<Record<string, string>>({});
+  useEffect(() => { if (pixelsQuery.data) setPx(pixelsQuery.data as any); }, [pixelsQuery.data]);
+
   // Campaign form
   const [showCampaignModal, setShowCampaignModal] = useState(false);
   const [cf, setCf] = useState({ name: "", channel: "email" as "email" | "whatsapp", subject: "", body: "", segment: "all" });
@@ -126,6 +133,7 @@ export default function Marketing() {
             <TabsTrigger value="campaigns" className="gap-2 font-bold text-xs rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"><Send className="w-3.5 h-3.5" /> Campaigns</TabsTrigger>
             <TabsTrigger value="automations" className="gap-2 font-bold text-xs rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"><Bot className="w-3.5 h-3.5" /> Automations</TabsTrigger>
             <TabsTrigger value="abandoned" className="gap-2 font-bold text-xs rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"><ShoppingCart className="w-3.5 h-3.5" /> Abandoned Carts</TabsTrigger>
+            <TabsTrigger value="pixels" className="gap-2 font-bold text-xs rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"><Activity className="w-3.5 h-3.5" /> Tracking Pixels</TabsTrigger>
           </TabsList>
 
           {/* ─── Campaigns Tab ─────────────────────────────── */}
@@ -262,6 +270,105 @@ export default function Marketing() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* ─── Tracking Pixels Tab ──────────────────────── */}
+          <TabsContent value="pixels" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-black">Tracking & Analytics Pixels</h2>
+                <p className="text-sm text-muted-foreground">Connect your ad platforms to track conversions and optimize campaigns.</p>
+              </div>
+              <Button className="gap-2 bg-violet-600 hover:bg-violet-700 font-bold text-xs" disabled={updatePixels.isPending} onClick={() => updatePixels.mutate({ storeId, pixels: px as any })}>
+                <Save className="w-4 h-4" /> {updatePixels.isPending ? "Saving..." : "Save All"}
+              </Button>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-5">
+              {/* Meta / Facebook */}
+              <Card className="p-5 border-border/40 hover:shadow-lg transition-all group">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-sm">f</div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-sm">Meta Pixel</h3>
+                    <p className="text-[10px] text-muted-foreground">Facebook & Instagram Ads</p>
+                  </div>
+                  {px.metaPixelId && <Check className="w-4 h-4 text-emerald-500" />}
+                </div>
+                <div className="space-y-3">
+                  <Input placeholder="Pixel ID (e.g. 123456789012345)" value={px.metaPixelId || ""} onChange={e => setPx(p => ({ ...p, metaPixelId: e.target.value }))} className="text-xs font-mono" />
+                  <Input placeholder="Conversions API Access Token (optional)" type="password" value={px.metaAccessToken || ""} onChange={e => setPx(p => ({ ...p, metaAccessToken: e.target.value }))} className="text-xs font-mono" />
+                </div>
+              </Card>
+
+              {/* TikTok */}
+              <Card className="p-5 border-border/40 hover:shadow-lg transition-all group">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center text-white font-black text-sm">T</div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-sm">TikTok Pixel</h3>
+                    <p className="text-[10px] text-muted-foreground">TikTok For Business</p>
+                  </div>
+                  {px.tiktokPixelId && <Check className="w-4 h-4 text-emerald-500" />}
+                </div>
+                <div className="space-y-3">
+                  <Input placeholder="Pixel ID (e.g. CXXXXXXXXXXXXXXXXX)" value={px.tiktokPixelId || ""} onChange={e => setPx(p => ({ ...p, tiktokPixelId: e.target.value }))} className="text-xs font-mono" />
+                  <Input placeholder="Events API Access Token (optional)" type="password" value={px.tiktokAccessToken || ""} onChange={e => setPx(p => ({ ...p, tiktokAccessToken: e.target.value }))} className="text-xs font-mono" />
+                </div>
+              </Card>
+
+              {/* Google Analytics */}
+              <Card className="p-5 border-border/40 hover:shadow-lg transition-all group">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-white font-black text-sm">G</div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-sm">Google Analytics 4</h3>
+                    <p className="text-[10px] text-muted-foreground">Website analytics & insights</p>
+                  </div>
+                  {px.ga4MeasurementId && <Check className="w-4 h-4 text-emerald-500" />}
+                </div>
+                <Input placeholder="Measurement ID (e.g. G-XXXXXXXXXX)" value={px.ga4MeasurementId || ""} onChange={e => setPx(p => ({ ...p, ga4MeasurementId: e.target.value }))} className="text-xs font-mono" />
+              </Card>
+
+              {/* Google Ads */}
+              <Card className="p-5 border-border/40 hover:shadow-lg transition-all group">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center text-white font-black text-sm">Ads</div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-sm">Google Ads</h3>
+                    <p className="text-[10px] text-muted-foreground">Conversion tracking for Google Ads</p>
+                  </div>
+                  {px.googleAdsId && <Check className="w-4 h-4 text-emerald-500" />}
+                </div>
+                <Input placeholder="Conversion ID (e.g. AW-XXXXXXXXX)" value={px.googleAdsId || ""} onChange={e => setPx(p => ({ ...p, googleAdsId: e.target.value }))} className="text-xs font-mono" />
+              </Card>
+
+              {/* Snapchat */}
+              <Card className="p-5 border-border/40 hover:shadow-lg transition-all group">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-yellow-400 flex items-center justify-center text-black font-black text-sm">👻</div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-sm">Snapchat Pixel</h3>
+                    <p className="text-[10px] text-muted-foreground">Snap Ads conversion tracking</p>
+                  </div>
+                  {px.snapchatPixelId && <Check className="w-4 h-4 text-emerald-500" />}
+                </div>
+                <Input placeholder="Pixel ID" value={px.snapchatPixelId || ""} onChange={e => setPx(p => ({ ...p, snapchatPixelId: e.target.value }))} className="text-xs font-mono" />
+              </Card>
+
+              {/* Pinterest */}
+              <Card className="p-5 border-border/40 hover:shadow-lg transition-all group">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white font-black text-sm">P</div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-sm">Pinterest Tag</h3>
+                    <p className="text-[10px] text-muted-foreground">Pinterest Ads conversion tracking</p>
+                  </div>
+                  {px.pinterestTagId && <Check className="w-4 h-4 text-emerald-500" />}
+                </div>
+                <Input placeholder="Tag ID" value={px.pinterestTagId || ""} onChange={e => setPx(p => ({ ...p, pinterestTagId: e.target.value }))} className="text-xs font-mono" />
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

@@ -85,6 +85,17 @@ export const stores = pgTable("stores", {
   isActive: boolean("is_active").default(true),
   autoOrderEmail: boolean("auto_order_email").default(true),
   autoContactReply: boolean("auto_contact_reply").default(true),
+  // Tracking & Analytics Pixels
+  trackingPixels: jsonb("tracking_pixels").$type<{
+    metaPixelId?: string;
+    metaAccessToken?: string;  // For Conversions API (CAPI)
+    tiktokPixelId?: string;
+    tiktokAccessToken?: string;
+    ga4MeasurementId?: string; // G-XXXXXXXXXX
+    googleAdsId?: string;     // AW-XXXXXXXXX
+    snapchatPixelId?: string;
+    pinterestTagId?: string;
+  }>().default({}),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
