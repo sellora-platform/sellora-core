@@ -61,6 +61,45 @@ const triggerMeta: Record<string, { icon: any; label: string; desc: string; colo
   birthday: { icon: Gift, label: "Birthday", desc: "Customer birthday celebration", color: "text-pink-500" },
 };
 
+// ── Pixel Card with Validation ──────────────────────────────
+function PixelCard({ icon, title, sub, findUrl, value, valid, hint, onChange, placeholder, extraInput }: {
+  icon: React.ReactNode; title: string; sub: string; findUrl: string;
+  value?: string; valid: boolean; hint: string;
+  onChange: (v: string) => void; placeholder: string; extraInput?: React.ReactNode;
+}) {
+  const hasValue = !!value?.trim();
+  return (
+    <Card className="p-5 border-border/40 hover:shadow-lg transition-all group">
+      <div className="flex items-center gap-3 mb-4">
+        {icon}
+        <div className="flex-1">
+          <h3 className="font-bold text-sm">{title}</h3>
+          <p className="text-[10px] text-muted-foreground">{sub}</p>
+        </div>
+        {hasValue && valid && <Check className="w-4 h-4 text-emerald-500" />}
+        {hasValue && !valid && <AlertTriangle className="w-4 h-4 text-amber-500" />}
+      </div>
+      <div className="space-y-2">
+        <Input
+          placeholder={placeholder}
+          value={value || ""}
+          onChange={e => onChange(e.target.value)}
+          className={`text-xs font-mono ${hasValue && !valid ? "border-amber-500/50 focus-visible:ring-amber-500/30" : ""}`}
+        />
+        {hasValue && !valid && (
+          <p className="text-[10px] text-amber-500 font-bold flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3" /> Invalid format — {hint}
+          </p>
+        )}
+        {extraInput}
+      </div>
+      <a href={findUrl} target="_blank" rel="noopener" className="text-[10px] text-muted-foreground hover:text-violet-500 mt-3 inline-flex items-center gap-1 transition-colors">
+        <ExternalLink className="w-3 h-3" /> Where to find your {title.split(" ")[0]} ID
+      </a>
+    </Card>
+  );
+}
+
 export default function Marketing() {
   const { isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
   const storeQuery = trpc.stores.getMyStore.useQuery();
@@ -286,89 +325,126 @@ export default function Marketing() {
 
             <div className="grid md:grid-cols-2 gap-5">
               {/* Meta / Facebook */}
-              <Card className="p-5 border-border/40 hover:shadow-lg transition-all group">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-sm">f</div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-sm">Meta Pixel</h3>
-                    <p className="text-[10px] text-muted-foreground">Facebook & Instagram Ads</p>
-                  </div>
-                  {px.metaPixelId && <Check className="w-4 h-4 text-emerald-500" />}
-                </div>
-                <div className="space-y-3">
-                  <Input placeholder="Pixel ID (e.g. 123456789012345)" value={px.metaPixelId || ""} onChange={e => setPx(p => ({ ...p, metaPixelId: e.target.value }))} className="text-xs font-mono" />
-                  <Input placeholder="Conversions API Access Token (optional)" type="password" value={px.metaAccessToken || ""} onChange={e => setPx(p => ({ ...p, metaAccessToken: e.target.value }))} className="text-xs font-mono" />
-                </div>
-              </Card>
+              <PixelCard
+                icon={<div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-sm">f</div>}
+                title="Meta Pixel" sub="Facebook & Instagram Ads"
+                findUrl="https://business.facebook.com/events_manager"
+                value={px.metaPixelId} valid={/^\d{12,16}$/.test(px.metaPixelId || "")}
+                hint="15-16 digit number from Events Manager"
+                onChange={v => setPx(p => ({ ...p, metaPixelId: v }))}
+                placeholder="Pixel ID (e.g. 123456789012345)"
+                extraInput={<Input placeholder="Conversions API Access Token (optional)" type="password" value={px.metaAccessToken || ""} onChange={e => setPx(p => ({ ...p, metaAccessToken: e.target.value }))} className="text-xs font-mono" />}
+              />
 
               {/* TikTok */}
-              <Card className="p-5 border-border/40 hover:shadow-lg transition-all group">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center text-white font-black text-sm">T</div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-sm">TikTok Pixel</h3>
-                    <p className="text-[10px] text-muted-foreground">TikTok For Business</p>
-                  </div>
-                  {px.tiktokPixelId && <Check className="w-4 h-4 text-emerald-500" />}
-                </div>
-                <div className="space-y-3">
-                  <Input placeholder="Pixel ID (e.g. CXXXXXXXXXXXXXXXXX)" value={px.tiktokPixelId || ""} onChange={e => setPx(p => ({ ...p, tiktokPixelId: e.target.value }))} className="text-xs font-mono" />
-                  <Input placeholder="Events API Access Token (optional)" type="password" value={px.tiktokAccessToken || ""} onChange={e => setPx(p => ({ ...p, tiktokAccessToken: e.target.value }))} className="text-xs font-mono" />
-                </div>
-              </Card>
+              <PixelCard
+                icon={<div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center text-white font-black text-sm">T</div>}
+                title="TikTok Pixel" sub="TikTok For Business"
+                findUrl="https://ads.tiktok.com/marketing_api/docs"
+                value={px.tiktokPixelId} valid={/^C[A-Z0-9]{15,25}$/.test(px.tiktokPixelId || "")}
+                hint="Starts with C, followed by uppercase letters/numbers"
+                onChange={v => setPx(p => ({ ...p, tiktokPixelId: v }))}
+                placeholder="Pixel ID (e.g. CXXXXXXXXXXXXXXXXX)"
+                extraInput={<Input placeholder="Events API Access Token (optional)" type="password" value={px.tiktokAccessToken || ""} onChange={e => setPx(p => ({ ...p, tiktokAccessToken: e.target.value }))} className="text-xs font-mono" />}
+              />
 
               {/* Google Analytics */}
-              <Card className="p-5 border-border/40 hover:shadow-lg transition-all group">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-white font-black text-sm">G</div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-sm">Google Analytics 4</h3>
-                    <p className="text-[10px] text-muted-foreground">Website analytics & insights</p>
-                  </div>
-                  {px.ga4MeasurementId && <Check className="w-4 h-4 text-emerald-500" />}
-                </div>
-                <Input placeholder="Measurement ID (e.g. G-XXXXXXXXXX)" value={px.ga4MeasurementId || ""} onChange={e => setPx(p => ({ ...p, ga4MeasurementId: e.target.value }))} className="text-xs font-mono" />
-              </Card>
+              <PixelCard
+                icon={<div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-white font-black text-sm">G</div>}
+                title="Google Analytics 4" sub="Website analytics & insights"
+                findUrl="https://analytics.google.com"
+                value={px.ga4MeasurementId} valid={/^G-[A-Z0-9]{6,12}$/.test(px.ga4MeasurementId || "")}
+                hint="Format: G-XXXXXXXXXX"
+                onChange={v => setPx(p => ({ ...p, ga4MeasurementId: v }))}
+                placeholder="Measurement ID (e.g. G-XXXXXXXXXX)"
+              />
 
               {/* Google Ads */}
-              <Card className="p-5 border-border/40 hover:shadow-lg transition-all group">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center text-white font-black text-sm">Ads</div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-sm">Google Ads</h3>
-                    <p className="text-[10px] text-muted-foreground">Conversion tracking for Google Ads</p>
-                  </div>
-                  {px.googleAdsId && <Check className="w-4 h-4 text-emerald-500" />}
-                </div>
-                <Input placeholder="Conversion ID (e.g. AW-XXXXXXXXX)" value={px.googleAdsId || ""} onChange={e => setPx(p => ({ ...p, googleAdsId: e.target.value }))} className="text-xs font-mono" />
-              </Card>
+              <PixelCard
+                icon={<div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center text-white font-black text-sm">Ads</div>}
+                title="Google Ads" sub="Conversion tracking for Google Ads"
+                findUrl="https://ads.google.com"
+                value={px.googleAdsId} valid={/^AW-\d{8,12}$/.test(px.googleAdsId || "")}
+                hint="Format: AW-XXXXXXXXX"
+                onChange={v => setPx(p => ({ ...p, googleAdsId: v }))}
+                placeholder="Conversion ID (e.g. AW-XXXXXXXXX)"
+              />
 
               {/* Snapchat */}
-              <Card className="p-5 border-border/40 hover:shadow-lg transition-all group">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-yellow-400 flex items-center justify-center text-black font-black text-sm">👻</div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-sm">Snapchat Pixel</h3>
-                    <p className="text-[10px] text-muted-foreground">Snap Ads conversion tracking</p>
-                  </div>
-                  {px.snapchatPixelId && <Check className="w-4 h-4 text-emerald-500" />}
-                </div>
-                <Input placeholder="Pixel ID" value={px.snapchatPixelId || ""} onChange={e => setPx(p => ({ ...p, snapchatPixelId: e.target.value }))} className="text-xs font-mono" />
-              </Card>
+              <PixelCard
+                icon={<div className="w-10 h-10 rounded-xl bg-yellow-400 flex items-center justify-center text-black font-black text-sm">👻</div>}
+                title="Snapchat Pixel" sub="Snap Ads conversion tracking"
+                findUrl="https://ads.snapchat.com"
+                value={px.snapchatPixelId} valid={/^[a-f0-9-]{20,40}$/.test(px.snapchatPixelId || "")}
+                hint="UUID format from Snap Ads Manager"
+                onChange={v => setPx(p => ({ ...p, snapchatPixelId: v }))}
+                placeholder="Pixel ID"
+              />
 
               {/* Pinterest */}
-              <Card className="p-5 border-border/40 hover:shadow-lg transition-all group">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white font-black text-sm">P</div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-sm">Pinterest Tag</h3>
-                    <p className="text-[10px] text-muted-foreground">Pinterest Ads conversion tracking</p>
-                  </div>
-                  {px.pinterestTagId && <Check className="w-4 h-4 text-emerald-500" />}
-                </div>
-                <Input placeholder="Tag ID" value={px.pinterestTagId || ""} onChange={e => setPx(p => ({ ...p, pinterestTagId: e.target.value }))} className="text-xs font-mono" />
-              </Card>
+              <PixelCard
+                icon={<div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white font-black text-sm">P</div>}
+                title="Pinterest Tag" sub="Pinterest Ads conversion tracking"
+                findUrl="https://ads.pinterest.com"
+                value={px.pinterestTagId} valid={/^\d{10,15}$/.test(px.pinterestTagId || "")}
+                hint="10-15 digit number from Pinterest Ads"
+                onChange={v => setPx(p => ({ ...p, pinterestTagId: v }))}
+                placeholder="Tag ID"
+              />
             </div>
+
+            {/* ─── Testing Guide ────────────────────────────── */}
+            <Card className="border-border/40 overflow-hidden">
+              <div className="p-5 bg-gradient-to-r from-violet-500/5 to-pink-500/5 border-b border-border/30">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-violet-500/10">
+                    <BarChart3 className="w-5 h-5 text-violet-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-sm">How to Test Your Pixels</h3>
+                    <p className="text-[10px] text-muted-foreground">Use browser extensions to verify your pixels are firing correctly</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-5 space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="flex gap-3 p-3 rounded-lg bg-muted/30">
+                    <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-black text-[10px] shrink-0">1</div>
+                    <div>
+                      <p className="text-xs font-bold">Meta Pixel Helper</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Install the <a href="https://chrome.google.com/webstore/detail/meta-pixel-helper/fdgfkebogiimcoedlicjlajpkdmockpc" target="_blank" rel="noopener" className="text-violet-500 underline">Chrome Extension</a> → Visit your store → Check for PageView, ViewContent, AddToCart, Purchase events</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 p-3 rounded-lg bg-muted/30">
+                    <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center text-white font-black text-[10px] shrink-0">2</div>
+                    <div>
+                      <p className="text-xs font-bold">TikTok Pixel Helper</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Install the <a href="https://chrome.google.com/webstore/detail/tiktok-pixel-helper/aelgobmabdmlfmiblddjfnjodalhidnn" target="_blank" rel="noopener" className="text-violet-500 underline">Chrome Extension</a> → Browse products → Verify events fire on each action</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 p-3 rounded-lg bg-muted/30">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-white font-black text-[10px] shrink-0">3</div>
+                    <div>
+                      <p className="text-xs font-bold">Google Tag Assistant</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Visit <a href="https://tagassistant.google.com" target="_blank" rel="noopener" className="text-violet-500 underline">tagassistant.google.com</a> → Enter your store URL → See real-time GA4 events including view_item, add_to_cart, purchase</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 p-3 rounded-lg bg-muted/30">
+                    <div className="w-8 h-8 rounded-lg bg-violet-500 flex items-center justify-center text-white font-black text-[10px] shrink-0">4</div>
+                    <div>
+                      <p className="text-xs font-bold">Browser Console</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Open DevTools → Console → Type <code className="bg-muted px-1 py-0.5 rounded text-[9px] font-mono">typeof fbq</code> or <code className="bg-muted px-1 py-0.5 rounded text-[9px] font-mono">typeof ttq</code> — should return "function"/"object" if loaded</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
+                  <p className="text-[10px] text-amber-600 dark:text-amber-400 font-bold flex items-center gap-2">
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                    Events tracked automatically: PageView (every page), ViewContent (product page), AddToCart (add to cart), InitiateCheckout (checkout page), Purchase (order placed). No extra setup needed.
+                  </p>
+                </div>
+              </div>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
