@@ -352,34 +352,29 @@ export default function ThemeEditor() {
   // Sync to Preview
   useEffect(() => {
     if (previewRef.current?.contentWindow) {
+      // Flatten the settings for the storefront receiver
+      const syncSettings = {
+        ...globalSettings,
+        // Ensure legacy naming is also supported
+        primary: globalSettings.primaryColor,
+        background: globalSettings.backgroundColor,
+        text: globalSettings.textColor,
+        accent: globalSettings.accentColor,
+        border: globalSettings.borderColor,
+        secondary: globalSettings.secondaryTextColor,
+        // Font vars
+        family: globalSettings.fontFamily,
+        headingFamily: globalSettings.headingFont,
+        baseSize: globalSettings.baseFontSize,
+      };
+
       previewRef.current.contentWindow.postMessage({ 
         type: "THEME_UPDATE", 
         sections: localSections,
         header: headerSection,
         footer: footerSection,
         selectedSectionId: selectedSectionId,
-        globalSettings: {
-          ...globalSettings,
-          colors: {
-            primary: globalSettings.primaryColor,
-            accent: globalSettings.accentColor,
-            background: globalSettings.backgroundColor,
-            foreground: globalSettings.textColor,
-            text: globalSettings.textColor,
-            secondary: globalSettings.secondaryTextColor,
-            border: globalSettings.borderColor,
-          },
-          typography: {
-            family: globalSettings.fontFamily,
-            headingFamily: globalSettings.headingFont,
-            baseSize: globalSettings.baseFontSize,
-            borderRadius: globalSettings.borderRadius,
-            pageWidth: globalSettings.pageWidth,
-            sectionSpacing: globalSettings.sectionSpacing,
-            cardStyle: globalSettings.cardStyle,
-          },
-          socialLinks: globalSettings.socialLinks
-        },
+        globalSettings: syncSettings,
         themeId: theme?.id,
         themeName: theme?.name
       }, "*");
@@ -450,7 +445,10 @@ export default function ThemeEditor() {
       colors: {
         primary: globalSettings.primaryColor,
         background: globalSettings.backgroundColor,
-        text: globalSettings.textColor
+        text: globalSettings.textColor,
+        accent: globalSettings.accentColor,
+        secondary: globalSettings.secondaryTextColor,
+        border: globalSettings.borderColor,
       },
       typography: {
         family: globalSettings.fontFamily,
@@ -950,15 +948,19 @@ export default function ThemeEditor() {
                       ].map(preset => (
                         <button
                           key={preset.name}
-                          onClick={() => setGlobalSettings({
-                            ...globalSettings,
-                            primaryColor: preset.primary,
-                            accentColor: preset.accent,
-                            backgroundColor: preset.bg,
-                            textColor: preset.text,
-                            fontFamily: preset.font,
-                            headingFont: preset.font,
-                          })}
+                          onClick={() => {
+                            const newSettings = {
+                              ...globalSettings,
+                              primaryColor: preset.primary,
+                              accentColor: preset.accent,
+                              backgroundColor: preset.bg,
+                              textColor: preset.text,
+                              fontFamily: preset.font,
+                              headingFont: preset.font,
+                            };
+                            setGlobalSettings(newSettings);
+                            pushToHistory(templates, newSettings);
+                          }}
                           className="p-3 border border-[#f1f1f1] rounded-2xl hover:border-[#008060] transition-all bg-white hover:shadow-md text-left group"
                         >
                           <div className="flex gap-1 mb-2">
