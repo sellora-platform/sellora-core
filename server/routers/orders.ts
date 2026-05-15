@@ -405,7 +405,7 @@ export const ordersRouter = router({
 
               <div style="border-top: 1px solid #eee; padding-top: 30px; margin-top: 30px; text-align: center;">
                 <p style="font-size: 14px; color: #666;">Need help? Contact us via WhatsApp</p>
-                <a href="https://wa.me/${order.customerPhone.replace(/[^0-9]/g, '')}" style="color: #25D366; font-weight: bold; text-decoration: none; font-size: 16px;">Chat on WhatsApp</a>
+                <a href="https://wa.me/${(order.customerPhone || '').replace(/[^0-9]/g, '')}" style="color: #25D366; font-weight: bold; text-decoration: none; font-size: 16px;">Chat on WhatsApp</a>
               </div>
             </div>
             <div style="background: #fcfcfc; padding: 20px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee;">

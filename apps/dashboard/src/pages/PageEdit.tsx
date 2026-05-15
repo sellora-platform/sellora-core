@@ -126,8 +126,8 @@ export default function PageEdit() {
               {isEditing ? "Edit Page" : "New Page"}
             </h1>
           </div>
-          <Button onClick={handleSave} disabled={createMutation.isLoading || updateMutation.isLoading} className="shadow-lg">
-            {createMutation.isLoading || updateMutation.isLoading ? (
+          <Button onClick={handleSave} disabled={createMutation.isPending || updateMutation.isPending} className="shadow-lg">
+            {createMutation.isPending || updateMutation.isPending ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
             ) : (
               <Save className="w-4 h-4 mr-2" />
