@@ -108,6 +108,13 @@ export async function getStoreByMerchantId(merchantId: number) {
   return storesList.length > 0 ? storesList[0] : null;
 }
 
+export async function getStoreById(id: number) {
+  const db = getDb();
+  if (!db) return null;
+  const result = await db.select().from(stores).where(eq(stores.id, id)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
 export async function getStoreBySlug(slug: string) {
   const db = getDb();
   if (!db) return null;

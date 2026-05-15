@@ -193,7 +193,9 @@ export const storesRouter = router({
         const themes = await db.getThemesByStoreId(store.id);
         const activeTheme = themes.find(t => t.isActive) || themes[0] || null;
         const channels = await db.getChannelsByStoreId(store.id);
-        return { ...store, activeTheme, channels };
+        const discounts = await db.getDiscountsByStoreId(store.id);
+        const hasActiveDiscounts = discounts.some(d => d.isActive);
+        return { ...store, activeTheme, channels, hasActiveDiscounts };
       }
       return null;
     }),
@@ -207,7 +209,9 @@ export const storesRouter = router({
         const themes = await db.getThemesByStoreId(store.id);
         const activeTheme = themes.find(t => t.isActive) || themes[0] || null;
         const channels = await db.getChannelsByStoreId(store.id);
-        return { ...store, activeTheme, channels };
+        const discounts = await db.getDiscountsByStoreId(store.id);
+        const hasActiveDiscounts = discounts.some(d => d.isActive);
+        return { ...store, activeTheme, channels, hasActiveDiscounts };
       }
       return null;
     }),
