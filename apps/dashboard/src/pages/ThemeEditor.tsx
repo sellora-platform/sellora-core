@@ -197,6 +197,9 @@ export default function ThemeEditor() {
     headingFont: "Inter",
     baseFontSize: "16px",
     borderRadius: "0.5rem",
+    pageWidth: "1200px",
+    sectionSpacing: "60px",
+    cardStyle: "flat", // flat, shadow, border
     socialLinks: {
       instagram: "",
       tiktok: "",
@@ -297,6 +300,9 @@ export default function ThemeEditor() {
         headingFont: config?.typography?.headingFamily || "Inter",
         baseFontSize: config?.typography?.baseSize || "16px",
         borderRadius: config?.typography?.borderRadius || "0.5rem",
+        pageWidth: config?.layout?.pageWidth || "1200px",
+        sectionSpacing: config?.layout?.sectionSpacing || "60px",
+        cardStyle: config?.layout?.cardStyle || "flat",
         socialLinks: config?.socialLinks || {
           instagram: "",
           tiktok: "",
@@ -368,6 +374,9 @@ export default function ThemeEditor() {
             headingFamily: globalSettings.headingFont,
             baseSize: globalSettings.baseFontSize,
             borderRadius: globalSettings.borderRadius,
+            pageWidth: globalSettings.pageWidth,
+            sectionSpacing: globalSettings.sectionSpacing,
+            cardStyle: globalSettings.cardStyle,
           },
           socialLinks: globalSettings.socialLinks
         },
@@ -444,7 +453,15 @@ export default function ThemeEditor() {
         text: globalSettings.textColor
       },
       typography: {
-        family: globalSettings.fontFamily
+        family: globalSettings.fontFamily,
+        headingFamily: globalSettings.headingFont,
+        baseSize: globalSettings.baseFontSize,
+        borderRadius: globalSettings.borderRadius,
+      },
+      layout: {
+        pageWidth: globalSettings.pageWidth,
+        sectionSpacing: globalSettings.sectionSpacing,
+        cardStyle: globalSettings.cardStyle,
       },
       socialLinks: globalSettings.socialLinks,
       templates: {}
@@ -669,309 +686,391 @@ export default function ThemeEditor() {
 
           <div className="flex-1 overflow-y-auto bg-white p-2">
             {activeActivity === "settings" ? (
-              <div className="p-4 space-y-6">
-                
-                {/* Colors Section */}
-                <div>
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a1a1a] mb-4 flex items-center gap-2">
-                    <Palette className="w-3.5 h-3.5 text-[#008060]" />
-                    Brand Colors
-                  </h3>
-                  
-                  <div className="flex h-8 rounded-lg overflow-hidden mb-4 border border-[#f1f1f1]">
-                    <div className="flex-1" style={{ background: globalSettings.backgroundColor }} />
-                    <div className="flex-1" style={{ background: globalSettings.primaryColor }} />
-                    <div className="flex-1" style={{ background: globalSettings.accentColor }} />
-                    <div className="flex-1" style={{ background: globalSettings.textColor }} />
-                    <div className="flex-1" style={{ background: globalSettings.secondaryTextColor }} />
+              <div className="flex flex-col h-full bg-white">
+                {/* Search in Settings */}
+                <div className="p-4 border-b border-[#f1f1f1]">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#616161]" />
+                    <Input 
+                      placeholder="Search settings..." 
+                      className="pl-10 h-10 bg-[#f1f1f1] border-none text-sm focus-visible:ring-1 focus-visible:ring-[#008060]"
+                    />
                   </div>
+                </div>
 
-                  <div className="space-y-2">
-                    {[
-                      { key: 'primaryColor', label: 'Primary', hint: 'Buttons, headings' },
-                      { key: 'accentColor', label: 'Accent', hint: 'Highlights, links' },
-                      { key: 'backgroundColor', label: 'Background', hint: 'Page background' },
-                      { key: 'textColor', label: 'Main Text', hint: 'Body text color' },
-                      { key: 'secondaryTextColor', label: 'Secondary Text', hint: 'Subtitles, captions' },
-                      { key: 'borderColor', label: 'Border', hint: 'Dividers, outlines' },
-                    ].map(({ key, label, hint }) => (
-                      <div key={key} className="flex items-center justify-between p-2.5 bg-white border border-[#f1f1f1] rounded-lg hover:border-[#d1d1d1] transition-colors">
-                        <div>
-                          <p className="text-xs font-semibold text-[#1a1a1a]">{label}</p>
-                          <p className="text-[10px] text-muted-foreground">{hint}</p>
+                <div className="flex-1 overflow-y-auto p-4 space-y-8 pb-20 custom-scrollbar">
+                  {/* Colors Section */}
+                  <section className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1a1a1a] flex items-center gap-2">
+                        <Palette className="w-4 h-4 text-[#008060]" />
+                        Colors
+                      </h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-5 h-2.5 rounded-full overflow-hidden mb-6 border border-[#f1f1f1] shadow-inner">
+                      <div className="hover:scale-110 transition-transform cursor-help" title="Background" style={{ background: globalSettings.backgroundColor }} />
+                      <div className="hover:scale-110 transition-transform cursor-help" title="Primary" style={{ background: globalSettings.primaryColor }} />
+                      <div className="hover:scale-110 transition-transform cursor-help" title="Accent" style={{ background: globalSettings.accentColor }} />
+                      <div className="hover:scale-110 transition-transform cursor-help" title="Text" style={{ background: globalSettings.textColor }} />
+                      <div className="hover:scale-110 transition-transform cursor-help" title="Border" style={{ background: globalSettings.borderColor }} />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      {[
+                        { key: 'primaryColor', label: 'Primary', hint: 'Buttons, accents' },
+                        { key: 'backgroundColor', label: 'Background', hint: 'Main background' },
+                        { key: 'textColor', label: 'Main Text', hint: 'Standard text' },
+                        { key: 'accentColor', label: 'Accent', hint: 'Special highlights' },
+                        { key: 'secondaryTextColor', label: 'Secondary Text', hint: 'Muted content' },
+                        { key: 'borderColor', label: 'Borders', hint: 'Lines & dividers' },
+                      ].map(({ key, label, hint }) => (
+                        <div key={key} className="flex items-center justify-between p-3 rounded-xl hover:bg-[#f6f6f7] transition-all group">
+                          <div className="flex-1">
+                            <Label className="text-xs font-bold text-[#1a1a1a] cursor-pointer" htmlFor={`color-${key}`}>{label}</Label>
+                            <p className="text-[10px] text-[#616161]">{hint}</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-mono text-[#616161] opacity-0 group-hover:opacity-100 transition-opacity">
+                              {(globalSettings[key as keyof typeof globalSettings] as string).toUpperCase()}
+                            </span>
+                            <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-[#d1d1d1] shadow-sm hover:scale-110 transition-transform cursor-pointer">
+                              <div 
+                                className="w-full h-full"
+                                style={{ background: globalSettings[key as keyof typeof globalSettings] as string }}
+                              />
+                              <input
+                                id={`color-${key}`}
+                                type="color"
+                                value={globalSettings[key as keyof typeof globalSettings] as string}
+                                onChange={(e) => setGlobalSettings({ ...globalSettings, [key]: e.target.value })}
+                                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                              />
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-mono text-muted-foreground">
-                            {globalSettings[key as keyof typeof globalSettings] as string}
-                          </span>
-                          <div className="relative">
-                            <div 
-                              className="w-8 h-8 rounded-lg border border-[#e1e1e1] cursor-pointer shadow-sm"
-                              style={{ background: globalSettings[key as keyof typeof globalSettings] as string }}
-                              onClick={() => document.getElementById(`color-${key}`)?.click()}
-                            />
-                            <input
-                              id={`color-${key}`}
-                              type="color"
-                              value={globalSettings[key as keyof typeof globalSettings] as string}
-                              onChange={(e) => setGlobalSettings({ ...globalSettings, [key]: e.target.value })}
-                              className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                      ))}
+                    </div>
+                  </section>
+
+                  <div className="h-px bg-[#f1f1f1]" />
+
+                  {/* Typography Section */}
+                  <section className="animate-in fade-in slide-in-from-bottom-2 duration-400">
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1a1a1a] mb-5 flex items-center gap-2">
+                      <Box className="w-4 h-4 text-[#008060]" />
+                      Typography
+                    </h3>
+                    
+                    <div className="space-y-5">
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-[#616161]">Heading Font</Label>
+                        <Select
+                          value={globalSettings.headingFont}
+                          onValueChange={(val: string) => setGlobalSettings({ ...globalSettings, headingFont: val })}
+                        >
+                          <SelectTrigger className="w-full h-11 bg-white border-[#d1d1d1] hover:border-[#008060] transition-colors rounded-xl text-sm font-medium">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[
+                              { value: "Inter", label: "Inter", desc: "Modern & versatile" },
+                              { value: "Outfit", label: "Outfit", desc: "Soft & geometric" },
+                              { value: "Playfair Display", label: "Playfair Display", desc: "Classic & elegant" },
+                              { value: "DM Sans", label: "DM Sans", desc: "Clean & friendly" },
+                              { value: "Space Grotesk", label: "Space Grotesk", desc: "Tech & industrial" },
+                              { value: "Cormorant Garamond", label: "Cormorant", desc: "Traditional serif" },
+                            ].map(f => (
+                              <SelectItem key={f.value} value={f.value} className="py-2.5">
+                                <div className="flex flex-col gap-0.5">
+                                  <span className="font-bold" style={{ fontFamily: f.value }}>{f.label}</span>
+                                  <span className="text-[10px] text-muted-foreground">{f.desc}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-[#616161]">Body Font</Label>
+                        <Select
+                          value={globalSettings.fontFamily}
+                          onValueChange={(val: string) => setGlobalSettings({ ...globalSettings, fontFamily: val })}
+                        >
+                          <SelectTrigger className="w-full h-11 bg-white border-[#d1d1d1] hover:border-[#008060] transition-colors rounded-xl text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[
+                              { value: "Inter", label: "Inter" },
+                              { value: "Outfit", label: "Outfit" },
+                              { value: "DM Sans", label: "DM Sans" },
+                              { value: "Lato", label: "Lato" },
+                            ].map(f => (
+                              <SelectItem key={f.value} value={f.value}>
+                                <span style={{ fontFamily: f.value }}>{f.label}</span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-[#616161]">Base Font Size</Label>
+                          <span className="text-xs font-bold text-[#008060]">{globalSettings.baseFontSize}</span>
+                        </div>
+                        <Slider 
+                          value={[parseInt(globalSettings.baseFontSize)]} 
+                          min={12} 
+                          max={20} 
+                          step={1}
+                          onValueChange={(val) => setGlobalSettings({ ...globalSettings, baseFontSize: `${val[0]}px` })}
+                          className="py-4"
+                        />
+                      </div>
+                    </div>
+                  </section>
+
+                  <div className="h-px bg-[#f1f1f1]" />
+
+                  {/* Layout & Styles Section */}
+                  <section className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1a1a1a] mb-5 flex items-center gap-2">
+                      <Layout className="w-4 h-4 text-[#008060]" />
+                      Layout & Styles
+                    </h3>
+                    
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-[#616161]">Border Radius</Label>
+                        <div className="grid grid-cols-4 gap-1.5 p-1 bg-[#f1f1f1] rounded-xl">
+                          {[
+                            { value: "0rem", label: "None" },
+                            { value: "0.5rem", label: "Sm" },
+                            { value: "1rem", label: "Md" },
+                            { value: "9999px", label: "Full" },
+                          ].map(opt => (
+                            <button
+                              key={opt.value}
+                              onClick={() => setGlobalSettings({ ...globalSettings, borderRadius: opt.value })}
+                              className={`py-2 text-[10px] font-black uppercase transition-all rounded-lg ${
+                                globalSettings.borderRadius === opt.value 
+                                  ? 'bg-white text-[#008060] shadow-sm' 
+                                  : 'text-[#616161] hover:text-[#1a1a1a]'
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-[#616161]">Page Max Width</Label>
+                          <span className="text-xs font-bold text-[#008060]">{globalSettings.pageWidth}</span>
+                        </div>
+                        <Slider 
+                          value={[parseInt(globalSettings.pageWidth)]} 
+                          min={1000} 
+                          max={1600} 
+                          step={50}
+                          onValueChange={(val) => setGlobalSettings({ ...globalSettings, pageWidth: `${val[0]}px` })}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-[#616161]">Section Spacing</Label>
+                          <span className="text-xs font-bold text-[#008060]">{globalSettings.sectionSpacing}</span>
+                        </div>
+                        <Slider 
+                          value={[parseInt(globalSettings.sectionSpacing)]} 
+                          min={0} 
+                          max={120} 
+                          step={10}
+                          onValueChange={(val) => setGlobalSettings({ ...globalSettings, sectionSpacing: `${val[0]}px` })}
+                        />
+                      </div>
+                    </div>
+                  </section>
+
+                  <div className="h-px bg-[#f1f1f1]" />
+
+                  {/* Social Media Section */}
+                  <section className="animate-in fade-in slide-in-from-bottom-2 duration-700">
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1a1a1a] mb-5 flex items-center gap-2">
+                      <Star className="w-4 h-4 text-[#008060]" />
+                      Social Media
+                    </h3>
+                    <div className="space-y-3">
+                      {[
+                        { id: 'instagram', label: 'Instagram', placeholder: '@username' },
+                        { id: 'tiktok', label: 'TikTok', placeholder: '@username' },
+                        { id: 'x', label: 'X (Twitter)', placeholder: '@username' },
+                        { id: 'facebook', label: 'Facebook', placeholder: 'your.page' },
+                      ].map(({ id, label, placeholder }) => (
+                        <div key={id} className="space-y-1.5">
+                          <Label className="text-[10px] font-black text-[#616161] uppercase tracking-wider">{label}</Label>
+                          <div className="relative group">
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#616161] text-[10px] font-bold group-hover:text-[#008060] transition-colors">
+                              {id === 'instagram' ? 'ig.me/' : id === 'tiktok' ? 'tt.com/' : id === 'x' ? 'x.com/' : 'fb.com/'}
+                            </div>
+                            <Input
+                              placeholder={placeholder}
+                              value={globalSettings.socialLinks[id as keyof typeof globalSettings.socialLinks]}
+                              onChange={(e) => setGlobalSettings({
+                                ...globalSettings,
+                                socialLinks: { ...globalSettings.socialLinks, [id]: e.target.value }
+                              })}
+                              className="h-10 pl-14 bg-white border-[#d1d1d1] rounded-xl text-sm focus-visible:ring-[#008060]"
                             />
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="border-t border-[#f1f1f1]" />
-
-                {/* Typography Section */}
-                <div>
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a1a1a] mb-4 flex items-center gap-2">
-                    <Box className="w-3.5 h-3.5 text-[#008060]" />
-                    Typography
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="p-2.5 bg-white border border-[#f1f1f1] rounded-lg">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Body Font</p>
-                      <Select
-                        value={globalSettings.fontFamily}
-                        onValueChange={(val: string) => setGlobalSettings({ ...globalSettings, fontFamily: val })}
-                      >
-                        <SelectTrigger className="w-full h-9 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {[
-                            { value: "Inter", label: "Inter", hint: "Clean & Modern" },
-                            { value: "Outfit", label: "Outfit", hint: "Bold & Contemporary" },
-                            { value: "Playfair Display", label: "Playfair Display", hint: "Elegant Serif" },
-                            { value: "DM Sans", label: "DM Sans", hint: "Friendly & Readable" },
-                          ].map(f => (
-                            <SelectItem key={f.value} value={f.value}>
-                              <span>{f.label}</span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      ))}
                     </div>
+                  </section>
 
-                    <div className="p-2.5 bg-white border border-[#f1f1f1] rounded-lg">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Button Style</p>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          { value: "0rem", label: "Sharp" },
-                          { value: "0.5rem", label: "Rounded" },
-                          { value: "9999px", label: "Pill" },
-                        ].map(opt => (
-                          <button
-                            key={opt.value}
-                            onClick={() => setGlobalSettings({ ...globalSettings, borderRadius: opt.value })}
-                            className={`py-2 text-xs font-bold border transition-all ${
-                              globalSettings.borderRadius === opt.value 
-                                ? 'border-[#008060] bg-[#008060]/5 text-[#008060]' 
-                                : 'border-[#e1e1e1] text-[#616161]'
-                            }`}
-                            style={{ borderRadius: opt.value === '9999px' ? '9999px' : '4px' }}
-                          >
-                            {opt.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  <div className="h-px bg-[#f1f1f1]" />
 
-                <div className="border-t border-[#f1f1f1]" />
-
-                {/* Social Media Section */}
-                <div>
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a1a1a] mb-4 flex items-center gap-2">
-                    <Star className="w-3.5 h-3.5 text-[#008060]" />
-                    Social Media
-                  </h3>
-                  <div className="space-y-4">
-                    {[
-                      { id: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/yourstore', icon: <Star className="w-4 h-4" /> },
-                      { id: 'tiktok', label: 'TikTok', placeholder: 'https://tiktok.com/@yourstore', icon: <Star className="w-4 h-4" /> },
-                      { id: 'x', label: 'X (Twitter)', placeholder: 'https://x.com/yourstore', icon: <Star className="w-4 h-4" /> },
-                      { id: 'facebook', label: 'Facebook', placeholder: 'https://facebook.com/yourstore', icon: <Star className="w-4 h-4" /> },
-                      { id: 'youtube', label: 'YouTube', placeholder: 'https://youtube.com/@yourstore', icon: <Star className="w-4 h-4" /> },
-                    ].map((platform) => (
-                      <div key={platform.id} className="space-y-2">
-                        <Label className="text-xs font-semibold flex items-center gap-2">
-                          {platform.label}
-                        </Label>
-                        <Input 
-                          placeholder={platform.placeholder}
-                          value={(globalSettings.socialLinks as any)?.[platform.id] || ""}
-                          onChange={(e) => setGlobalSettings({
+                  {/* Quick Presets */}
+                  <section className="animate-in fade-in slide-in-from-bottom-2 duration-800">
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1a1a1a] mb-5 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[#008060]" />
+                      Presets
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { name: "Minimal", primary: "#18181b", accent: "#10b981", bg: "#ffffff", text: "#18181b", font: "Inter" },
+                        { name: "Bold Dark", primary: "#ffffff", accent: "#3b82f6", bg: "#0a0a0a", text: "#ffffff", font: "Outfit" },
+                        { name: "Luxury", primary: "#1a0a00", accent: "#b8860b", bg: "#faf8f5", text: "#1a0a00", font: "Cormorant Garamond" },
+                        { name: "Fresh", primary: "#064e3b", accent: "#34d399", bg: "#f0fdf4", text: "#064e3b", font: "DM Sans" },
+                      ].map(preset => (
+                        <button
+                          key={preset.name}
+                          onClick={() => setGlobalSettings({
                             ...globalSettings,
-                            socialLinks: {
-                              ...(globalSettings.socialLinks as any),
-                              [platform.id]: e.target.value
-                            }
+                            primaryColor: preset.primary,
+                            accentColor: preset.accent,
+                            backgroundColor: preset.bg,
+                            textColor: preset.text,
+                            fontFamily: preset.font,
+                            headingFont: preset.font,
                           })}
-                          className="h-9 text-xs"
-                        />
-                      </div>
-                    ))}
-                  </div>
+                          className="p-3 border border-[#f1f1f1] rounded-2xl hover:border-[#008060] transition-all bg-white hover:shadow-md text-left group"
+                        >
+                          <div className="flex gap-1 mb-2">
+                            <div className="w-3 h-3 rounded-full border border-[#f1f1f1]" style={{ background: preset.bg }} />
+                            <div className="w-3 h-3 rounded-full" style={{ background: preset.primary }} />
+                            <div className="w-3 h-3 rounded-full" style={{ background: preset.accent }} />
+                          </div>
+                          <p className="text-[10px] font-black text-[#1a1a1a] truncate group-hover:text-[#008060] transition-colors">{preset.name}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
                 </div>
-
-                {/* Divider */}
-                <div className="border-t border-[#f1f1f1]" />
-
-                {/* Quick Presets */}
-                <div>
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a1a1a] mb-4 flex items-center gap-2">
-                    <Star className="w-3.5 h-3.5 text-[#008060]" />
-                    Quick Presets
-                  </h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { name: "Minimal", primary: "#18181b", accent: "#10b981", bg: "#ffffff", text: "#18181b", font: "Inter" },
-                      { name: "Bold Dark", primary: "#ffffff", accent: "#3b82f6", bg: "#0a0a0a", text: "#ffffff", font: "Outfit" },
-                      { name: "Luxury", primary: "#1a0a00", accent: "#b8860b", bg: "#faf8f5", text: "#1a0a00", font: "Cormorant Garamond" },
-                      { name: "Fresh", primary: "#064e3b", accent: "#34d399", bg: "#f0fdf4", text: "#064e3b", font: "DM Sans" },
-                      { name: "Electric", primary: "#1e1b4b", accent: "#8b5cf6", bg: "#0f0f23", text: "#e2e8f0", font: "Space Grotesk" },
-                      { name: "Classic", primary: "#1c1917", accent: "#dc2626", bg: "#ffffff", text: "#1c1917", font: "Playfair Display" },
-                    ].map(preset => (
-                      <button
-                        key={preset.name}
-                        onClick={() => setGlobalSettings({
-                          ...globalSettings,
-                          primaryColor: preset.primary,
-                          accentColor: preset.accent,
-                          backgroundColor: preset.bg,
-                          textColor: preset.text,
-                          fontFamily: preset.font,
-                          headingFont: preset.font,
-                        })}
-                        className="p-2.5 border border-[#f1f1f1] rounded-lg hover:border-[#008060] transition-colors text-left"
-                      >
-                        <div className="flex gap-1 mb-1.5">
-                          <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.bg === '#ffffff' ? '#f1f1f1' : preset.bg }} />
-                          <div className="w-4 h-4 rounded-full" style={{ background: preset.primary }} />
-                          <div className="w-4 h-4 rounded-full" style={{ background: preset.accent }} />
-                        </div>
-                        <p className="text-[10px] font-bold text-[#1a1a1a]">{preset.name}</p>
-                        <p className="text-[9px] text-muted-foreground" style={{ fontFamily: preset.font }}>{preset.font}</p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
               </div>
             ) : !selectedSectionId ? (
-              <div className="space-y-1">
+              <div className="flex flex-col h-full bg-white p-2">
                 {/* Header & Footer always pinned */}
                 <div 
                   onClick={() => setSelectedSectionId('header')}
-                  className={`p-3 rounded-md hover:bg-[#f1f1f1] flex items-center justify-between cursor-pointer group border transition-all ${selectedSectionId === 'header' ? "bg-[#008060]/5 border-[#008060]" : "border-transparent"}`}
+                  className={`p-3 rounded-xl hover:bg-[#f1f1f1] flex items-center justify-between cursor-pointer group border transition-all mb-2 ${selectedSectionId === 'header' ? "bg-[#008060]/5 border-[#008060] shadow-sm" : "bg-white border-transparent"}`}
                 >
                   <div className="flex items-center gap-3">
-                    <ChevronRight className={`w-4 h-4 transition-transform ${selectedSectionId === 'header' ? "rotate-90" : ""}`} />
-                    <span className="text-sm font-medium text-[#1a1a1a]">Header</span>
+                    <LayoutGrid className="w-4 h-4 text-[#008060]" />
+                    <span className="text-sm font-bold text-[#1a1a1a]">Header</span>
                   </div>
-                  <Settings className="w-4 h-4 text-[#616161] opacity-0 group-hover:opacity-100" />
+                  <Settings className="w-4 h-4 text-[#616161] opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
 
-                <div className="py-4 px-2">
-                  <div className="h-px bg-[#f1f1f1] mb-4" />
-                  <span className="text-[10px] font-bold text-[#616161] uppercase tracking-wider mb-2 block">Sections</span>
+                <div className="flex-1 overflow-y-auto px-1 py-4 custom-scrollbar">
+                  <div className="h-px bg-[#f1f1f1] mb-6" />
+                  <span className="text-[10px] font-black text-[#616161] uppercase tracking-[0.2em] mb-4 block px-2">Sections</span>
                   
-                  {localSections.map((section, idx) => (
-                    <div 
-                      key={section.id}
-                      onClick={() => setSelectedSectionId(section.id)}
-                      className={`p-3 rounded-xl flex items-center justify-between cursor-pointer group border transition-all mb-2 ${selectedSectionId === section.id ? "bg-[#008060]/5 border-[#008060] shadow-sm" : "bg-white border-[#f1f1f1] hover:border-[#d1d1d1]"}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <GripVertical className="w-4 h-4 text-[#c1c1c1] cursor-grab" />
-                        <span className="text-sm font-bold capitalize text-[#1a1a1a]">{section.type.replace("_", " ")}</span>
+                  <div className="space-y-2">
+                    {localSections.map((section, idx) => (
+                      <div 
+                        key={section.id}
+                        onClick={() => setSelectedSectionId(section.id)}
+                        className={`p-3 rounded-xl flex items-center justify-between cursor-pointer group border transition-all ${selectedSectionId === section.id ? "bg-[#008060]/5 border-[#008060] shadow-sm" : "bg-white border-[#f1f1f1] hover:border-[#d1d1d1]"}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <GripVertical className="w-4 h-4 text-[#c1c1c1] cursor-grab group-hover:text-[#616161] transition-colors" />
+                          <span className="text-sm font-bold capitalize text-[#1a1a1a]">{section.type.replace("_", " ")}</span>
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button 
+                            variant="ghost" size="icon" className="h-7 w-7 text-[#616161] hover:text-[#008060]"
+                            onClick={(e: React.MouseEvent) => {
+                              e.stopPropagation();
+                              if (idx > 0) {
+                                const newSections = [...localSections];
+                                [newSections[idx-1], newSections[idx]] = [newSections[idx], newSections[idx-1]];
+                                const newTemplates = { ...templates, [pageKey]: newSections };
+                                setTemplates(newTemplates);
+                                pushToHistory(newTemplates, globalSettings);
+                              }
+                            }}
+                          >
+                            <ChevronUp className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" size="icon" className="h-7 w-7 text-[#616161] hover:text-[#008060]"
+                            onClick={(e: React.MouseEvent) => {
+                              e.stopPropagation();
+                              if (idx < localSections.length - 1) {
+                                const newSections = [...localSections];
+                                [newSections[idx], newSections[idx+1]] = [newSections[idx+1], newSections[idx]];
+                                const newTemplates = { ...templates, [pageKey]: newSections };
+                                setTemplates(newTemplates);
+                                pushToHistory(newTemplates, globalSettings);
+                              }
+                            }}
+                          >
+                            <ChevronDown className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button 
-                          variant="ghost" size="icon" className="h-7 w-7 text-[#616161] hover:text-[#008060]"
-                          onClick={(e: React.MouseEvent) => {
-                            e.stopPropagation();
-                            if (idx > 0) {
-                              const newSections = [...localSections];
-                              [newSections[idx-1], newSections[idx]] = [newSections[idx], newSections[idx-1]];
-                              const newTemplates = { ...templates, [pageKey]: newSections };
-                              setTemplates(newTemplates);
-                              pushToHistory(newTemplates, globalSettings);
-                            }
-                          }}
-                        >
-                          <ChevronUp className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" size="icon" className="h-7 w-7 text-[#616161] hover:text-[#008060]"
-                          onClick={(e: React.MouseEvent) => {
-                            e.stopPropagation();
-                            if (idx < localSections.length - 1) {
-                              const newSections = [...localSections];
-                              [newSections[idx], newSections[idx+1]] = [newSections[idx+1], newSections[idx]];
-                              const newTemplates = { ...templates, [pageKey]: newSections };
-                              setTemplates(newTemplates);
-                              pushToHistory(newTemplates, globalSettings);
-                            }
-                          }}
-                        >
-                          <ChevronDown className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" size="icon" className="h-7 w-7 text-[#616161] hover:text-[#008060]"
-                          onClick={(e: React.MouseEvent) => {
-                            e.stopPropagation();
-                            const newSection = { ...section, id: Math.random().toString(36).substr(2, 9) };
-                            const newSections = [...localSections];
-                            newSections.splice(idx + 1, 0, newSection);
-                            const newTemplates = { ...templates, [pageKey]: newSections };
-                            setTemplates(newTemplates);
-                            pushToHistory(newTemplates, globalSettings);
-                          }}
-                        >
-                          <Copy className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button 
                         variant="ghost" 
-                        className="w-full justify-start text-[#008060] hover:bg-[#f1f1f1] text-sm font-semibold h-10 mt-4 border border-dashed border-[#008060]/30"
+                        className="w-full justify-center text-[#008060] hover:bg-[#008060]/5 text-xs font-black uppercase tracking-widest h-12 mt-6 border-2 border-dashed border-[#008060]/20 rounded-2xl transition-all hover:border-[#008060]/40"
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         Add Section
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-[300px] max-h-[480px] overflow-y-auto">
-                      <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground border-b">
-                        Add Section — {selectedPage}
+                    <DropdownMenuContent align="start" className="w-[300px] max-h-[480px] overflow-y-auto rounded-2xl shadow-2xl border-[#f1f1f1]">
+                      <div className="px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-[#616161] border-b bg-[#f9f9f9]">
+                        Sections for {selectedPage}
                       </div>
                       {(PAGE_SECTIONS[pageKey] || DEFAULT_SECTIONS).map((type) => {
                         const meta = SECTION_META[type];
-                        const schema = SECTION_SCHEMAS[type];
+                        const schema = resolveSchema(type);
                         if (!meta && !schema) return null;
                         return (
                           <DropdownMenuItem
                             key={type}
                             onClick={() => addSection(type)}
-                            className="py-3 cursor-pointer hover:bg-[#f1f1f1]"
+                            className="py-4 px-4 cursor-pointer hover:bg-[#f6f6f7] transition-colors border-b last:border-0 border-[#f1f1f1]/50"
                           >
-                            <div className="flex items-start gap-3 w-full">
-                              <span className="text-xl mt-0.5">{meta?.icon || '📄'}</span>
+                            <div className="flex items-center gap-4 w-full">
+                              <div className="w-10 h-10 rounded-xl bg-[#f1f1f1] flex items-center justify-center text-xl shadow-inner">
+                                {meta?.icon || '📄'}
+                              </div>
                               <div className="flex flex-col min-w-0">
-                                <span className="font-bold text-sm text-[#1a1a1a]">
+                                <span className="font-black text-sm text-[#1a1a1a]">
                                   {meta?.name || schema?.name || type}
                                 </span>
-                                <span className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                                <span className="text-[10px] text-[#616161] leading-tight mt-0.5 font-medium">
                                   {meta?.description || ''}
                                 </span>
                               </div>
@@ -983,220 +1082,152 @@ export default function ThemeEditor() {
                   </DropdownMenu>
                 </div>
 
-                {/* Theme Settings at Bottom */}
-                <div className="p-4 border-t mt-4 bg-[#f9f9f9]/50">
-                  <span className="text-[10px] font-bold text-[#616161] uppercase tracking-wider mb-4 block">Theme Settings</span>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium">Accent Color</span>
-                      <Input 
-                        type="color" 
-                        value={globalSettings.primaryColor} 
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          const newSettings = {...globalSettings, primaryColor: e.target.value};
-                          setGlobalSettings(newSettings);
-                          pushToHistory(templates, newSettings);
-                        }}
-                        className="w-8 h-8 p-0 rounded-md border-none bg-transparent cursor-pointer"
-                      />
-                    </div>
-                    <Select 
-                      value={globalSettings.fontFamily} 
-                      onValueChange={(val: string) => {
-                        const newSettings = {...globalSettings, fontFamily: val};
-                        setGlobalSettings(newSettings);
-                        pushToHistory(templates, newSettings);
-                      }}
-                    >
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue placeholder="Font Family" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Inter">Inter</SelectItem>
-                        <SelectItem value="Playfair Display">Playfair</SelectItem>
-                        <SelectItem value="Montserrat">Montserrat</SelectItem>
-                        <SelectItem value="Roboto">Roboto</SelectItem>
-                        <SelectItem value="Outfit">Outfit</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
                 <div 
                   onClick={() => setSelectedSectionId('footer')}
-                  className={`p-3 rounded-md hover:bg-[#f1f1f1] flex items-center justify-between cursor-pointer group border transition-all mt-4 ${selectedSectionId === 'footer' ? "bg-[#008060]/5 border-[#008060]" : "border-transparent"}`}
+                  className={`p-3 rounded-xl hover:bg-[#f1f1f1] flex items-center justify-between cursor-pointer group border transition-all mt-auto ${selectedSectionId === 'footer' ? "bg-[#008060]/5 border-[#008060] shadow-sm" : "bg-white border-transparent"}`}
                 >
                   <div className="flex items-center gap-3">
-                    <ChevronRight className={`w-4 h-4 transition-transform ${selectedSectionId === 'footer' ? "rotate-90" : ""}`} />
-                    <span className="text-sm font-medium text-[#1a1a1a]">Footer</span>
+                    <LayoutGrid className="w-4 h-4 text-[#008060]" />
+                    <span className="text-sm font-bold text-[#1a1a1a]">Footer</span>
                   </div>
-                  <Settings className="w-4 h-4 text-[#616161] opacity-0 group-hover:opacity-100" />
+                  <Settings className="w-4 h-4 text-[#616161] opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
             ) : (
               /* Section Settings View */
-              <div className="p-4 space-y-6 animate-in slide-in-from-right-4 duration-200">
-                {(() => {
-                  const schema = resolveSchema(currentSection?.type || '');
-                  if (!schema) return <div className="text-sm text-foreground/50 italic p-2">No settings found for "{currentSection?.type}" — this section may need to be re-added.</div>;
+              <div className="flex flex-col h-full bg-white">
+                <div className="flex-1 overflow-y-auto p-4 space-y-8 pb-20 custom-scrollbar">
+                  {(() => {
+                    const schema = resolveSchema(currentSection?.type || '');
+                    if (!schema) return <div className="text-sm text-foreground/50 italic p-2">No settings found.</div>;
 
-                  return (
-                    <div className="space-y-6">
-                      {/* AI Magic Button for supported types */}
-                      {["faq", "testimonials", "newsletter"].includes(currentSection?.type || "") && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={generateMutation.isPending}
-                          onClick={() => generateMutation.mutate({ 
-                            sectionType: currentSection!.type,
-                            storeNiche: (storeQuery.data as any)?.niche || "general" 
-                          })}
-                          className="w-full bg-gradient-to-r from-primary/10 to-purple-500/10 border-primary/20 text-primary font-bold gap-2 h-10 hover:from-primary/20 hover:to-purple-500/20"
-                        >
-                          {generateMutation.isPending ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Sparkles className="w-4 h-4" />
-                          )}
-                          {generateMutation.isPending ? "Generating..." : "Auto-Generate with AI"}
-                        </Button>
-                      )}
+                    return (
+                      <div className="space-y-8">
+                        {/* AI Magic Button */}
+                        {["faq", "testimonials", "newsletter", "hero", "rich_text"].includes(currentSection?.type || "") && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={generateMutation.isPending}
+                            onClick={() => generateMutation.mutate({ 
+                              sectionType: currentSection!.type,
+                              storeNiche: (storeQuery.data as any)?.niche || "general" 
+                            })}
+                            className="w-full bg-gradient-to-br from-[#008060]/10 via-[#008060]/5 to-purple-500/10 border-[#008060]/20 text-[#008060] font-black tracking-widest uppercase text-[10px] gap-2 h-12 hover:shadow-lg transition-all rounded-2xl"
+                          >
+                            {generateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                            Auto-Generate Content
+                          </Button>
+                        )}
 
-                      {schema.settings.map((field: any) => (
-                        <div key={field.id} className="space-y-2">
-                          <Label className="text-[10px] font-bold text-[#616161] uppercase tracking-wider">
-                            {field.label}
-                          </Label>
+                        <div className="space-y-6">
+                          {schema.settings.map((field: any) => (
+                            <div key={field.id} className="space-y-3">
+                              <Label className="text-[10px] font-black text-[#616161] uppercase tracking-[0.15em]">
+                                {field.label}
+                              </Label>
 
-                          {field.type === "text" || field.type === "url" ? (
-                            (() => {
-                              const isColorField = field.id.toLowerCase().includes('color') || 
-                                                   field.id.toLowerCase().includes('bg') ||
-                                                   field.id.toLowerCase() === 'bgcolor';
-                              
-                              if (isColorField && field.type === "text") {
-                                return (
-                                  <div className="flex items-center gap-3">
-                                    <Input
-                                      value={currentSection?.settings[field.id] || ''}
-                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleUpdateSection(currentSection!.id, {
-                                        ...currentSection!.settings,
-                                        [field.id]: e.target.value
-                                      })}
-                                      placeholder="#ffffff or transparent"
-                                      className="flex-1 h-10 font-mono text-xs rounded-xl"
+                              {field.type === "text" || field.type === "url" ? (
+                                (() => {
+                                  const isColorField = field.id.toLowerCase().includes('color') || field.id.toLowerCase().includes('bg');
+                                  if (isColorField) {
+                                    return (
+                                      <div className="flex items-center gap-3">
+                                        <Input
+                                          value={currentSection?.settings[field.id] || ''}
+                                          onChange={(e) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: e.target.value })}
+                                          className="flex-1 h-11 font-mono text-xs rounded-xl bg-[#f9f9f9] border-none"
+                                        />
+                                        <div className="relative w-11 h-11 rounded-xl overflow-hidden border border-[#f1f1f1] shadow-sm">
+                                          <div className="w-full h-full" style={{ background: currentSection?.settings[field.id] || '#ffffff' }} />
+                                          <input
+                                            type="color"
+                                            value={currentSection?.settings[field.id] || '#ffffff'}
+                                            onChange={(e) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: e.target.value })}
+                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                          />
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+                                  return (
+                                    <Input 
+                                      value={currentSection?.settings[field.id] || ""} 
+                                      onChange={(e) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: e.target.value })}
+                                      className="h-11 rounded-xl bg-[#f9f9f9] border-none"
                                     />
-                                    <div className="relative">
-                                      <div
-                                        className="w-10 h-10 rounded-xl border border-[#d1d1d1] cursor-pointer flex-shrink-0"
-                                        style={{ background: currentSection?.settings[field.id] || '#ffffff' }}
-                                        onClick={() => document.getElementById(`sc-${field.id}-${currentSection?.id}`)?.click()}
-                                      />
-                                      <input
-                                        id={`sc-${field.id}-${currentSection?.id}`}
-                                        type="color"
-                                        value={currentSection?.settings[field.id] || '#ffffff'}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleUpdateSection(currentSection!.id, {
-                                          ...currentSection!.settings,
-                                          [field.id]: e.target.value
-                                        })}
-                                        className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-                                      />
-                                    </div>
-                                  </div>
-                                );
-                              }
-                              
-                              return (
-                                <Input 
-                                  value={currentSection?.settings[field.id] || ""} 
-                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleUpdateSection(currentSection!.id, {
-                                    ...currentSection!.settings,
-                                    [field.id]: e.target.value
-                                  })}
-                                  className="h-10 rounded-xl border-[#d1d1d1]"
+                                  );
+                                })()
+                              ) : field.type === "image" ? (
+                                <ImagePicker
+                                  value={currentSection?.settings[field.id] || ""}
+                                  onChange={(url: string) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: url })}
                                 />
-                              );
-                            })()
-                          ) : field.type === "image" ? (
-                            <ImagePicker
-                               value={currentSection?.settings[field.id] || ""}
-                               onChange={(url: string) => handleUpdateSection(currentSection!.id, {
-                                 ...currentSection!.settings,
-                                 [field.id]: url
-                               })}
-                             />
-                          ) : field.type === "textarea" ? (
-                            <Textarea 
-                              className="min-h-[100px] border-[#d1d1d1] focus-visible:ring-[#008060] resize-none"
-                              value={currentSection?.settings[field.id] || ""} 
-                              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: e.target.value })}
-                            />
-                          ) : field.type === "select" ? (
-                            <Select 
-                              value={currentSection?.settings[field.id]} 
-                              onValueChange={(val: string) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
-                            >
-                              <SelectTrigger className="h-10 border-[#d1d1d1]">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {field.options?.map((opt: any) => (
-                                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          ) : null}
-
-                          {field.type === "range" && (
-                            <div className="space-y-3 pt-2">
-                              <Slider 
-                                min={field.min} 
-                                max={field.max} 
-                                step={1}
-                                value={[currentSection?.settings[field.id] || field.default]}
-                                onValueChange={([val]: number[]) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
-                                className="[&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&_[role=slider]]:border-[#008060] [&_[role=track]]:h-1"
-                              />
-                              <div className="flex justify-between text-[10px] font-bold text-[#616161]">
-                                <span>{field.min}</span>
-                                <span className="text-[#008060]">{currentSection?.settings[field.id]}</span>
-                                <span>{field.max}</span>
-                              </div>
+                              ) : field.type === "textarea" ? (
+                                <Textarea 
+                                  className="min-h-[120px] rounded-2xl bg-[#f9f9f9] border-none focus-visible:ring-[#008060]"
+                                  value={currentSection?.settings[field.id] || ""} 
+                                  onChange={(e) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: e.target.value })}
+                                />
+                              ) : field.type === "select" ? (
+                                <Select 
+                                  value={currentSection?.settings[field.id]} 
+                                  onValueChange={(val: string) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
+                                >
+                                  <SelectTrigger className="h-11 rounded-xl bg-[#f9f9f9] border-none">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {field.options?.map((opt: any) => (
+                                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              ) : field.type === "range" ? (
+                                <div className="space-y-4 pt-2">
+                                  <Slider 
+                                    min={field.min} max={field.max} step={1}
+                                    value={[currentSection?.settings[field.id] || field.default]}
+                                    onValueChange={([val]) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
+                                  />
+                                  <div className="flex justify-between text-[10px] font-black text-[#008060]">
+                                    <span>{field.min}</span>
+                                    <span>{currentSection?.settings[field.id]}</span>
+                                    <span>{field.max}</span>
+                                  </div>
+                                </div>
+                              ) : field.type === "checkbox" ? (
+                                <div className="flex items-center justify-between p-4 rounded-2xl bg-[#f9f9f9]">
+                                  <span className="text-xs font-bold text-[#1a1a1a]">{field.label}</span>
+                                  <Switch 
+                                    checked={currentSection?.settings[field.id]}
+                                    onCheckedChange={(val) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
+                                  />
+                                </div>
+                              ) : null}
                             </div>
-                          )}
-
-                          {field.type === "checkbox" && (
-                            <div className="flex items-center justify-between p-3 rounded-lg border border-[#f1f1f1] bg-white">
-                              <span className="text-sm">{field.label}</span>
-                              <Switch 
-                                checked={currentSection?.settings[field.id]}
-                                onCheckedChange={(val: boolean) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
-                              />
-                            </div>
-                          )}
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  );
-                })()}
+                      </div>
+                    );
+                  })()}
 
-                <div className="pt-6 border-t border-[#f1f1f1]">
-                  <Button 
-                    variant="ghost" 
-                    className="w-full text-red-600 hover:bg-red-50 hover:text-red-700 h-10 gap-2"
-                    onClick={() => {
-                      const newSections = localSections.filter(s => s.id !== selectedSectionId);
-                      const newTemplates = { ...templates, [pageKey]: newSections };
-                      setTemplates(newTemplates);
-                      pushToHistory(newTemplates, globalSettings);
-                      setSelectedSectionId(null);
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Remove Section
-                  </Button>
+                  <div className="pt-10">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-red-500 hover:bg-red-50 hover:text-red-600 h-12 rounded-2xl font-black uppercase tracking-widest text-[10px] gap-2 border border-red-100"
+                      onClick={() => {
+                        const newSections = localSections.filter(s => s.id !== selectedSectionId);
+                        const newTemplates = { ...templates, [pageKey]: newSections };
+                        setTemplates(newTemplates);
+                        pushToHistory(newTemplates, globalSettings);
+                        setSelectedSectionId(null);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Remove Section
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
