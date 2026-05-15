@@ -569,3 +569,140 @@ export const messages = pgTable("messages", {
 
 export type Page = typeof pages.$inferSelect;
 export type InsertPage = typeof pages.$inferInsert;
+
+// ============================================================================
+// Marketing Campaigns
+// ============================================================================
+
+export const campaignStatusEnum = pgEnum("campaign_status", ["draft", "scheduled", "sending", "sent", "paused", "failed"]);
+export const campaignChannelEnum = pgEnum("campaign_channel", ["email", "whatsapp"]);
+
+export const marketingCampaigns = pgTable("marketing_campaigns", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  subject: varchar("subject", { length: 255 }), // Email subject line
+  channel: campaignChannelEnum("channel").notNull(),
+  status: campaignStatusEnum("status").default("draft").notNull(),
+  // Content
+  body: text("body").notNull(), // HTML for email, plain text for WhatsApp
+  previewText: varchar("preview_text", { length: 255 }), // Email preview text
+  // Targeting
+  segment: varchar("segment", { length: 50 }).default("all"), // all, subscribers, buyers, inactive, vip, custom
+  segmentRules: jsonb("segment_rules").$type<{
+    minOrders?: number;
+    maxOrders?: number;
+    minSpent?: number;
+    maxSpent?: number;
+    inactiveDays?: number;
+    acceptsMarketing?: boolean;
+  }>().default({}),
+  // Scheduling
+  scheduledAt: timestamp("scheduled_at"),
+  sentAt: timestamp("sent_at"),
+  // Analytics
+  recipientCount: integer("recipient_count").default(0),
+  deliveredCount: integer("delivered_count").default(0),
+  openedCount: integer("opened_count").default(0),
+  clickedCount: integer("clicked_count").default(0),
+  unsubscribedCount: integer("unsubscribed_count").default(0),
+  // Discount attachment
+  discountId: integer("discount_id"), // Optionally attach a discount to this campaign
+  // Metadata
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  storeIdIdx: index("campaigns_store_id_idx").on(table.storeId),
+  statusIdx: index("campaigns_status_idx").on(table.status),
+}));
+
+export type MarketingCampaign = typeof marketingCampaigns.$inferSelect;
+export type InsertMarketingCampaign = typeof marketingCampaigns.$inferInsert;
+
+// ============================================================================
+// Abandoned Carts (Recovery Automation)
+// ============================================================================
+
+export const abandonedCartStatusEnum = pgEnum("abandoned_cart_status", ["active", "reminded", "recovered", "expired"]);
+
+export const abandonedCarts = pgTable("abandoned_carts", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull(),
+  // Customer info (captured at checkout attempt)
+  customerEmail: varchar("customer_email", { length: 320 }),
+  customerPhone: varchar("customer_phone", { length: 20 }),
+  customerName: varchar("customer_name", { length: 255 }),
+  customerId: integer("customer_id"),
+  // Cart contents
+  cartItems: jsonb("cart_items").$type<Array<{
+    productId: number;
+    variantId?: number;
+    title: string;
+    price: string;
+    quantity: number;
+    image?: string;
+  }>>().default([]),
+  cartTotal: numeric("cart_total", { precision: 10, scale: 2 }).default("0"),
+  // Recovery tracking
+  status: abandonedCartStatusEnum("status").default("active").notNull(),
+  remindersSent: integer("reminders_sent").default(0),
+  lastReminderAt: timestamp("last_reminder_at"),
+  recoveredAt: timestamp("recovered_at"),
+  recoveryOrderId: integer("recovery_order_id"),
+  // Recovery discount (auto-generated for incentive)
+  recoveryDiscountCode: varchar("recovery_discount_code", { length: 100 }),
+  recoveryDiscountValue: numeric("recovery_discount_value", { precision: 5, scale: 2 }),
+  // Timestamps
+  abandonedAt: timestamp("abandoned_at").defaultNow().notNull(),
+  expiresAt: timestamp("expires_at"), // After this, stop sending reminders
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  storeIdIdx: index("abandoned_carts_store_id_idx").on(table.storeId),
+  statusIdx: index("abandoned_carts_status_idx").on(table.status),
+  emailIdx: index("abandoned_carts_email_idx").on(table.customerEmail),
+}));
+
+export type AbandonedCart = typeof abandonedCarts.$inferSelect;
+export type InsertAbandonedCart = typeof abandonedCarts.$inferInsert;
+
+// ============================================================================
+// Marketing Automations (Flow Triggers)
+// ============================================================================
+
+export const automationTriggerEnum = pgEnum("automation_trigger", [
+  "abandoned_cart",    // Cart abandoned > X minutes
+  "welcome",          // New subscriber
+  "post_purchase",    // After order completed
+  "winback",          // Inactive customer
+  "birthday",         // Customer birthday
+]);
+
+export const marketingAutomations = pgTable("marketing_automations", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  trigger: automationTriggerEnum("trigger").notNull(),
+  isActive: boolean("is_active").default(false).notNull(),
+  // Configuration
+  delayMinutes: integer("delay_minutes").default(60), // Wait before sending
+  channel: campaignChannelEnum("channel").default("email").notNull(),
+  subject: varchar("subject", { length: 255 }),
+  body: text("body").notNull(),
+  // Discount incentive
+  includeDiscount: boolean("include_discount").default(false),
+  discountType: discountTypeEnum("discount_type"),
+  discountValue: numeric("discount_value", { precision: 10, scale: 2 }),
+  // Analytics
+  sentCount: integer("sent_count").default(0),
+  convertedCount: integer("converted_count").default(0),
+  revenue: numeric("revenue", { precision: 10, scale: 2 }).default("0"),
+  // Metadata
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  storeIdIdx: index("automations_store_id_idx").on(table.storeId),
+  triggerIdx: index("automations_trigger_idx").on(table.trigger),
+}));
+
+export type MarketingAutomation = typeof marketingAutomations.$inferSelect;
+export type InsertMarketingAutomation = typeof marketingAutomations.$inferInsert;
