@@ -83,7 +83,7 @@ export default function Marketing() {
 
   // Automation form
   const [showAutoModal, setShowAutoModal] = useState(false);
-  const [af, setAf] = useState({ name: "", trigger: "abandoned_cart" as string, channel: "email" as "email" | "whatsapp", subject: "", body: "", delayMinutes: 60, includeDiscount: false, discountValue: "" });
+  const [af, setAf] = useState({ name: "", trigger: "abandoned_cart" as "abandoned_cart" | "welcome" | "post_purchase" | "winback" | "birthday", channel: "email" as "email" | "whatsapp", subject: "", body: "", delayMinutes: 60, includeDiscount: false, discountValue: "" });
 
   if (!isAuthenticated) return null;
   const o = overview.data;
@@ -310,7 +310,7 @@ export default function Marketing() {
           <div className="space-y-4 py-2">
             <Input placeholder="Automation name" value={af.name} onChange={e => setAf(p => ({ ...p, name: e.target.value }))} />
             <div className="grid grid-cols-2 gap-3">
-              <Select value={af.trigger} onValueChange={(v) => setAf(p => ({ ...p, trigger: v }))}>
+              <Select value={af.trigger} onValueChange={(v: any) => setAf(p => ({ ...p, trigger: v }))}>
                 <SelectTrigger><SelectValue placeholder="Trigger" /></SelectTrigger>
                 <SelectContent>
                   {Object.entries(triggerMeta).map(([k, v]) => (
