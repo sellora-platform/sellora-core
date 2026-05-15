@@ -286,6 +286,8 @@ export default function OrderDetails() {
                 <p className="font-bold text-foreground">{order.customerName}</p>
                 <p>{(order.shippingAddress as any)?.line1}</p>
                 {(order.shippingAddress as any)?.line2 && <p>{(order.shippingAddress as any).line2}</p>}
+                {(order.shippingAddress as any)?.area && <p className="font-medium">Area: {(order.shippingAddress as any).area}</p>}
+                {(order.shippingAddress as any)?.landmark && <p className="text-primary font-bold">Landmark: {(order.shippingAddress as any).landmark}</p>}
                 <p>{(order.shippingAddress as any)?.city}, {(order.shippingAddress as any)?.state}</p>
                 <p>{(order.shippingAddress as any)?.country} {(order.shippingAddress as any)?.postalCode}</p>
               </div>
