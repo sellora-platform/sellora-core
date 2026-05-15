@@ -931,48 +931,6 @@ export default function ThemeEditor() {
                     </div>
                   </section>
 
-                  <div className="h-px bg-[#f1f1f1]" />
-
-                  {/* Quick Presets */}
-                  <section className="animate-in fade-in slide-in-from-bottom-2 duration-800">
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1a1a1a] mb-5 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-[#008060]" />
-                      Presets
-                    </h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        { name: "Minimal", primary: "#18181b", accent: "#10b981", bg: "#ffffff", text: "#18181b", font: "Inter" },
-                        { name: "Bold Dark", primary: "#ffffff", accent: "#3b82f6", bg: "#0a0a0a", text: "#ffffff", font: "Outfit" },
-                        { name: "Luxury", primary: "#1a0a00", accent: "#b8860b", bg: "#faf8f5", text: "#1a0a00", font: "Cormorant Garamond" },
-                        { name: "Fresh", primary: "#064e3b", accent: "#34d399", bg: "#f0fdf4", text: "#064e3b", font: "DM Sans" },
-                      ].map(preset => (
-                        <button
-                          key={preset.name}
-                          onClick={() => {
-                            const newSettings = {
-                              ...globalSettings,
-                              primaryColor: preset.primary,
-                              accentColor: preset.accent,
-                              backgroundColor: preset.bg,
-                              textColor: preset.text,
-                              fontFamily: preset.font,
-                              headingFont: preset.font,
-                            };
-                            setGlobalSettings(newSettings);
-                            pushToHistory(templates, newSettings);
-                          }}
-                          className="p-3 border border-[#f1f1f1] rounded-2xl hover:border-[#008060] transition-all bg-white hover:shadow-md text-left group"
-                        >
-                          <div className="flex gap-1 mb-2">
-                            <div className="w-3 h-3 rounded-full border border-[#f1f1f1]" style={{ background: preset.bg }} />
-                            <div className="w-3 h-3 rounded-full" style={{ background: preset.primary }} />
-                            <div className="w-3 h-3 rounded-full" style={{ background: preset.accent }} />
-                          </div>
-                          <p className="text-[10px] font-black text-[#1a1a1a] truncate group-hover:text-[#008060] transition-colors">{preset.name}</p>
-                        </button>
-                      ))}
-                    </div>
-                  </section>
                 </div>
               </div>
             ) : !selectedSectionId ? (
