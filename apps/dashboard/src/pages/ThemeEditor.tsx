@@ -685,16 +685,7 @@ export default function ThemeEditor() {
           <div className="flex-1 overflow-y-auto bg-white p-2">
             {activeActivity === "settings" ? (
               <div className="flex flex-col h-full bg-white">
-                {/* Search in Settings */}
-                <div className="p-4 border-b border-[#f1f1f1]">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#616161]" />
-                    <Input 
-                      placeholder="Search settings..." 
-                      className="pl-10 h-10 bg-[#f1f1f1] border-none text-sm focus-visible:ring-1 focus-visible:ring-[#008060]"
-                    />
-                  </div>
-                </div>
+                {/* Removed Search in Settings as requested */}
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-8 pb-20 custom-scrollbar">
                   {/* Colors Section */}
@@ -716,12 +707,12 @@ export default function ThemeEditor() {
 
                     <div className="space-y-1.5">
                       {[
-                        { key: 'primaryColor', label: 'Primary', hint: 'Buttons, accents' },
-                        { key: 'backgroundColor', label: 'Background', hint: 'Main background' },
-                        { key: 'textColor', label: 'Main Text', hint: 'Standard text' },
-                        { key: 'accentColor', label: 'Accent', hint: 'Special highlights' },
-                        { key: 'secondaryTextColor', label: 'Secondary Text', hint: 'Muted content' },
-                        { key: 'borderColor', label: 'Borders', hint: 'Lines & dividers' },
+                        { key: 'primaryColor', label: 'Primary Color', hint: 'Used for buttons, links, and main navigation highlights.' },
+                        { key: 'backgroundColor', label: 'Background Color', hint: 'The main background color of your entire store pages.' },
+                        { key: 'textColor', label: 'Main Text Color', hint: 'Primary font color for all headings and descriptions.' },
+                        { key: 'accentColor', label: 'Accent Color', hint: 'Used for small UI highlights, badges, and active indicators.' },
+                        { key: 'secondaryTextColor', label: 'Muted Text Color', hint: 'For secondary info like labels, dates, and placeholder text.' },
+                        { key: 'borderColor', label: 'Border & Line Color', hint: 'Used for separators, card outlines, and section dividers.' },
                       ].map(({ key, label, hint }) => (
                         <div key={key} className="flex items-center justify-between p-3 rounded-xl hover:bg-[#f6f6f7] transition-all group">
                           <div className="flex-1">
