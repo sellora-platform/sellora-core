@@ -25,8 +25,10 @@ export default function Payments() {
     paymentBankDetails: { bankName: "", accountTitle: "", accountNumber: "" },
     paymentJazzcashEnabled: false,
     paymentJazzcashNumber: "",
+    paymentJazzcashName: "",
     paymentEasypaisaEnabled: false,
     paymentEasypaisaNumber: "",
+    paymentEasypaisaName: "",
   });
 
   useEffect(() => {
@@ -37,8 +39,10 @@ export default function Payments() {
         paymentBankDetails: (storeQuery.data.paymentBankDetails as any) || { bankName: "", accountTitle: "", accountNumber: "" },
         paymentJazzcashEnabled: storeQuery.data.paymentJazzcashEnabled ?? false,
         paymentJazzcashNumber: storeQuery.data.paymentJazzcashNumber || "",
+        paymentJazzcashName: storeQuery.data.paymentJazzcashName || "",
         paymentEasypaisaEnabled: storeQuery.data.paymentEasypaisaEnabled ?? false,
         paymentEasypaisaNumber: storeQuery.data.paymentEasypaisaNumber || "",
+        paymentEasypaisaName: storeQuery.data.paymentEasypaisaName || "",
       });
     }
   }, [storeQuery.data]);
@@ -185,14 +189,25 @@ export default function Payments() {
                 />
               </div>
               {formData.paymentJazzcashEnabled && (
-                <div className="px-4 animate-in fade-in duration-300">
-                  <label className="block text-xs font-bold text-foreground/70 uppercase tracking-widest mb-2">JazzCash Number</label>
-                  <Input
-                    value={formData.paymentJazzcashNumber}
-                    onChange={(e) => setFormData({ ...formData, paymentJazzcashNumber: e.target.value })}
-                    placeholder="e.g. 03001234567"
-                    className="max-w-sm font-mono"
-                  />
+                <div className="px-4 animate-in fade-in duration-300 grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-foreground/70 uppercase tracking-widest mb-2">Account Title</label>
+                    <Input
+                      value={formData.paymentJazzcashName}
+                      onChange={(e) => setFormData({ ...formData, paymentJazzcashName: e.target.value })}
+                      placeholder="e.g. John Doe"
+                      className="bg-accent/5"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-foreground/70 uppercase tracking-widest mb-2">JazzCash Number</label>
+                    <Input
+                      value={formData.paymentJazzcashNumber}
+                      onChange={(e) => setFormData({ ...formData, paymentJazzcashNumber: e.target.value })}
+                      placeholder="e.g. 03001234567"
+                      className="font-mono bg-accent/5"
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -215,14 +230,25 @@ export default function Payments() {
                 />
               </div>
               {formData.paymentEasypaisaEnabled && (
-                <div className="px-4 animate-in fade-in duration-300">
-                  <label className="block text-xs font-bold text-foreground/70 uppercase tracking-widest mb-2">Easypaisa Number</label>
-                  <Input
-                    value={formData.paymentEasypaisaNumber}
-                    onChange={(e) => setFormData({ ...formData, paymentEasypaisaNumber: e.target.value })}
-                    placeholder="e.g. 03001234567"
-                    className="max-w-sm font-mono"
-                  />
+                <div className="px-4 animate-in fade-in duration-300 grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-foreground/70 uppercase tracking-widest mb-2">Account Title</label>
+                    <Input
+                      value={formData.paymentEasypaisaName}
+                      onChange={(e) => setFormData({ ...formData, paymentEasypaisaName: e.target.value })}
+                      placeholder="e.g. Jane Doe"
+                      className="bg-accent/5"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-foreground/70 uppercase tracking-widest mb-2">Easypaisa Number</label>
+                    <Input
+                      value={formData.paymentEasypaisaNumber}
+                      onChange={(e) => setFormData({ ...formData, paymentEasypaisaNumber: e.target.value })}
+                      placeholder="e.g. 03001234567"
+                      className="font-mono bg-accent/5"
+                    />
+                  </div>
                 </div>
               )}
             </div>

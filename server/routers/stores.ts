@@ -235,8 +235,10 @@ export const storesRouter = router({
         paymentBankDetails: z.object({ bankName: z.string(), accountTitle: z.string(), accountNumber: z.string() }).optional(),
         paymentJazzcashEnabled: z.boolean().optional(),
         paymentJazzcashNumber: z.string().nullable().optional(),
+        paymentJazzcashName: z.string().nullable().optional(),
         paymentEasypaisaEnabled: z.boolean().optional(),
         paymentEasypaisaNumber: z.string().nullable().optional(),
+        paymentEasypaisaName: z.string().nullable().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -249,8 +251,14 @@ export const storesRouter = router({
       if (updateData.paymentJazzcashNumber === "") {
         updateData.paymentJazzcashNumber = null;
       }
+      if (updateData.paymentJazzcashName === "") {
+        updateData.paymentJazzcashName = null;
+      }
       if (updateData.paymentEasypaisaNumber === "") {
         updateData.paymentEasypaisaNumber = null;
+      }
+      if (updateData.paymentEasypaisaName === "") {
+        updateData.paymentEasypaisaName = null;
       }
       
       // 1. Verify ownership

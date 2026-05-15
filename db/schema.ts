@@ -91,8 +91,10 @@ export const stores = pgTable("stores", {
   paymentBankDetails: jsonb("payment_bank_details").$type<{ bankName: string; accountTitle: string; accountNumber: string }>().default({ bankName: "", accountTitle: "", accountNumber: "" }),
   paymentJazzcashEnabled: boolean("payment_jazzcash_enabled").default(false),
   paymentJazzcashNumber: varchar("payment_jazzcash_number", { length: 20 }),
+  paymentJazzcashName: varchar("payment_jazzcash_name", { length: 100 }),
   paymentEasypaisaEnabled: boolean("payment_easypaisa_enabled").default(false),
   paymentEasypaisaNumber: varchar("payment_easypaisa_number", { length: 20 }),
+  paymentEasypaisaName: varchar("payment_easypaisa_name", { length: 100 }),
   // Tracking & Analytics Pixels
   trackingPixels: jsonb("tracking_pixels").$type<{
     metaPixelId?: string;
