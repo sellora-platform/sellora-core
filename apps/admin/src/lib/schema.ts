@@ -468,3 +468,18 @@ export const subscriptionRequests = pgTable("subscription_requests", {
 
 export type SubscriptionRequest = typeof subscriptionRequests.$inferSelect;
 export type InsertSubscriptionRequest = typeof subscriptionRequests.$inferInsert;
+
+// ============================================================================
+// Platform Settings (Admin-configurable global settings)
+// ============================================================================
+
+export const platformSettings = pgTable("platform_settings", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 100 }).unique().notNull(),
+  value: text("value").notNull(),
+  label: varchar("label", { length: 255 }),
+  group: varchar("group", { length: 50 }).notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type PlatformSetting = typeof platformSettings.$inferSelect;

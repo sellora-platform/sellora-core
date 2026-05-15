@@ -717,3 +717,18 @@ export const marketingAutomations = pgTable("marketing_automations", {
 
 export type MarketingAutomation = typeof marketingAutomations.$inferSelect;
 export type InsertMarketingAutomation = typeof marketingAutomations.$inferInsert;
+
+// ============================================================================
+// Platform Settings (Admin-configurable global settings)
+// ============================================================================
+
+export const platformSettings = pgTable("platform_settings", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 100 }).unique().notNull(),
+  value: text("value").notNull(),
+  label: varchar("label", { length: 255 }),
+  group: varchar("group", { length: 50 }).notNull(), // 'payment', 'pricing', 'general'
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type PlatformSetting = typeof platformSettings.$inferSelect;
