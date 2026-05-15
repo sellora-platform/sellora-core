@@ -42,20 +42,32 @@ export const SECTION_SCHEMAS: Record<string, any> = {
         { label: "Left", value: "left" },
         { label: "Center", value: "center" },
         { label: "Right", value: "right" }
-      ], default: "right" }
+      ], default: "right" },
+      { id: "header_bg", type: "text", label: "Custom Background", default: "" }
     ]
   },
   footer: {
     name: "Footer",
     settings: [
       { id: "copyright_text", type: "text", label: "Copyright Text", default: "All rights reserved." },
-      { id: "show_payment_icons", type: "checkbox", label: "Show Payment Icons", default: true },
-      { id: "payment_methods", type: "text", label: "Custom Payment Text", default: "Visa, Mastercard, PayPal" },
       { id: "background_color", type: "select", label: "Background Scheme", options: [
-        { label: "Light", value: "light" },
-        { label: "Dark", value: "dark" },
+        { label: "Theme (Light)", value: "light" },
+        { label: "Primary (Dark)", value: "dark" },
         { label: "Accent", value: "accent" }
       ], default: "light" },
+      { id: "custom_footer_bg", type: "text", label: "Custom Background", default: "" },
+      { id: "show_payment_icons", type: "checkbox", label: "Show Payment Icons", default: true },
+      { id: "payment_icons_style", type: "select", label: "Icons Style", options: [
+        { label: "Colored", value: "colored" },
+        { label: "Monochrome", value: "monochrome" }
+      ], default: "colored" },
+      { id: "show_visa", type: "checkbox", label: "Visa", default: true },
+      { id: "show_mastercard", type: "checkbox", label: "Mastercard", default: true },
+      { id: "show_paypal", type: "checkbox", label: "PayPal", default: true },
+      { id: "show_stripe", type: "checkbox", label: "Stripe", default: true },
+      { id: "show_jazzcash", type: "checkbox", label: "JazzCash", default: true },
+      { id: "show_easypaisa", type: "checkbox", label: "Easypaisa", default: true },
+      { id: "show_cod", type: "checkbox", label: "Cash on Delivery", default: true },
     ]
   },
   hero: HeroSchema,
