@@ -198,10 +198,37 @@ export default function Navigation() {
                       Create your first menu to define how customers navigate your store.
                     </p>
                   </div>
-                  <Button onClick={() => setIsCreateModalOpen(true)} variant="outline" className="mt-4 px-8 rounded-xl">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Menu
-                  </Button>
+                  <div className="flex gap-4 mt-4">
+                    <Button onClick={() => setIsCreateModalOpen(true)} variant="outline" className="px-8 rounded-xl h-12">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Custom Menu
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        createMutation.mutate({ 
+                          storeId: storeQuery.data!.id, 
+                          name: "Main Menu" 
+                        }, {
+                          onSuccess: (newMenu) => {
+                            updateMutation.mutate({
+                              menuId: newMenu.id,
+                              storeId: storeQuery.data!.id,
+                              items: [
+                                { label: "Shop", url: "/products" },
+                                { label: "Track Order", url: "/track-order" },
+                                { label: "Story", url: "/about" },
+                                { label: "Contact", url: "/contact" }
+                              ]
+                            });
+                          }
+                        });
+                      }}
+                      className="px-8 rounded-xl h-12 bg-[#008060] hover:bg-[#008060]/90"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Setup Default Menu
+                    </Button>
+                  </div>
                 </div>
               </Card>
             )}

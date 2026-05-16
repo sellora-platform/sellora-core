@@ -390,6 +390,7 @@ export default function ThemeEditor() {
         themeId: theme?.id,
         themeName: theme?.name
       }, "*");
+      console.log("[Editor] Sent THEME_UPDATE with header menu_id:", headerSection?.settings?.menu_id);
     }
   }, [localSections, headerSection, footerSection, selectedSectionId, globalSettings, theme]);
 
