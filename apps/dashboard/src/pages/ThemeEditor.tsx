@@ -236,6 +236,10 @@ export default function ThemeEditor() {
 
   // Queries
   const storeQuery = trpc.stores.getMyStore.useQuery();
+  const menusQuery = trpc.navigation.list.useQuery(
+    { storeId: storeQuery.data?.id || 0 },
+    { enabled: !!storeQuery.data?.id }
+  );
   const search = window.location.search;
   const params = new URLSearchParams(search);
   const themeId = params.get("themeId") || "";
@@ -1079,9 +1083,18 @@ export default function ThemeEditor() {
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {field.options?.map((opt: any) => (
-                                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                                    ))}
+                                    {field.id === "menu_id" ? (
+                                      <>
+                                        <SelectItem value="none">No Menu</SelectItem>
+                                        {menusQuery.data?.map((menu: any) => (
+                                          <SelectItem key={menu.id} value={menu.id.toString()}>{menu.name}</SelectItem>
+                                        ))}
+                                      </>
+                                    ) : (
+                                      field.options?.map((opt: any) => (
+                                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                      ))
+                                    )}
                                   </SelectContent>
                                 </Select>
                               ) : field.type === "range" ? (

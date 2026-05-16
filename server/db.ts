@@ -431,3 +431,58 @@ export async function getChannelsByStoreId(storeId: number) {
   return db.select().from(communicationChannels).where(eq(communicationChannels.storeId, storeId));
 }
 
+// ============================================================================
+// Navigation Queries
+// ============================================================================
+
+export async function createNavigationMenu(data: schema.InsertNavigationMenu) {
+  const db = getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(schema.navigationMenus).values(data).returning();
+  return result[0];
+}
+
+export async function getNavigationMenusByStoreId(storeId: number) {
+  const db = getDb();
+  if (!db) return [];
+  return db.select().from(schema.navigationMenus).where(eq(schema.navigationMenus.storeId, storeId));
+}
+
+export async function getNavigationMenuById(id: number) {
+  const db = getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(schema.navigationMenus).where(eq(schema.navigationMenus.id, id)).limit(1);
+  return result[0];
+}
+
+export async function updateNavigationMenu(id: number, data: Partial<schema.InsertNavigationMenu>) {
+  const db = getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.update(schema.navigationMenus).set(data).where(eq(schema.navigationMenus.id, id)).returning();
+  return result[0];
+}
+
+export async function deleteNavigationMenu(id: number) {
+  const db = getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(schema.navigationItems).where(eq(schema.navigationItems.menuId, id));
+  await db.delete(schema.navigationMenus).where(eq(schema.navigationMenus.id, id));
+}
+
+export async function getNavigationItemsByMenuId(menuId: number) {
+  const db = getDb();
+  if (!db) return [];
+  return db.select().from(schema.navigationItems).where(eq(schema.navigationItems.menuId, menuId)).orderBy(asc(schema.navigationItems.displayOrder));
+}
+
+export async function upsertNavigationItems(menuId: number, items: schema.InsertNavigationItem[]) {
+  const db = getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Simple approach: delete all and re-insert
+  await db.delete(schema.navigationItems).where(eq(schema.navigationItems.menuId, menuId));
+  if (items.length > 0) {
+    return db.insert(schema.navigationItems).values(items).returning();
+  }
+  return [];
+}

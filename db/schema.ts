@@ -729,6 +729,40 @@ export type MarketingAutomation = typeof marketingAutomations.$inferSelect;
 export type InsertMarketingAutomation = typeof marketingAutomations.$inferInsert;
 
 // ============================================================================
+// Navigation (Menus & Items)
+// ============================================================================
+
+export const navigationMenus = pgTable("navigation_menus", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  handle: varchar("handle", { length: 255 }).notNull(), // e.g. 'main-menu', 'footer-menu'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  storeIdIdx: index("nav_menus_store_id_idx").on(table.storeId),
+}));
+
+export type NavigationMenu = typeof navigationMenus.$inferSelect;
+export type InsertNavigationMenu = typeof navigationMenus.$inferInsert;
+
+export const navigationItems = pgTable("navigation_items", {
+  id: serial("id").primaryKey(),
+  menuId: integer("menu_id").notNull(),
+  parentId: integer("parent_id"), // For nested menus
+  label: varchar("label", { length: 255 }).notNull(),
+  url: varchar("url", { length: 512 }).notNull(),
+  displayOrder: integer("display_order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  menuIdIdx: index("nav_items_menu_id_idx").on(table.menuId),
+}));
+
+export type NavigationItem = typeof navigationItems.$inferSelect;
+export type InsertNavigationItem = typeof navigationItems.$inferInsert;
+
+// ============================================================================
 // Platform Settings (Admin-configurable global settings)
 // ============================================================================
 

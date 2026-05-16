@@ -20,6 +20,7 @@ import { messagesRouter } from "./routers/messages";
 import { customersRouter } from "./routers/customers";
 import { marketingRouter } from "./routers/marketing";
 import { platformSettingsRouter } from "./routers/platformSettings";
+import { navigationRouter } from "./routers/navigation";
 
 export const appRouter = router({
   system: systemRouter,
@@ -52,6 +53,7 @@ export const appRouter = router({
   customers: customersRouter,
   marketing: marketingRouter,
   platformSettings: platformSettingsRouter,
+  navigation: navigationRouter,
 });
 
 export type AppRouter = typeof appRouter;

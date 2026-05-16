@@ -41,6 +41,7 @@ import ThemeManager from "./pages/ThemeManager";
 import Reviews from "./pages/Reviews";
 import Marketing from "./pages/Marketing";
 import Payments from "./pages/Payments";
+import Navigation from "./pages/Navigation";
 
 
 
@@ -156,6 +157,7 @@ function Router() {
       <Route path={"/orders"} component={Orders} />
       <Route path={"/orders/:id"} component={OrderDetails} />
       <Route path={"/pages"} component={Pages} />
+      <Route path={"/navigation"} component={Navigation} />
       <Route path={"/pages/new"} component={PageEdit} />
       <Route path={"/pages/:id/edit"} component={PageEdit} />
       <Route path={"/connect"} component={Connect} />

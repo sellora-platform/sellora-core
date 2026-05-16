@@ -39,7 +39,8 @@ import {
   MessageCircle,
   Zap,
   Megaphone,
-  CreditCard
+  CreditCard,
+  Menu as MenuIcon
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -56,6 +57,7 @@ const menuItems = [
   { icon: Megaphone, label: "Marketing", path: "/marketing" },
   { icon: Star, label: "Reviews", path: "/reviews" },
   { icon: FileText, label: "Pages", path: "/pages" },
+  { icon: MenuIcon, label: "Navigation", path: "/navigation" },
   { icon: Globe, label: "Domains", path: "/domains" },
   {icon: MessageSquare, label: "Inbox", path: "/inbox" },
   { icon: MessageCircle, label: "Channels", path: "/connect" },
