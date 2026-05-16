@@ -43,7 +43,7 @@ export const SECTION_SCHEMAS: Record<string, any> = {
         { label: "Center", value: "center" },
         { label: "Right", value: "right" }
       ], default: "right" },
-      { id: "menu_id", type: "select", label: "Select Menu", options: [] },
+      { id: "menu_id", type: "select", label: "Select Menu", options: [], default: "none" },
       { id: "header_bg", type: "text", label: "Custom Background", default: "" }
     ]
   },

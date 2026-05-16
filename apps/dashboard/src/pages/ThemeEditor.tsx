@@ -1076,7 +1076,7 @@ export default function ThemeEditor() {
                                 />
                               ) : field.type === "select" ? (
                                 <Select 
-                                  value={currentSection?.settings[field.id]} 
+                                  value={currentSection?.settings[field.id] || field.default || "none"} 
                                   onValueChange={(val: string) => handleUpdateSection(currentSection!.id, { ...currentSection!.settings, [field.id]: val })}
                                 >
                                   <SelectTrigger className="h-11 rounded-xl bg-[#f9f9f9] border-none">
