@@ -42,6 +42,7 @@ import Reviews from "./pages/Reviews";
 import Marketing from "./pages/Marketing";
 import Payments from "./pages/Payments";
 import Navigation from "./pages/Navigation";
+import Shipping from "./pages/Shipping";
 
 
 
@@ -167,6 +168,7 @@ function Router() {
       <Route path={"/marketing"} component={Marketing} />
       <Route path={"/settings"} component={Settings} />
       <Route path={"/payments"} component={Payments} />
+      <Route path={"/shipping"} component={Shipping} />
       <Route path={"/domains"} component={Domains} />
       <Route path={"/store/:slug"} component={Storefront} />
       <Route path={"/store/:slug/products"} component={Storefront} />

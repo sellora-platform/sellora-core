@@ -40,7 +40,8 @@ import {
   Zap,
   Megaphone,
   CreditCard,
-  Menu as MenuIcon
+  Menu as MenuIcon,
+  Truck
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -63,6 +64,7 @@ const menuItems = [
   { icon: MessageCircle, label: "Channels", path: "/connect" },
   { icon: Zap, label: "AI Assistant", path: "/ai-assistant" },
   { icon: CreditCard, label: "Payments", path: "/payments" },
+  { icon: Truck, label: "Shipping", path: "/shipping" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 

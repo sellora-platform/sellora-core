@@ -38,6 +38,8 @@ export const ordersRouter = router({
         variant: z.string().optional(),
       })),
       notes: z.string().optional(),
+      shippingFee: z.number().optional(),
+      discountAmount: z.number().optional(),
     }))
     .mutation(async ({ input }) => {
       // Validate screenshot required for non-COD
@@ -55,7 +57,9 @@ export const ordersRouter = router({
       const subtotal = input.items.reduce(
         (acc, item) => acc + item.price * item.quantity, 0
       );
-      const total = subtotal; // shipping calculated later
+      const shipping = input.shippingFee || 0;
+      const discount = input.discountAmount || 0;
+      const total = Math.max(0, subtotal + shipping - discount);
 
       // Generate order number
       const orderNumber = `ORD-${Date.now().toString().slice(-6)}-${nanoid(4).toUpperCase()}`;
@@ -72,6 +76,8 @@ export const ordersRouter = router({
         paymentStatus: input.paymentScreenshot ? "screenshot_uploaded" : "pending",
         paymentScreenshot: input.paymentScreenshot || null,
         subtotal: subtotal.toFixed(2),
+        shipping: shipping.toFixed(2),
+        discount: discount.toFixed(2),
         total: total.toFixed(2),
         notes: input.notes || null,
         status: "pending",

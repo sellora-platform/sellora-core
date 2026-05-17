@@ -776,3 +776,55 @@ export const platformSettings = pgTable("platform_settings", {
 });
 
 export type PlatformSetting = typeof platformSettings.$inferSelect;
+
+// ============================================================================
+// Shipping Management
+// ============================================================================
+
+export const shippingZones = pgTable("shipping_zones", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  countries: jsonb("countries").$type<string[]>().default([]).notNull(), // List of country codes, e.g. ["US", "CA"] or ["PK"]
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  storeIdIdx: index("shipping_zones_store_id_idx").on(table.storeId),
+}));
+
+export type ShippingZone = typeof shippingZones.$inferSelect;
+export type InsertShippingZone = typeof shippingZones.$inferInsert;
+
+export const shippingRates = pgTable("shipping_rates", {
+  id: serial("id").primaryKey(),
+  zoneId: integer("zone_id").notNull().references(() => shippingZones.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(), // e.g., "Standard", "Express"
+  type: varchar("type", { length: 50 }).notNull(), // "flat" | "weight_based" | "price_based"
+  price: numeric("price", { precision: 10, scale: 2 }).notNull(),
+  minLimit: numeric("min_limit", { precision: 10, scale: 2 }), // Min weight or min cart price
+  maxLimit: numeric("max_limit", { precision: 10, scale: 2 }), // Max weight or max cart price
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  zoneIdIdx: index("shipping_rates_zone_id_idx").on(table.zoneId),
+}));
+
+export type ShippingRate = typeof shippingRates.$inferSelect;
+export type InsertShippingRate = typeof shippingRates.$inferInsert;
+
+export const shippingCarrierSettings = pgTable("shipping_carrier_settings", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull(),
+  carrier: varchar("carrier", { length: 100 }).notNull(), // "easypost" | "shipstation" | "leopard" | "tcs" | etc.
+  apiKey: text("api_key"),
+  apiSecret: text("api_secret"),
+  isEnabled: boolean("is_enabled").default(false).notNull(),
+  settings: jsonb("settings").$type<any>().default({}).notNull(), // Extra configuration parameters
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  storeCarrierIdx: index("shipping_carrier_store_carrier_idx").on(table.storeId, table.carrier),
+}));
+
+export type ShippingCarrierSetting = typeof shippingCarrierSettings.$inferSelect;
+export type InsertShippingCarrierSetting = typeof shippingCarrierSettings.$inferInsert;
